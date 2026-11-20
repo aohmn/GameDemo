@@ -90,10 +90,10 @@ func _run_logic() -> void:
 func _run_live() -> void:
     var start: int = GameClock.get_total_minutes()
     GameClock.set_paused(false)
-    GameClock.set_speed(600.0)
+    GameClock.set_speed(60.0)
     await get_tree().create_timer(1.0).timeout
     var moved: int = GameClock.get_total_minutes() - start
-    _check("autoload chạy ~10 phút game/giây (đo được %d)" % moved, moved >= 5 and moved <= 20)
+    _check("autoload chạy ~60 phút game/giây (đo được %d)" % moved, moved >= 40 and moved <= 80)
     GameClock.set_paused(true)
     var frozen: int = GameClock.get_total_minutes()
     await get_tree().create_timer(0.5).timeout
