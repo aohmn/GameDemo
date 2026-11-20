@@ -11,13 +11,13 @@ thiết kế và triển khai phải tuân thủ. Khi có xung đột, áp dụn
 Khi hai quy tắc mâu thuẫn, quy tắc có số thứ tự ưu tiên nhỏ hơn thắng.
 
 1. §2  — Chỉ phát triển bằng điện thoại.
-2. §14 — Trung thực khi kiểm tra, không báo cáo khống.
+2. §13 — Trung thực khi kiểm tra, không báo cáo khống.
 3. §5  — Kiến trúc module và quy tắc phụ thuộc.
 4. §6  — Nguồn dữ liệu duy nhất (Economy, Inventory, GameClock...).
 5. §4  — Quy tắc đồ họa (không texture trong giai đoạn hiện tại).
 6. §9  — Save/Load.
-7. §11 — Presentation và UI.
-8. §12 — Quy tắc GDScript và Godot.
+7. §10 — Presentation và UI.
+8. §11 — Quy tắc GDScript và Godot.
 9. Các mục còn lại.
 
 Ví dụ: §4 cấm texture nhưng §3 muốn phong cách HD-2D. Theo bảng ưu tiên,
@@ -318,6 +318,14 @@ thực hiện theo cơ chế tất-cả-hoặc-không-gì:
 Không chấp nhận trường hợp trừ tiền thành công nhưng thêm item thất bại
 hoặc ngược lại.
 
+### TransactionCoordinator
+
+- TransactionCoordinator điều phối giao dịch liên quan nhiều module.
+- Mỗi module cung cấp API kiểm tra điều kiện và thực hiện thay đổi.
+- Chỉ commit khi tất cả thao tác thành công.
+- Nếu thất bại, rollback toàn bộ thay đổi đã thực hiện.
+- Không cho phép module khác sửa trực tiếp dữ liệu nội bộ.
+
 ### Inventory
 
 - Inventory là nguồn dữ liệu vật phẩm duy nhất.
@@ -514,6 +522,6 @@ kèm danh sách việc còn lại.
 
 ---
 
-*Phiên bản: 2.0 — Viết lại theo bảng ưu tiên, sửa đường dẫn dự án, thêm
+*Phiên bản: 2.1 — Viết lại theo bảng ưu tiên, sửa đường dẫn dự án, thêm
 template lệnh Termux, ghi rõ giới hạn Godot CLI trên Android, thêm định
 nghĩa Done và quy tắc giao dịch atomic.*
