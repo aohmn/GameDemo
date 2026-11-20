@@ -5,77 +5,88 @@ var _touch_index := -1
 
 
 func _ready() -> void:
-    queue_redraw()
+	set_process_input(true)
+	queue_redraw()
 
 
 func get_direction() -> Vector2:
-    return _direction
+	return _direction
 
 
-func _gui_input(event: InputEvent) -> void:
-    if event is InputEventScreenTouch:
-        var touch := event as InputEventScreenTouch
-
-        if touch.pressed:
-            if _touch_index == -1 and get_global_rect().has_point(
-                touch.position
-            ):
-                _touch_index = touch.index
-                _update_direction(touch.position)
-                accept_event()
-        elif touch.index == _touch_index:
-            _touch_index = -1
-            _direction = Vector2.ZERO
-            queue_redraw()
-            accept_event()
-
-    elif event is InputEventScreenDrag:
-        var drag := event as InputEventScreenDrag
-
-        if drag.index == _touch_index:
-            _update_direction(drag.position)
-            accept_event()
+func is_active() -> bool:
+	return _touch_index != -1
 
 
-func _update_direction(screen_position: Vector2) -> void:
-    var local_position := (
-        get_global_transform_with_canvas().affine_inverse()
-        * screen_position
-    )
+func _screen_to_local(screen_position: Vector2) -> Vector2:
+	var inverse := get_global_transform_with_canvas().affine_inverse()
+	return inverse * screen_position
 
-    var center := size * 0.5
-    var radius := minf(size.x, size.y) * 0.42
-    var offset := local_position - center
 
-    if radius > 0.0:
-        _direction = offset.limit_length(radius) / radius
+func _input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch:
+		var touch := event as InputEventScreenTouch
 
-    queue_redraw()
+		if touch.pressed:
+			if _touch_index == -1:
+				var local_pos := _screen_to_local(touch.position)
+				var touch_area := Rect2(Vector2.ZERO, size)
+
+				if touch_area.has_point(local_pos):
+					_touch_index = touch.index
+					_update_direction(local_pos)
+					get_viewport().set_input_as_handled()
+		else:
+			if touch.index == _touch_index:
+				_touch_index = -1
+				_direction = Vector2.ZERO
+				queue_redraw()
+				get_viewport().set_input_as_handled()
+
+	elif event is InputEventScreenDrag:
+		var drag := event as InputEventScreenDrag
+
+		if drag.index == _touch_index:
+			var local_pos := _screen_to_local(drag.position)
+			_update_direction(local_pos)
+			get_viewport().set_input_as_handled()
+
+
+func _update_direction(local_position: Vector2) -> void:
+	var center := size * 0.5
+	var radius := minf(size.x, size.y) * 0.42
+	var offset := local_position - center
+
+	if radius > 0.0:
+		_direction = offset.limit_length(radius) / radius
+	else:
+		_direction = Vector2.ZERO
+
+	queue_redraw()
 
 
 func _draw() -> void:
-    var center := size * 0.5
-    var radius := minf(size.x, size.y) * 0.42
+	var center := size * 0.5
+	var radius := minf(size.x, size.y) * 0.42
 
-    draw_circle(
-        center,
-        radius,
-        Color(0.04, 0.06, 0.07, 0.38)
-    )
+	draw_circle(
+		center,
+		radius,
+		Color(0.04, 0.06, 0.07, 0.45)
+	)
 
-    draw_arc(
-        center,
-        radius,
-        0.0,
-        TAU,
-        48,
-        Color(0.85, 0.88, 0.84, 0.65),
-        3.0,
-        true
-    )
+	draw_arc(
+		center,
+		radius,
+		0.0,
+		TAU,
+		48,
+		Color(0.85, 0.88, 0.84, 0.75),
+		3.0,
+		true
+	)
 
-    draw_circle(
-        center + _direction * radius * 0.58,
-        radius * 0.30,
-        Color(0.88, 0.90, 0.86, 0.72)
-    )
+	draw_circle(
+		center + _direction * radius * 0.58,
+		radius * 0.30,
+		Color(0.88, 0.90, 0.86, 0.85)
+	)

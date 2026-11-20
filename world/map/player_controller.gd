@@ -4,10 +4,13 @@ class_name Player3DController
 @export var move_speed: float = 5.0
 @export var acceleration: float = 18.0
 @export var gravity: float = 18.0
-@export var camera_sensitivity: float = 0.005
+@export var camera_follow_speed: float = 5.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var joystick: Node = get_node("../HUD/Joystick")
+
+var _movement_basis_yaw: float = 0.0
+var _was_moving: bool = false
 
 
 func _physics_process(delta: float) -> void:
@@ -15,7 +18,7 @@ func _physics_process(delta: float) -> void:
 		"ui_left",
 		"ui_right",
 		"ui_up",
-        "ui_down"
+		"ui_down"
 	)
 
 	var touch_input: Vector2 = joystick.get_direction()
@@ -23,6 +26,15 @@ func _physics_process(delta: float) -> void:
 
 	if touch_input.length() > keyboard_input.length():
 		input_vector = touch_input
+
+	var has_input := input_vector.length() > 0.08
+
+	# Khóa hướng camera tại thời điểm bắt đầu kéo joystick.
+	# Camera có thể xoay mà hướng di chuyển không bị lệch theo.
+	if has_input and not _was_moving:
+		_movement_basis_yaw = camera_pivot.rotation.y
+
+	_was_moving = has_input
 
 	var direction := Vector3(
 		input_vector.x,
@@ -32,11 +44,26 @@ func _physics_process(delta: float) -> void:
 
 	direction = direction.rotated(
 		Vector3.UP,
-		camera_pivot.rotation.y
+		_movement_basis_yaw
 	)
 
 	if direction.length() > 0.08:
 		direction = direction.normalized()
+
+		# Camera tự xoay ra phía sau hướng di chuyển.
+		var target_yaw := atan2(
+			-direction.x,
+			-direction.z
+		)
+
+		camera_pivot.rotation.y = lerp_angle(
+			camera_pivot.rotation.y,
+			target_yaw,
+			clampf(camera_follow_speed * delta, 0.0, 1.0)
+		)
+
+		# Nhân vật quay mặt theo hướng đang đi.
+		look_at(global_position + direction, Vector3.UP)
 
 	var target_velocity := direction * move_speed
 
@@ -45,6 +72,7 @@ func _physics_process(delta: float) -> void:
 		target_velocity.x,
 		acceleration * delta
 	)
+
 	velocity.z = move_toward(
 		velocity.z,
 		target_velocity.z,
@@ -57,25 +85,3 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	move_and_slide()
-
-	if direction.length() > 0.08:
-		look_at(global_position + direction, Vector3.UP)
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventScreenDrag:
-		var drag := event as InputEventScreenDrag
-		var screen_width := get_viewport().get_visible_rect().size.x
-
-		# Vuốt bên phải màn hình để xoay camera.
-		if drag.position.x > screen_width * 0.4:
-			camera_pivot.rotation.y -= (
-				drag.relative.x * camera_sensitivity
-			)
-
-			camera_pivot.rotation.x = clamp(
-				camera_pivot.rotation.x
-				- drag.relative.y * camera_sensitivity,
-				-0.75,
-				-0.12
-			)

@@ -28,3 +28,21 @@
 - Thêm joystick cảm ứng và thao tác vuốt để xoay camera.
 - Giữ shader map 2D cũ làm prototype tham khảo, không còn dùng trong scene chính.
 - Chưa xác nhận runtime trên Godot Android.
+
+## Phase 2.1: Fix mobile virtual joystick
+
+- Chuyển joystick từ `_gui_input()` sang `_input()` để nhận touch ổn định.
+- Chuyển tọa độ viewport sang tọa độ Control trước khi kiểm tra vùng chạm.
+- Đánh dấu touch/drag của joystick đã xử lý để không lọt xuống camera.
+- Định danh VirtualJoystick và khai báo kiểu rõ ràng trong PlayerController.
+
+## Phase 2.1: Top-down Angled Camera
+
+- Chuyển camera từ third-person thấp sang top-down nghiêng 55 độ.
+- Tăng khoảng cách SpringArm để bao quát khu vực xung quanh.
+- Camera tự xoay mượt theo hướng di chuyển của nhân vật.
+- Khóa góc tham chiếu điều khiển khi bắt đầu di chuyển,
+  tránh hiện tượng camera và hướng đi tự kéo lệch lẫn nhau.
+- Bỏ thao tác vuốt phải để xoay camera thủ công.
+- Cập nhật hướng dẫn điều khiển trong README map.
+- Chưa xác nhận runtime trên Godot Android.

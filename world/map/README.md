@@ -1,42 +1,43 @@
-# 3D Map — Third-person Prototype
+# 3D Map — Top-down Angled Prototype
 
 ## Mục đích
-Thay thế map CanvasItem 2D bằng môi trường 3D góc nhìn thứ ba,
-tối ưu bước đầu cho Godot Android.
+Môi trường 3D góc nhìn từ trên xuống, nghiêng nhẹ,
+tối ưu cho thao tác cảm ứng trên Android.
 
 ## Thành phần
 - MapRoot: scene môi trường 3D.
-- Map3DController: tạo địa hình phẳng, đường, ngã tư, kênh nước,
-  nhà phố và cây bằng Primitive Mesh.
-- Player3DController: CharacterBody3D, trọng lực, va chạm,
-  di chuyển theo hướng camera.
+- Map3DController: tạo địa hình và vật thể bằng Primitive Mesh.
+- Player3DController: di chuyển, trọng lực, va chạm và điều khiển camera.
 - VirtualJoystick: joystick cảm ứng bên trái màn hình.
-- SpringArm3D + Camera3D: camera theo sau nhân vật.
+- SpringArm3D + Camera3D: camera top-down nghiêng, tự xoay theo hướng đi.
 
 ## Điều khiển
-- Chạm/kéo joystick bên trái: di chuyển.
-- Vuốt bên phải màn hình: xoay camera.
-- Phím điều hướng ui_left/ui_right/ui_up/ui_down:
-  điều khiển khi có bàn phím.
+- Kéo joystick bên trái: di chuyển nhân vật.
+- Camera tự xoay mượt ra phía sau hướng di chuyển.
+- Thả joystick: camera giữ nguyên hướng.
+- Lần kéo tiếp theo sử dụng hướng camera hiện tại làm chuẩn.
+- Không cần vuốt màn hình để xoay camera.
+
+## Camera
+- Góc nghiêng: 55 độ.
+- Khoảng cách SpringArm: 8 đơn vị.
+- Camera theo hướng di chuyển bằng lerp_angle.
+- Hướng tham chiếu di chuyển được khóa khi bắt đầu điều khiển,
+  tránh hiện tượng nhân vật chạy vòng khi camera đang xoay.
 
 ## Đồ họa
 - Dựng bằng Mesh và StandardMaterial3D.
-- Không dùng texture.
-- Map shader CanvasItem cũ được giữ lại làm tài liệu prototype,
-  không còn được tham chiếu bởi map_root.tscn.
+- Không sử dụng texture.
 
 ## Dependencies
-Godot 4.x, GL Compatibility, EventBus và CoreEvents từ dự án.
-
-## Giới hạn prototype
-- Địa hình hiện là mặt phẳng.
-- Nhà và cây là mô hình low-poly cơ bản.
-- Kênh nước hiện là hình học tĩnh.
-- Chưa có giao thông, NPC, hệ thống tương tác hoặc lưu vị trí.
-- Chưa tối ưu LOD và streaming khu vực.
+Godot 4.x, GL Compatibility, EventBus và GameClock.
 
 ## Kiểm tra
 Mở project bằng Godot Android và chạy scene khởi động.
-Kiểm tra nhân vật đứng trên mặt đất, di chuyển bằng joystick,
-xoay camera bằng thao tác vuốt và va chạm với nhà.
-Chỉ xác nhận hoàn thành sau khi chạy thử thực tế.
+Kiểm tra:
+1. Camera nhìn từ trên xuống và vẫn thấy nhân vật.
+2. Kéo joystick lên, xuống, trái, phải.
+3. Camera tự xoay theo hướng di chuyển.
+4. Nhân vật không chạy vòng khi camera xoay.
+5. Thả joystick, camera giữ hướng.
+6. Kéo joystick lần nữa, hướng di chuyển vẫn chính xác.
