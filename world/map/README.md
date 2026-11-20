@@ -85,3 +85,13 @@ Hai map dùng chung cấu trúc Player, Camera và Joystick.
 - Player tự trở về local_spawn_position nếu tọa độ Y thấp hơn -10.
 - Barrier là StaticBody3D, không tạo mesh hiển thị.
 - Cần kiểm tra va chạm và khả năng di chuyển thực tế trên Godot Android.
+
+
+## Minimap
+
+- Minimap được tạo trong HUD ở góc trên bên phải.
+- `WorldMinimap` là Control độc lập, chỉ phụ trách hiển thị.
+- Hiển thị sơ đồ khu dân cư hoặc hồ câu tùy `map_type`.
+- Chấm cam cập nhật theo vị trí thực tế của Player.
+- Bản đồ giữ hướng Bắc ở phía trên.
+- Dùng CanvasItem drawing, không dùng texture hoặc ảnh.

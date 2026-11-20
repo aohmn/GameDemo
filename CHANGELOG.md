@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Phase 3.2: World Minimap
+
+- Thêm minimap nhỏ ở góc trên bên phải HUD.
+- Hiển thị sơ đồ riêng cho khu dân cư và hồ câu.
+- Cập nhật vị trí Player theo thời gian thực.
+- Giữ bản đồ hướng Bắc lên trên, không xoay theo nhân vật.
+- Dựng bằng Control drawing, không sử dụng texture.
+- Chưa xác nhận parser và runtime trên Godot Android.
+
 ## Phase 3.1: Map Fall Protection
 
 - Thêm collision wall vô hình ở bốn cạnh hai map.

@@ -4,6 +4,8 @@ class_name Map3DController
 const WORLD_SIZE := 100.0
 const TRAVEL_META_KEY := "projectgame_spawn_point_id"
 
+const MINIMAP_SCRIPT: Script = preload("res://world/map/minimap.gd")
+
 @export var map_type: String = "residential"
 @export_file("*.tscn") var destination_scene_path: String = ""
 @export var destination_name: String = ""
@@ -36,6 +38,7 @@ func _ready() -> void:
 
 	_build_transition()
 	_apply_spawn()
+	_build_minimap()
 
 	print("[World] Map loaded: ", map_type)
 
@@ -637,3 +640,29 @@ func _apply_spawn() -> void:
 		" at ",
 		spawn_position
 	)
+
+
+# --------------------------------------------------
+# MINIMAP
+# --------------------------------------------------
+
+func _build_minimap() -> void:
+	var hud := get_node_or_null("HUD") as CanvasLayer
+	if hud == null:
+		push_warning("[World] HUD not found. Minimap skipped.")
+		return
+
+	var minimap := Control.new()
+	minimap.name = "WorldMinimap"
+	minimap.set_script(MINIMAP_SCRIPT)
+	minimap.set("player", player)
+	minimap.set("map_type", map_type)
+
+	minimap.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	minimap.offset_left = -176.0
+	minimap.offset_top = 16.0
+	minimap.offset_right = -16.0
+	minimap.offset_bottom = 176.0
+	minimap.z_index = 100
+
+	hud.add_child(minimap)
