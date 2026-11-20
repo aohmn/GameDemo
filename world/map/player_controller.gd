@@ -4,13 +4,18 @@ class_name Player3DController
 @export var move_speed: float = 5.0
 @export var acceleration: float = 18.0
 @export var gravity: float = 18.0
-@export var camera_follow_speed: float = 5.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var joystick: Node = get_node("../HUD/Joystick")
 
-var _movement_basis_yaw: float = 0.0
-var _was_moving: bool = false
+const CAMERA_FOLLOW_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
+
+
+func _ready() -> void:
+	# Camera không kế thừa góc xoay của nhân vật.
+	camera_pivot.top_level = true
+	camera_pivot.global_rotation = Vector3.ZERO
+	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET
 
 
 func _physics_process(delta: float) -> void:
@@ -27,42 +32,11 @@ func _physics_process(delta: float) -> void:
 	if touch_input.length() > keyboard_input.length():
 		input_vector = touch_input
 
-	var has_input := input_vector.length() > 0.08
-
-	# Khóa hướng camera tại thời điểm bắt đầu kéo joystick.
-	# Camera có thể xoay mà hướng di chuyển không bị lệch theo.
-	if has_input and not _was_moving:
-		_movement_basis_yaw = camera_pivot.rotation.y
-
-	_was_moving = has_input
-
-	var direction := Vector3(
-		input_vector.x,
-		0.0,
-		input_vector.y
-	)
-
-	direction = direction.rotated(
-		Vector3.UP,
-		_movement_basis_yaw
-	)
+	# Camera cố định hướng nên joystick luôn dùng trục thế giới.
+	var direction := Vector3(input_vector.x, 0.0, input_vector.y)
 
 	if direction.length() > 0.08:
 		direction = direction.normalized()
-
-		# Camera tự xoay ra phía sau hướng di chuyển.
-		var target_yaw := atan2(
-			-direction.x,
-			-direction.z
-		)
-
-		camera_pivot.rotation.y = lerp_angle(
-			camera_pivot.rotation.y,
-			target_yaw,
-			clampf(camera_follow_speed * delta, 0.0, 1.0)
-		)
-
-		# Nhân vật quay mặt theo hướng đang đi.
 		look_at(global_position + direction, Vector3.UP)
 
 	var target_velocity := direction * move_speed
@@ -85,3 +59,6 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	move_and_slide()
+
+	# Camera chỉ bám vị trí, không xoay theo nhân vật.
+	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET

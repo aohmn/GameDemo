@@ -46,3 +46,12 @@
 - Bỏ thao tác vuốt phải để xoay camera thủ công.
 - Cập nhật hướng dẫn điều khiển trong README map.
 - Chưa xác nhận runtime trên Godot Android.
+
+## Phase 2.2: Fixed Angled Follow Camera
+
+- Tách CameraPivot khỏi transform xoay của Player bằng top_level.
+- Giữ camera ở góc nghiêng 55 độ, khoảng cách 8 đơn vị.
+- Camera chỉ bám theo vị trí nhân vật, không xoay theo hướng di chuyển.
+- Hướng joystick sử dụng hệ trục thế giới cố định.
+- Nhân vật vẫn quay mặt theo hướng đang đi.
+- Chưa xác nhận runtime trên Godot Android.

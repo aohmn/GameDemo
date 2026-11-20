@@ -1,43 +1,36 @@
-# 3D Map — Top-down Angled Prototype
+# 3D Map — Fixed Angled Camera Prototype
 
 ## Mục đích
-Môi trường 3D góc nhìn từ trên xuống, nghiêng nhẹ,
-tối ưu cho thao tác cảm ứng trên Android.
+Môi trường 3D góc nhìn từ trên xuống, nghiêng 55 độ.
+Camera cố định hướng nhìn và bám theo vị trí nhân vật.
 
 ## Thành phần
 - MapRoot: scene môi trường 3D.
 - Map3DController: tạo địa hình và vật thể bằng Primitive Mesh.
-- Player3DController: di chuyển, trọng lực, va chạm và điều khiển camera.
+- Player3DController: di chuyển, trọng lực, va chạm và cập nhật camera.
 - VirtualJoystick: joystick cảm ứng bên trái màn hình.
-- SpringArm3D + Camera3D: camera top-down nghiêng, tự xoay theo hướng đi.
+- SpringArm3D + Camera3D: camera nghiêng cố định.
 
 ## Điều khiển
-- Kéo joystick bên trái: di chuyển nhân vật.
-- Camera tự xoay mượt ra phía sau hướng di chuyển.
-- Thả joystick: camera giữ nguyên hướng.
-- Lần kéo tiếp theo sử dụng hướng camera hiện tại làm chuẩn.
-- Không cần vuốt màn hình để xoay camera.
+- Kéo joystick bên trái để di chuyển.
+- Nhân vật quay mặt theo hướng đang di chuyển.
+- Camera giữ nguyên góc nhìn, chỉ theo sau vị trí nhân vật.
+- Không có thao tác vuốt để xoay camera.
 
 ## Camera
-- Góc nghiêng: 55 độ.
+- Góc nghiêng SpringArm3D: 55 độ.
 - Khoảng cách SpringArm: 8 đơn vị.
-- Camera theo hướng di chuyển bằng lerp_angle.
-- Hướng tham chiếu di chuyển được khóa khi bắt đầu điều khiển,
-  tránh hiện tượng nhân vật chạy vòng khi camera đang xoay.
+- CameraPivot sử dụng top_level để không kế thừa góc xoay của Player.
+- Camera giữ rotation toàn cục bằng 0 độ.
+- Joystick sử dụng hệ trục thế giới cố định.
 
 ## Đồ họa
 - Dựng bằng Mesh và StandardMaterial3D.
 - Không sử dụng texture.
 
-## Dependencies
-Godot 4.x, GL Compatibility, EventBus và GameClock.
-
 ## Kiểm tra
-Mở project bằng Godot Android và chạy scene khởi động.
-Kiểm tra:
-1. Camera nhìn từ trên xuống và vẫn thấy nhân vật.
+1. Chạy scene khởi động trên Godot Android.
 2. Kéo joystick lên, xuống, trái, phải.
-3. Camera tự xoay theo hướng di chuyển.
-4. Nhân vật không chạy vòng khi camera xoay.
-5. Thả joystick, camera giữ hướng.
-6. Kéo joystick lần nữa, hướng di chuyển vẫn chính xác.
+3. Xác nhận nhân vật quay mặt theo hướng đi.
+4. Xác nhận camera không xoay khi nhân vật đổi hướng.
+5. Xác nhận camera chỉ bám theo vị trí nhân vật.
