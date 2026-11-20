@@ -10,7 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Dự án Trò chơi Mới"
+config/name="ProjectGame"
+run/main_scene="res://scenes/boot/boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
