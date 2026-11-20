@@ -1,3 +1,20 @@
+## World Map: Zoom và Pan
+
+- Thêm zoom bản đồ bằng thao tác chụm/xòe hai ngón.
+- Thêm nút zoom `+` và `−`, giới hạn mức zoom từ 1x đến 4x.
+- Thêm thao tác kéo bản đồ bằng một ngón tay.
+- Giữ waypoint khi đóng và mở lại bản đồ.
+- Giữ bản đồ lớn mở sau khi chọn waypoint để người chơi xem vị trí.
+- Chưa xác nhận parser và runtime trên Godot Android.
+
+## Navigation Foundation: minimap route preview
+
+- Connect the full-map waypoint selection to `NavigationService.find_route`.
+- Draw the returned AStar2D route on the full map.
+- Show route-found status; clear the previous route when opening the map.
+- Route preview only; player movement remains manual.
+- Godot Android parser and runtime verification pending.
+
 # CHANGELOG
 
 ## Phase 3.2: World Minimap

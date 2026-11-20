@@ -526,14 +526,15 @@ Không báo cáo tính năng hoàn thành nếu chưa có kết quả kiểm tra
 
 Tài liệu này là hợp đồng kiến trúc tổng thể của World System. Mọi triển khai phải tuân thủ AGENTS.md và cập nhật README của module liên quan.
 
-## Navigation Foundation — implemented
+## Navigation Foundation — route preview
 
-The `world/navigation/` module now contains a first road-graph foundation.
+The `world/navigation/` module contains an AStar2D road-graph foundation.
 
-- `navigation_service.gd` builds an AStar2D graph from the current road intersections.
-- `find_route(start_position, destination)` returns route points.
-- `world/map/minimap.gd` requests a route when the player selects a waypoint
-  and draws the route on the full map.
+- `navigation_service.gd` builds a graph from the configured road intersections.
+- `find_route(start_position, destination)` returns world-space route points.
+- `world/map/minimap.gd` requests a route when the player selects a waypoint.
+- The full map draws the returned route and reports whether a route was found.
 
-This is route preview only. It does not move the player automatically and
-does not yet perform obstacle-aware local navigation.
+This is visual route preview only. It does not move the player automatically,
+does not include obstacle-aware local navigation, and does not yet model
+sidewalks, entrances, one-way roads, traffic, or road closures.

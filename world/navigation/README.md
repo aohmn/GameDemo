@@ -34,3 +34,17 @@ The graph uses the existing road axes:
 ## Verification
 Open the project in Godot Android and check for parser errors.
 Then open the full map and tap a destination to inspect the route preview.
+
+
+## Minimap integration
+
+When the player selects a destination on the full map, `WorldMinimap`
+calls `NavigationService.find_route(player.global_position, destination)`.
+The returned world-space points are projected onto the full-map drawing
+and rendered as a route line.
+
+This is a visual route preview only:
+- The player remains under manual joystick control.
+- Selecting a new destination recalculates the route.
+- Opening the full map clears the previous destination and route.
+- An empty or one-point result is displayed as no available route.

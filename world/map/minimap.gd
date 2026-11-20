@@ -6,11 +6,23 @@ var map_type: String = "open_world"
 
 const WORLD_HALF_SIZE := 150.0
 const MINI_SIZE := 144.0
-const MINI_ORIGIN := Vector2(8.0, 24.0)
+const MAP_ZOOM_MIN := 1.0
+const MAP_ZOOM_MAX := 4.0
 
 var _world_map_open := false
 var _waypoint := Vector3.ZERO
 var _has_waypoint := false
+
+var _map_zoom := 1.0
+var _map_pan := Vector2.ZERO
+
+var _touch_positions: Dictionary = {}
+var _opening_touch_index := -1
+var _gesture_moved := false
+
+var _mouse_down := false
+var _mouse_moved := false
+var _mouse_last_position := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -23,34 +35,204 @@ func _process(_delta: float) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch and event.pressed:
-		_handle_map_tap(event.position)
-	elif event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			_handle_map_tap(event.position)
+	if event is InputEventScreenTouch:
+		_handle_screen_touch(event)
+	elif event is InputEventScreenDrag:
+		_handle_screen_drag(event)
+	elif event is InputEventMouseButton:
+		_handle_mouse_button(event)
+	elif event is InputEventMouseMotion:
+		_handle_mouse_motion(event)
 
 
-func _handle_map_tap(position: Vector2) -> void:
-	if not _world_map_open:
-		_world_map_open = true
-		_has_waypoint = false
+func _handle_screen_touch(event: InputEventScreenTouch) -> void:
+	if event.pressed:
+		if not _world_map_open:
+			_world_map_open = true
+			_opening_touch_index = event.index
+			accept_event()
+			queue_redraw()
+			return
+
+		_touch_positions[event.index] = event.position
+
+		if _touch_positions.size() == 1:
+			_gesture_moved = false
+		else:
+			_gesture_moved = true
+
 		accept_event()
-		queue_redraw()
 		return
 
-	if position.y < 64.0 and position.x > size.x - 100.0:
-		_world_map_open = false
+	if event.index == _opening_touch_index:
+		_opening_touch_index = -1
+		accept_event()
+		return
+
+	if not _touch_positions.has(event.index):
+		return
+
+	if _world_map_open and not _gesture_moved and _touch_positions.size() == 1:
+		_handle_full_map_tap(event.position)
+
+	_touch_positions.erase(event.index)
+
+	if _touch_positions.is_empty():
+		_gesture_moved = false
+
+	accept_event()
+	queue_redraw()
+
+
+func _handle_screen_drag(event: InputEventScreenDrag) -> void:
+	if not _world_map_open:
+		return
+
+	if not _touch_positions.has(event.index):
+		return
+
+	var previous_position: Vector2 = _touch_positions[event.index]
+	_touch_positions[event.index] = event.position
+
+	if _touch_positions.size() >= 2:
+		var touch_ids: Array = _touch_positions.keys()
+		var other_id: int = touch_ids[0]
+
+		if other_id == event.index:
+			other_id = touch_ids[1]
+
+		var other_position: Vector2 = _touch_positions[other_id]
+		var old_distance := previous_position.distance_to(other_position)
+		var new_distance := event.position.distance_to(other_position)
+
+		if old_distance > 1.0 and new_distance > 1.0:
+			var zoom_factor := new_distance / old_distance
+			var focal_point := (event.position + other_position) * 0.5
+			_zoom_at(zoom_factor, focal_point)
+
+		_gesture_moved = true
+	else:
+		var movement := event.position - previous_position
+
+		if movement.length() > 1.0:
+			_map_pan += movement
+			_clamp_map_pan()
+			_gesture_moved = true
+
+	accept_event()
+	queue_redraw()
+
+
+func _handle_mouse_button(event: InputEventMouseButton) -> void:
+	if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+		if _world_map_open:
+			_zoom_at(1.2, event.position)
+			accept_event()
+			queue_redraw()
+		return
+
+	if event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+		if _world_map_open:
+			_zoom_at(0.83, event.position)
+			accept_event()
+			queue_redraw()
+		return
+
+	if event.button_index != MOUSE_BUTTON_LEFT:
+		return
+
+	if event.pressed:
+		if not _world_map_open:
+			_world_map_open = true
+			accept_event()
+			queue_redraw()
+			return
+
+		_mouse_down = true
+		_mouse_moved = false
+		_mouse_last_position = event.position
+		accept_event()
+	else:
+		if not _mouse_down:
+			return
+
+		_mouse_down = false
+
+		if not _mouse_moved:
+			_handle_full_map_tap(event.position)
+
 		accept_event()
 		queue_redraw()
+
+
+func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
+	if not _world_map_open or not _mouse_down:
+		return
+
+	var movement := event.position - _mouse_last_position
+	_mouse_last_position = event.position
+
+	if movement.length() > 1.0:
+		_map_pan += movement
+		_clamp_map_pan()
+		_mouse_moved = true
+
+	accept_event()
+	queue_redraw()
+
+
+func _handle_full_map_tap(position: Vector2) -> void:
+	if position.y < 54.0:
+		if position.x >= size.x - 155.0 and position.x < size.x - 115.0:
+			_zoom_at(0.8, _full_map_rect().get_center())
+			return
+
+		if position.x >= size.x - 112.0 and position.x < size.x - 72.0:
+			_zoom_at(1.25, _full_map_rect().get_center())
+			return
+
+		if position.x >= size.x - 70.0:
+			_world_map_open = false
+			return
+
+	var map_rect := _full_map_rect()
+
+	if not map_rect.has_point(position):
 		return
 
 	var world_position := _map_to_world(position)
 	_waypoint = Vector3(world_position.x, 0.0, world_position.y)
 	_has_waypoint = true
-	_world_map_open = false
 
-	accept_event()
+
+func _zoom_at(factor: float, focal_point: Vector2) -> void:
+	var map_center := _full_map_rect().get_center()
+	var world_offset := (focal_point - map_center - _map_pan) / _map_zoom
+
+	_map_zoom = clampf(
+		_map_zoom * factor,
+		MAP_ZOOM_MIN,
+		MAP_ZOOM_MAX
+	)
+
+	_map_pan = focal_point - map_center - world_offset * _map_zoom
+	_clamp_map_pan()
 	queue_redraw()
+
+
+func _clamp_map_pan() -> void:
+	var map_rect := _full_map_rect()
+	var max_pan := map_rect.size * 0.5 * (_map_zoom - 1.0)
+
+	_map_pan.x = clampf(_map_pan.x, -max_pan.x, max_pan.x)
+	_map_pan.y = clampf(_map_pan.y, -max_pan.y, max_pan.y)
+
+
+func _full_map_rect() -> Rect2:
+	return Rect2(
+		Vector2(16.0, 54.0),
+		Vector2(maxf(1.0, size.x - 32.0), maxf(1.0, size.y - 76.0))
+	)
 
 
 func _draw() -> void:
@@ -84,13 +266,13 @@ func _draw_minimap() -> void:
 
 	draw_rect(map_rect, Color(0.20, 0.34, 0.22), true)
 
-	# Duong chinh.
 	draw_line(
 		Vector2(center.x, map_rect.position.y),
 		Vector2(center.x, map_rect.end.y),
 		Color(0.24, 0.25, 0.25),
 		8.0
 	)
+
 	draw_line(
 		Vector2(map_rect.position.x, center.y),
 		Vector2(map_rect.end.x, center.y),
@@ -98,7 +280,6 @@ func _draw_minimap() -> void:
 		6.0
 	)
 
-	# Kenh nuoc.
 	draw_line(
 		Vector2(center.x + 13.0, map_rect.position.y),
 		Vector2(center.x + 13.0, map_rect.end.y),
@@ -106,7 +287,6 @@ func _draw_minimap() -> void:
 		5.0
 	)
 
-	# Cac truc duong khu dan cu.
 	for offset in [-31.0, 31.0]:
 		draw_line(
 			Vector2(center.x + offset, map_rect.position.y),
@@ -135,7 +315,11 @@ func _draw_minimap() -> void:
 
 
 func _draw_full_map() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color(0.025, 0.035, 0.045, 0.97), true)
+	draw_rect(
+		Rect2(Vector2.ZERO, size),
+		Color(0.025, 0.035, 0.045, 0.97),
+		true
+	)
 
 	draw_string(
 		ThemeDB.fallback_font,
@@ -149,59 +333,78 @@ func _draw_full_map() -> void:
 
 	draw_string(
 		ThemeDB.fallback_font,
-		Vector2(size.x - 86.0, 36.0),
-		"ĐÓNG  X",
+		Vector2(size.x - 150.0, 36.0),
+		"−",
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		24,
+		Color.WHITE
+	)
+
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(size.x - 106.0, 36.0),
+		"+",
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		24,
+		Color.WHITE
+	)
+
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(size.x - 66.0, 36.0),
+		"ĐÓNG",
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		14,
 		Color(1.0, 0.85, 0.55)
 	)
 
-	var map_rect := Rect2(
-		Vector2(16.0, 54.0),
-		Vector2(size.x - 32.0, size.y - 76.0)
-	)
-
+	var map_rect := _full_map_rect()
 	draw_rect(map_rect, Color(0.20, 0.35, 0.22), true)
 
 	var scale_x := map_rect.size.x / (WORLD_HALF_SIZE * 2.0)
 	var scale_y := map_rect.size.y / (WORLD_HALF_SIZE * 2.0)
 
-	# Kenh nuoc doc.
-	var canal_x := map_rect.position.x + (175.0 * scale_x)
-	draw_line(
-		Vector2(canal_x, map_rect.position.y),
-		Vector2(canal_x, map_rect.end.y),
+	var canal_x := 175.0
+	_draw_map_line(
+		map_rect,
+		scale_x,
+		scale_y,
+		Vector2(canal_x, -WORLD_HALF_SIZE),
+		Vector2(canal_x, WORLD_HALF_SIZE),
 		Color(0.06, 0.34, 0.52),
 		maxf(4.0, scale_x * 5.2)
 	)
 
-	# Duong chinh doc va ngang.
 	for x_position in [-65.0, 0.0, 65.0]:
-		var px: float = map_rect.position.x + (float(x_position) + WORLD_HALF_SIZE) * scale_x
-		draw_line(
-			Vector2(px, map_rect.position.y),
-			Vector2(px, map_rect.end.y),
+		_draw_map_line(
+			map_rect,
+			scale_x,
+			scale_y,
+			Vector2(x_position, -WORLD_HALF_SIZE),
+			Vector2(x_position, WORLD_HALF_SIZE),
 			Color(0.25, 0.26, 0.26),
 			maxf(2.0, scale_x * 7.0)
 		)
 
 	for z_position in [-90.0, -12.0, 70.0]:
-		var py: float = map_rect.position.y + (float(z_position) + WORLD_HALF_SIZE) * scale_y
-		draw_line(
-			Vector2(map_rect.position.x, py),
-			Vector2(map_rect.end.x, py),
+		_draw_map_line(
+			map_rect,
+			scale_x,
+			scale_y,
+			Vector2(-WORLD_HALF_SIZE, z_position),
+			Vector2(WORLD_HALF_SIZE, z_position),
 			Color(0.25, 0.26, 0.26),
 			maxf(2.0, scale_y * 7.0)
 		)
 
-	# Cum nha o trung tam.
 	for row in range(6):
 		var z_position := -34.0 + float(row) * 13.0
 		_draw_full_map_building(map_rect, scale_x, scale_y, -13.0, z_position)
 		_draw_full_map_building(map_rect, scale_x, scale_y, 13.0, z_position)
 
-	# Cac cum nha o ngoai vi.
 	for row in range(4):
 		var z_position := -125.0 + float(row) * 22.0
 		_draw_full_map_building(map_rect, scale_x, scale_y, -85.0, z_position)
@@ -212,7 +415,6 @@ func _draw_full_map() -> void:
 		_draw_full_map_building(map_rect, scale_x, scale_y, -85.0, z_position)
 		_draw_full_map_building(map_rect, scale_x, scale_y, 85.0, z_position)
 
-	# Vi tri nguoi choi.
 	if is_instance_valid(player):
 		var player_point := _world_to_full_map(
 			map_rect,
@@ -224,7 +426,6 @@ func _draw_full_map() -> void:
 		draw_circle(player_point, 7.0, Color.WHITE)
 		draw_circle(player_point, 4.5, Color(1.0, 0.35, 0.08))
 
-	# Diem den.
 	if _has_waypoint:
 		var target := _world_to_full_map(
 			map_rect,
@@ -236,14 +437,41 @@ func _draw_full_map() -> void:
 		draw_circle(target, 7.0, Color(1.0, 0.82, 0.12))
 		draw_circle(target, 3.0, Color(0.25, 0.18, 0.05))
 
+	var zoom_label := "Zoom: " + str(snappedf(_map_zoom, 0.1)) + "x"
+
 	draw_string(
 		ThemeDB.fallback_font,
 		Vector2(20.0, size.y - 10.0),
-		"Chạm vào bản đồ để đặt điểm đến",
+		zoom_label + "  |  Kéo để di chuyển, chụm/xòe để zoom",
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		12,
 		Color(0.86, 0.88, 0.82)
+	)
+
+
+func _draw_map_line(
+	map_rect: Rect2,
+	scale_x: float,
+	scale_y: float,
+	start_world: Vector2,
+	end_world: Vector2,
+	color: Color,
+	width: float
+) -> void:
+	var start_point := _world_to_full_map(
+		map_rect, scale_x, scale_y, start_world.x, start_world.y
+	)
+	var end_point := _world_to_full_map(
+		map_rect, scale_x, scale_y, end_world.x, end_world.y
+	)
+
+	draw_line(
+		start_point,
+		end_point,
+		color,
+		width * _map_zoom,
+		true
 	)
 
 
@@ -261,10 +489,12 @@ func _draw_full_map_building(
 		world_x,
 		world_z
 	)
+
 	var building_size := Vector2(
 		maxf(3.0, 5.0 * scale_x),
 		maxf(3.0, 6.0 * scale_y)
-	)
+	) * _map_zoom
+
 	draw_rect(
 		Rect2(point - building_size * 0.5, building_size),
 		Color(0.76, 0.61, 0.43),
@@ -279,24 +509,31 @@ func _world_to_full_map(
 	world_x: float,
 	world_z: float
 ) -> Vector2:
-	return Vector2(
+	var base_point := Vector2(
 		map_rect.position.x + (world_x + WORLD_HALF_SIZE) * scale_x,
 		map_rect.position.y + (world_z + WORLD_HALF_SIZE) * scale_y
 	)
 
+	return (
+		map_rect.get_center()
+		+ _map_pan
+		+ (base_point - map_rect.get_center()) * _map_zoom
+	)
+
 
 func _map_to_world(position: Vector2) -> Vector2:
-	var map_rect := Rect2(
-		Vector2(16.0, 54.0),
-		Vector2(size.x - 32.0, size.y - 76.0)
+	var map_rect := _full_map_rect()
+	var base_position := (
+		map_rect.get_center()
+		+ (position - map_rect.get_center() - _map_pan) / _map_zoom
 	)
 
 	var scale_x := map_rect.size.x / (WORLD_HALF_SIZE * 2.0)
 	var scale_y := map_rect.size.y / (WORLD_HALF_SIZE * 2.0)
 
 	return Vector2(
-		(position.x - map_rect.position.x) / scale_x - WORLD_HALF_SIZE,
-		(position.y - map_rect.position.y) / scale_y - WORLD_HALF_SIZE
+		(base_position.x - map_rect.position.x) / scale_x - WORLD_HALF_SIZE,
+		(base_position.y - map_rect.position.y) / scale_y - WORLD_HALF_SIZE
 	)
 
 
@@ -309,4 +546,5 @@ func _world_to_minimap(world_x: float, world_z: float) -> Vector2:
 		world_x - player.global_position.x,
 		world_z - player.global_position.z
 	)
+
 	return center + relative * 0.45

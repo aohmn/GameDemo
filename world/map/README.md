@@ -23,8 +23,11 @@ thôn bao quanh. Thế giới được mở rộng dần theo từng giai đoạ
 - Các cụm nhà dân cư.
 - Giới hạn địa hình và collision.
 - Minimap vẽ bằng Control drawing.
-- Bản đồ toàn màn hình có thể mở từ minimap.
-- Có thể chạm bản đồ để đặt waypoint hiển thị.
+- Bản đồ toàn màn hình mở khi chạm minimap.
+- Hỗ trợ zoom bằng thao tác chụm/xòe hai ngón và nút +/−.
+- Hỗ trợ kéo bản đồ bằng một ngón tay.
+- Chạm vị trí để đặt waypoint; bản đồ giữ trạng thái mở để xem vị trí.
+- Waypoint được giữ khi đóng và mở lại bản đồ.
 
 ### Chưa triển khai
 
@@ -147,10 +150,11 @@ Tuân thủ AGENTS.md:
 4. Di chuyển trên đường chính.
 5. Kiểm tra các khu vực mở rộng và giới hạn bản đồ.
 6. Chạm minimap để mở bản đồ toàn màn hình.
-7. Chạm một vị trí trên bản đồ để đặt waypoint.
-8. Xác nhận minimap hiển thị điểm đã chọn.
-9. Đóng bản đồ và tiếp tục di chuyển.
-10. Kiểm tra joystick, camera và collision.
+7. Dùng hai ngón chụm/xòe để zoom và một ngón kéo bản đồ.
+8. Thử nút +/− và kiểm tra giới hạn zoom.
+9. Chạm vị trí trên bản đồ để đặt waypoint.
+10. Đóng rồi mở lại bản đồ, xác nhận waypoint vẫn còn.
+11. Kiểm tra joystick, camera và collision.
 
 ## 11. Giới hạn hiện tại
 
@@ -162,3 +166,16 @@ NPC simulation streaming hoặc kiểm thử hiệu năng dài hạn.
 
 Không tuyên bố hoàn thành các hệ thống trên cho đến khi có mã nguồn
 và kết quả kiểm thử thực tế.
+
+
+## 12. Điều khiển World Map
+
+- Chạm minimap: mở bản đồ toàn màn hình.
+- Kéo một ngón: di chuyển khung bản đồ.
+- Chụm/xòe hai ngón: thu nhỏ/phóng to quanh tâm thao tác.
+- Nút `+` và `−`: điều chỉnh zoom.
+- Chạm vị trí trong vùng bản đồ: đặt waypoint.
+- Nút `ĐÓNG`: quay lại minimap.
+
+Zoom được giới hạn từ 1x đến 4x. Waypoint được giữ trong runtime khi
+đóng và mở lại bản đồ; hiện chưa được lưu qua SaveCoordinator.
