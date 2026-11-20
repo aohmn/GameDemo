@@ -92,7 +92,6 @@ Ví dụ: §4 cấm texture nhưng §3 muốn phong cách HD-2D. Theo bảng ưu
     ├── data/
     ├── systems/
     ├── localization/
-    ├── tests/
     ├── tools/
     └── builds/
 
@@ -241,7 +240,6 @@ Mỗi module phải:
     ├── components/   # thành phần tái sử dụng
     ├── scenes/       # scene của module
     ├── resources/    # tài nguyên riêng
-    ├── tests/        # kiểm thử
     └── README.md     # tài liệu tích hợp
 
 ### Phân tầng phụ thuộc
@@ -414,7 +412,7 @@ Không viết riêng một bộ logic cho từng NPC. Cụ thể:
 
 ---
 
-## 13. KIỂM THỬ VÀ CHẤT LƯỢNG
+## 13. KIỂM TRA VÀ CHẤT LƯỢNG
 
 ### Bốn mức kiểm tra — phải phân biệt rõ khi báo cáo
 
@@ -480,7 +478,7 @@ Sau mỗi thay đổi:
 Một tính năng chỉ được coi là xong khi đáp ứng TẤT CẢ:
 
 - Code không có lỗi parser khi mở trong Godot Android.
-- Có ít nhất một trong hai: unit test trong `tests/` HOẶC kết quả kiểm
+,+1c- Có kết quả kiểm tra thủ công trên Godot Android được ghi lại (mức 3 hoặc 4 ở §13).
   tra thủ công trên Godot Android được ghi lại (mức 3 hoặc 4 ở §13).
 - README của module liên quan đã cập nhật.
 - CHANGELOG đã ghi lại thay đổi (nếu là thay đổi đáng kể).
