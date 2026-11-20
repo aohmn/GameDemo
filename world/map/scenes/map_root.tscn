@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_controller"]
+[ext_resource type="Shader" path="res://world/map/shaders/terrain_map.gdshader" id="2_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_Map"]
+shader = ExtResource("2_shader")
+shader_parameter/world_seed = 7.0
+shader_parameter/road_width = 0.035
+shader_parameter/branch_width = 0.022
+shader_parameter/canal_width = 0.025
+shader_parameter/detail_scale = 24.0
+shader_parameter/viewport_size = Vector2(720, 1280)
+
+[node name="MapRoot" type="ColorRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+material = SubResource("ShaderMaterial_Map")
+script = ExtResource("1_controller")
