@@ -1,29 +1,42 @@
-# Shader Map Prototype — Phase 1
+# 3D Map — Third-person Prototype
 
 ## Mục đích
-Map nền procedural render bằng CanvasItem shader, không sử dụng texture.
+Thay thế map CanvasItem 2D bằng môi trường 3D góc nhìn thứ ba,
+tối ưu bước đầu cho Godot Android.
 
 ## Thành phần
-- Địa hình procedural nhiều lớp noise.
-- Mảng màu cỏ và đất.
-- Đường chính uốn cong.
-- Đường nhánh.
-- Kênh nước uốn cong và bờ kênh.
-- ShaderMaterial có seed và thông số độ rộng.
-- Controller tự cập nhật kích thước viewport.
+- MapRoot: scene môi trường 3D.
+- Map3DController: tạo địa hình phẳng, đường, ngã tư, kênh nước,
+  nhà phố và cây bằng Primitive Mesh.
+- Player3DController: CharacterBody3D, trọng lực, va chạm,
+  di chuyển theo hướng camera.
+- VirtualJoystick: joystick cảm ứng bên trái màn hình.
+- SpringArm3D + Camera3D: camera theo sau nhân vật.
 
-## Cấu trúc
-- map_controller.gd: quản lý tham số shader.
-- shaders/terrain_map.gdshader: render map procedural.
-- scenes/map_root.tscn: scene bản đồ.
+## Điều khiển
+- Chạm/kéo joystick bên trái: di chuyển.
+- Vuốt bên phải màn hình: xoay camera.
+- Phím điều hướng ui_left/ui_right/ui_up/ui_down:
+  điều khiển khi có bàn phím.
+
+## Đồ họa
+- Dựng bằng Mesh và StandardMaterial3D.
+- Không dùng texture.
+- Map shader CanvasItem cũ được giữ lại làm tài liệu prototype,
+  không còn được tham chiếu bởi map_root.tscn.
 
 ## Dependencies
-Godot 4.x, GL Compatibility.
-Không phụ thuộc gameplay module.
+Godot 4.x, GL Compatibility, EventBus và CoreEvents từ dự án.
 
-## Tích hợp
-Boot khởi tạo map làm lớp nền, giữ UI và EventBus.
+## Giới hạn prototype
+- Địa hình hiện là mặt phẳng.
+- Nhà và cây là mô hình low-poly cơ bản.
+- Kênh nước hiện là hình học tĩnh.
+- Chưa có giao thông, NPC, hệ thống tương tác hoặc lưu vị trí.
+- Chưa tối ưu LOD và streaming khu vực.
 
 ## Kiểm tra
-Mở project trong Godot Android, chạy game, kiểm tra map,
-đường và kênh nước. Chưa xác nhận runtime cho tới khi chạy thử.
+Mở project bằng Godot Android và chạy scene khởi động.
+Kiểm tra nhân vật đứng trên mặt đất, di chuyển bằng joystick,
+xoay camera bằng thao tác vuốt và va chạm với nhà.
+Chỉ xác nhận hoàn thành sau khi chạy thử thực tế.

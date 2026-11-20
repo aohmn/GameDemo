@@ -18,3 +18,13 @@
 - Thêm địa hình, đường chính, đường nhánh và kênh nước.
 - Thêm MapShaderController quản lý tham số shader và viewport.
 - Boot khởi tạo map làm nền, giữ EventBus và UI hiện có.
+
+## Phase 2: 3D Third-person Map Prototype
+
+- Thay map CanvasItem 2D bằng scene môi trường Node3D.
+- Tạo đường giao thông, vỉa hè, kênh nước, nhà phố và cây bằng Primitive Mesh.
+- Thêm Player CharacterBody3D với trọng lực và va chạm.
+- Thêm camera third-person dùng SpringArm3D.
+- Thêm joystick cảm ứng và thao tác vuốt để xoay camera.
+- Giữ shader map 2D cũ làm prototype tham khảo, không còn dùng trong scene chính.
+- Chưa xác nhận runtime trên Godot Android.

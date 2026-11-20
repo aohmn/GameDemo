@@ -1,23 +1,61 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=7 format=3]
 
-[ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_controller"]
-[ext_resource type="Shader" path="res://world/map/shaders/terrain_map.gdshader" id="2_shader"]
+[ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_map"]
+[ext_resource type="Script" path="res://world/map/player_controller.gd" id="2_player"]
+[ext_resource type="Script" path="res://world/map/virtual_joystick.gd" id="3_joystick"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_Map"]
-shader = ExtResource("2_shader")
-shader_parameter/world_seed = 7.0
-shader_parameter/road_width = 0.035
-shader_parameter/branch_width = 0.022
-shader_parameter/canal_width = 0.025
-shader_parameter/detail_scale = 24.0
-shader_parameter/viewport_size = Vector2(720, 1280)
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
+radius = 0.35
+height = 1.8
 
-[node name="MapRoot" type="ColorRect"]
-anchors_preset = 15
-anchor_right = 1.0
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_Player"]
+radius = 0.35
+height = 1.8
+radial_segments = 10
+rings = 6
+
+[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
+albedo_color = Color(0.82, 0.28, 0.12, 1)
+roughness = 0.85
+
+[node name="MapRoot" type="Node3D"]
+script = ExtResource("1_map")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+position = Vector3(0, 0.05, 12)
+script = ExtResource("2_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("CapsuleShape_Player")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="Player"]
+position = Vector3(0, 0.9, 0)
+mesh = SubResource("CapsuleMesh_Player")
+material_override = SubResource("PlayerMaterial")
+
+[node name="CameraPivot" type="Node3D" parent="Player"]
+position = Vector3(0, 1.5, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
+rotation_degrees = Vector3(-12, 0, 0)
+spring_length = 5.5
+collision_mask = 1
+
+[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
+current = true
+fov = 70.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Joystick" type="Control" parent="HUD"]
+anchors_preset = 0
+anchor_top = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-material = SubResource("ShaderMaterial_Map")
-script = ExtResource("1_controller")
+offset_left = 24.0
+offset_top = -184.0
+offset_right = 184.0
+offset_bottom = -24.0
+mouse_filter = 0
+script = ExtResource("3_joystick")
