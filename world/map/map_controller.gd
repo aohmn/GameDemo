@@ -1,7 +1,7 @@
 extends Node3D
 class_name Map3DController
 
-const WORLD_SIZE := 100.0
+const WORLD_SIZE := 300.0
 const TRAVEL_META_KEY := "projectgame_spawn_point_id"
 
 const MINIMAP_SCRIPT: Script = preload("res://world/map/minimap.gd")
@@ -19,28 +19,21 @@ var _transitioning := false
 
 
 func _ready() -> void:
+	map_type = "open_world"
+
 	_build_environment()
-
-	if map_type == "fishing_lake":
-		_build_lake_ground()
-		_build_fishing_lake()
-	else:
-		_build_ground()
-		_build_roads()
-		_build_canal()
-		_build_buildings()
-		_build_trees()
-
+	_build_ground()
+	_build_roads()
+	_build_canal()
+	_build_buildings()
+	_build_trees()
+	_build_expanded_world()
 	_build_world_boundaries()
 
-	if map_type == "fishing_lake":
-		_build_lake_water_barriers()
-
-	_build_transition()
 	_apply_spawn()
 	_build_minimap()
 
-	print("[World] Map loaded: ", map_type)
+	print("[World] Continuous world loaded.")
 
 
 # --------------------------------------------------
@@ -136,22 +129,22 @@ func _build_world_boundaries() -> void:
 	_add_collision_wall(
 		"BoundaryWest",
 		Vector3(2.0, 8.0, WORLD_SIZE),
-		Vector3(-49.0, 4.0, 0.0)
+		Vector3(-149.0, 4.0, 0.0)
 	)
 	_add_collision_wall(
 		"BoundaryEast",
 		Vector3(2.0, 8.0, WORLD_SIZE),
-		Vector3(49.0, 4.0, 0.0)
+		Vector3(149.0, 4.0, 0.0)
 	)
 	_add_collision_wall(
 		"BoundaryNorth",
 		Vector3(WORLD_SIZE, 8.0, 2.0),
-		Vector3(0.0, 4.0, -49.0)
+		Vector3(0.0, 4.0, -149.0)
 	)
 	_add_collision_wall(
 		"BoundarySouth",
 		Vector3(WORLD_SIZE, 8.0, 2.0),
-		Vector3(0.0, 4.0, 49.0)
+		Vector3(0.0, 4.0, 149.0)
 	)
 
 
@@ -366,6 +359,72 @@ func _build_trees() -> void:
 		var z_position := -35.0 + float(index) * 6.0
 		_build_tree(Vector3(-8.0, 0.0, z_position))
 		_build_tree(Vector3(8.0, 0.0, z_position))
+
+
+# --------------------------------------------------
+# EXPANDED WORLD: OUTER DISTRICTS
+# --------------------------------------------------
+
+func _build_expanded_world() -> void:
+	# Hai truc duong phu ket noi cac cum dan cu.
+	for x_position in [-65.0, 65.0]:
+		_add_box(
+			"DistrictRoad",
+			Vector3(7.0, 0.10, WORLD_SIZE),
+			Vector3(x_position, 0.08, 0.0),
+			Color(0.20, 0.22, 0.22)
+		)
+
+	# Duong ngang ket noi cac khu vuc.
+	for z_position in [-90.0, 70.0]:
+		_add_box(
+			"DistrictCrossRoad",
+			Vector3(WORLD_SIZE, 0.10, 7.0),
+			Vector3(0.0, 0.08, z_position),
+			Color(0.20, 0.22, 0.22)
+		)
+
+	# Cum nha dan cu phia bac va phia nam.
+	var district_colors: Array[Color] = [
+		Color(0.76, 0.67, 0.53),
+		Color(0.72, 0.74, 0.66),
+		Color(0.78, 0.58, 0.43),
+		Color(0.68, 0.72, 0.70)
+	]
+
+	for row in range(4):
+		var z_position := -125.0 + float(row) * 22.0
+		var wall_color: Color = district_colors[row % district_colors.size()]
+
+		_build_house(Vector3(-85.0, 0.0, z_position), wall_color)
+		_build_house(Vector3(85.0, 0.0, z_position), wall_color.darkened(0.08))
+
+	for row in range(3):
+		var z_position := 88.0 + float(row) * 20.0
+		var wall_color: Color = district_colors[(row + 1) % district_colors.size()]
+
+		_build_house(Vector3(-85.0, 0.0, z_position), wall_color)
+		_build_house(Vector3(85.0, 0.0, z_position), wall_color.darkened(0.08))
+
+	# Mang cay xanh o cac khu vuc chuyen tiep.
+	for index in range(12):
+		var z_position := -135.0 + float(index) * 24.0
+		_build_tree(Vector3(-112.0, 0.0, z_position))
+		_build_tree(Vector3(112.0, 0.0, z_position))
+
+	# Cac o dat xanh phia ngoai khu dan cu.
+	_add_box(
+		"GreenFieldWest",
+		Vector3(28.0, 0.06, 250.0),
+		Vector3(-130.0, 0.01, 0.0),
+		Color(0.25, 0.43, 0.20)
+	)
+	_add_box(
+		"GreenFieldEast",
+		Vector3(28.0, 0.06, 250.0),
+		Vector3(130.0, 0.01, 0.0),
+		Color(0.25, 0.43, 0.20)
+	)
 
 
 # --------------------------------------------------
@@ -656,7 +715,7 @@ func _build_minimap() -> void:
 	minimap.name = "WorldMinimap"
 	minimap.set_script(MINIMAP_SCRIPT)
 	minimap.set("player", player)
-	minimap.set("map_type", map_type)
+	minimap.set("map_type", "open_world")
 
 	minimap.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	minimap.offset_left = -176.0
