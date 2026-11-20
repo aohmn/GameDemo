@@ -2,280 +2,554 @@ extends Node3D
 class_name Map3DController
 
 const WORLD_SIZE := 100.0
+const TRAVEL_META_KEY := "projectgame_spawn_point_id"
+
+@export var map_type: String = "residential"
+@export_file("*.tscn") var destination_scene_path: String = ""
+@export var destination_name: String = ""
+@export var destination_spawn_point_id: StringName = &""
+@export var local_spawn_point_id: StringName = &"residential_entry"
+@export var local_spawn_position: Vector3 = Vector3(0.0, 0.05, 12.0)
+
+@onready var player: CharacterBody3D = $Player
+
+var _transitioning := false
+
 
 func _ready() -> void:
-    _build_environment()
-    _build_ground()
-    _build_roads()
-    _build_canal()
-    _build_buildings()
-    _build_trees()
-    print("[Map3D] World created")
+	_build_environment()
 
+	if map_type == "fishing_lake":
+		_build_lake_ground()
+		_build_fishing_lake()
+	else:
+		_build_ground()
+		_build_roads()
+		_build_canal()
+		_build_buildings()
+		_build_trees()
+
+	_build_transition()
+	_apply_spawn()
+
+	print("[World] Map loaded: ", map_type)
+
+
+# --------------------------------------------------
+# ENVIRONMENT
+# --------------------------------------------------
 
 func _build_environment() -> void:
-    var world_environment := WorldEnvironment.new()
-    var environment_data := Environment.new()
-    environment_data.background_mode = Environment.BG_COLOR
-    environment_data.background_color = Color(0.52, 0.72, 0.86)
-    environment_data.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-    environment_data.ambient_light_color = Color(0.78, 0.82, 0.88)
-    environment_data.ambient_light_energy = 0.65
-    world_environment.environment = environment_data
-    add_child(world_environment)
+	var world_environment := WorldEnvironment.new()
+	var environment_data := Environment.new()
 
-    var sunlight := DirectionalLight3D.new()
-    sunlight.rotation_degrees = Vector3(-52.0, -32.0, 0.0)
-    sunlight.light_energy = 1.15
-    sunlight.shadow_enabled = true
-    add_child(sunlight)
+	environment_data.background_mode = Environment.BG_COLOR
+	environment_data.background_color = Color(0.52, 0.72, 0.86)
+	environment_data.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	environment_data.ambient_light_color = Color(0.78, 0.82, 0.88)
+	environment_data.ambient_light_energy = 0.65
+
+	world_environment.environment = environment_data
+	add_child(world_environment)
+
+	var sunlight := DirectionalLight3D.new()
+	sunlight.rotation_degrees = Vector3(-52.0, -32.0, 0.0)
+	sunlight.light_energy = 1.15
+	sunlight.shadow_enabled = true
+	add_child(sunlight)
 
 
 func _build_ground() -> void:
-    _add_box(
-        "Ground",
-        Vector3(WORLD_SIZE, 0.5, WORLD_SIZE),
-        Vector3(0.0, -0.25, 0.0),
-        Color(0.29, 0.48, 0.23)
-    )
+	_add_ground_piece(
+		"Ground",
+		Vector3(WORLD_SIZE, 0.5, WORLD_SIZE),
+		Vector3(0.0, -0.25, 0.0)
+	)
 
-    var ground_body := StaticBody3D.new()
-    ground_body.name = "GroundCollision"
 
-    var collision := CollisionShape3D.new()
-    var shape := BoxShape3D.new()
-    shape.size = Vector3(WORLD_SIZE, 0.5, WORLD_SIZE)
-    collision.shape = shape
-    collision.position.y = -0.25
+func _build_lake_ground() -> void:
+	# Chừa khoảng trống bên dưới hồ để nhân vật không đi trên mặt nước.
+	_add_ground_piece(
+		"GroundNorth",
+		Vector3(100.0, 0.5, 31.0),
+		Vector3(0.0, -0.25, -34.5)
+	)
 
-    ground_body.add_child(collision)
-    add_child(ground_body)
+	_add_ground_piece(
+		"GroundSouth",
+		Vector3(100.0, 0.5, 43.0),
+		Vector3(0.0, -0.25, 28.5)
+	)
 
+	_add_ground_piece(
+		"GroundWest",
+		Vector3(34.0, 0.5, 100.0),
+		Vector3(-33.0, -0.25, 0.0)
+	)
+
+	_add_ground_piece(
+		"GroundEast",
+		Vector3(34.0, 0.5, 100.0),
+		Vector3(33.0, -0.25, 0.0)
+	)
+
+
+func _add_ground_piece(
+	object_name: String,
+	box_size: Vector3,
+	world_position: Vector3
+) -> void:
+	_add_box(
+		object_name,
+		box_size,
+		world_position,
+		Color(0.29, 0.48, 0.23)
+	)
+
+	var body := StaticBody3D.new()
+	body.name = object_name + "Collision"
+
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = box_size
+	collision.shape = shape
+
+	body.position = world_position
+	body.add_child(collision)
+	add_child(body)
+
+
+# --------------------------------------------------
+# MAP 01: RESIDENTIAL DISTRICT
+# --------------------------------------------------
 
 func _build_roads() -> void:
-    # Lề đường
-    _add_box(
-        "RoadShoulderMain",
-        Vector3(11.0, 0.12, WORLD_SIZE),
-        Vector3(0.0, 0.02, 0.0),
-        Color(0.48, 0.43, 0.34)
-    )
+	_add_box(
+		"RoadShoulderMain",
+		Vector3(11.0, 0.12, WORLD_SIZE),
+		Vector3(0.0, 0.02, 0.0),
+		Color(0.48, 0.43, 0.34)
+	)
 
-    # Đường chính
-    _add_box(
-        "MainRoad",
-        Vector3(8.0, 0.10, WORLD_SIZE),
-        Vector3(0.0, 0.09, 0.0),
-        Color(0.17, 0.19, 0.20)
-    )
+	_add_box(
+		"MainRoad",
+		Vector3(8.0, 0.10, WORLD_SIZE),
+		Vector3(0.0, 0.09, 0.0),
+		Color(0.17, 0.19, 0.20)
+	)
 
-    # Đường giao cắt
-    _add_box(
-        "CrossRoad",
-        Vector3(WORLD_SIZE, 0.10, 8.0),
-        Vector3(0.0, 0.10, -12.0),
-        Color(0.17, 0.19, 0.20)
-    )
+	_add_box(
+		"CrossRoad",
+		Vector3(WORLD_SIZE, 0.10, 8.0),
+		Vector3(0.0, 0.10, -12.0),
+		Color(0.17, 0.19, 0.20)
+	)
 
-    # Vạch đứt giữa đường
-    for index in range(-16, 17, 3):
-        _add_box(
-            "RoadMarking",
-            Vector3(0.16, 0.025, 1.5),
-            Vector3(0.0, 0.16, float(index) * 2.5),
-            Color(0.90, 0.87, 0.72)
-        )
+	for index in range(-16, 17, 3):
+		_add_box(
+			"RoadMarking",
+			Vector3(0.16, 0.025, 1.5),
+			Vector3(0.0, 0.16, float(index) * 2.5),
+			Color(0.90, 0.87, 0.72)
+		)
 
-    # Vỉa hè
-    _add_box(
-        "SidewalkLeft",
-        Vector3(1.5, 0.20, WORLD_SIZE),
-        Vector3(-5.8, 0.10, 0.0),
-        Color(0.57, 0.55, 0.47)
-    )
-    _add_box(
-        "SidewalkRight",
-        Vector3(1.5, 0.20, WORLD_SIZE),
-        Vector3(5.8, 0.10, 0.0),
-        Color(0.57, 0.55, 0.47)
-    )
+	_add_box(
+		"SidewalkLeft",
+		Vector3(1.5, 0.20, WORLD_SIZE),
+		Vector3(-5.8, 0.10, 0.0),
+		Color(0.57, 0.55, 0.47)
+	)
+
+	_add_box(
+		"SidewalkRight",
+		Vector3(1.5, 0.20, WORLD_SIZE),
+		Vector3(5.8, 0.10, 0.0),
+		Color(0.57, 0.55, 0.47)
+	)
 
 
 func _build_canal() -> void:
-    # Bờ kênh
-    _add_box(
-        "CanalBankLeft",
-        Vector3(1.2, 0.45, WORLD_SIZE),
-        Vector3(21.8, 0.20, 0.0),
-        Color(0.43, 0.48, 0.31)
-    )
-    _add_box(
-        "CanalBankRight",
-        Vector3(1.2, 0.45, WORLD_SIZE),
-        Vector3(28.2, 0.20, 0.0),
-        Color(0.43, 0.48, 0.31)
-    )
+	_add_box(
+		"CanalBankLeft",
+		Vector3(1.2, 0.45, WORLD_SIZE),
+		Vector3(21.8, 0.20, 0.0),
+		Color(0.43, 0.48, 0.31)
+	)
 
-    # Mặt nước
-    _add_box(
-        "CanalWater",
-        Vector3(5.2, 0.12, WORLD_SIZE),
-        Vector3(25.0, -0.08, 0.0),
-        Color(0.08, 0.34, 0.48)
-    )
+	_add_box(
+		"CanalBankRight",
+		Vector3(1.2, 0.45, WORLD_SIZE),
+		Vector3(28.2, 0.20, 0.0),
+		Color(0.43, 0.48, 0.31)
+	)
+
+	_add_box(
+		"CanalWater",
+		Vector3(5.2, 0.12, WORLD_SIZE),
+		Vector3(25.0, -0.08, 0.0),
+		Color(0.08, 0.34, 0.48)
+	)
 
 
 func _build_buildings() -> void:
-    var wall_colors: Array[Color] = [
-        Color(0.78, 0.65, 0.48),
-        Color(0.76, 0.75, 0.63),
-        Color(0.72, 0.49, 0.37),
-        Color(0.67, 0.72, 0.65),
-        Color(0.82, 0.76, 0.62)
-    ]
+	var wall_colors: Array[Color] = [
+		Color(0.78, 0.65, 0.48),
+		Color(0.76, 0.75, 0.63),
+		Color(0.72, 0.49, 0.37),
+		Color(0.67, 0.72, 0.65),
+		Color(0.82, 0.76, 0.62)
+	]
 
-    for index in range(6):
-        var z_position := -34.0 + float(index) * 13.0
-        var wall_color: Color = wall_colors[index % wall_colors.size()]
+	for index in range(6):
+		var z_position := -34.0 + float(index) * 13.0
+		var wall_color: Color = wall_colors[index % wall_colors.size()]
 
-        _build_house(
-            Vector3(-13.0, 0.0, z_position),
-            wall_color
-        )
-        _build_house(
-            Vector3(13.0, 0.0, z_position),
-            wall_color.darkened(0.08)
-        )
+		_build_house(
+			Vector3(-13.0, 0.0, z_position),
+			wall_color
+		)
+
+		_build_house(
+			Vector3(13.0, 0.0, z_position),
+			wall_color.darkened(0.08)
+		)
 
 
-func _build_house(world_position: Vector3, wall_color: Color) -> void:
-    var house := StaticBody3D.new()
-    house.name = "VietnameseHouse"
-    house.position = world_position
-    add_child(house)
+func _build_house(
+	world_position: Vector3,
+	wall_color: Color
+) -> void:
+	var house := StaticBody3D.new()
+	house.name = "VietnameseHouse"
+	house.position = world_position
+	add_child(house)
 
-    var body := _make_box_node(
-        "HouseBody",
-        Vector3(5.0, 3.0, 6.0),
-        Vector3(0.0, 1.5, 0.0),
-        wall_color
-    )
-    house.add_child(body)
+	var body := _make_box_node(
+		"HouseBody",
+		Vector3(5.0, 3.0, 6.0),
+		Vector3(0.0, 1.5, 0.0),
+		wall_color
+	)
+	house.add_child(body)
 
-    var collision := CollisionShape3D.new()
-    var collision_shape := BoxShape3D.new()
-    collision_shape.size = Vector3(5.0, 3.0, 6.0)
-    collision.shape = collision_shape
-    collision.position.y = 1.5
-    house.add_child(collision)
+	var collision := CollisionShape3D.new()
+	var collision_shape := BoxShape3D.new()
+	collision_shape.size = Vector3(5.0, 3.0, 6.0)
+	collision.shape = collision_shape
+	collision.position.y = 1.5
+	house.add_child(collision)
 
-    var roof := _make_box_node(
-        "FlatRoof",
-        Vector3(5.4, 0.35, 6.4),
-        Vector3(0.0, 3.15, 0.0),
-        Color(0.35, 0.27, 0.23)
-    )
-    house.add_child(roof)
+	house.add_child(
+		_make_box_node(
+			"FlatRoof",
+			Vector3(5.4, 0.35, 6.4),
+			Vector3(0.0, 3.15, 0.0),
+			Color(0.35, 0.27, 0.23)
+		)
+	)
 
-    var front_direction := 1.0
-    if world_position.x > 0.0:
-        front_direction = -1.0
+	var front_direction := 1.0
+	if world_position.x > 0.0:
+		front_direction = -1.0
 
-    var door := _make_box_node(
-        "FrontDoor",
-        Vector3(0.08, 1.8, 0.9),
-        Vector3(front_direction * 2.54, 0.9, 0.0),
-        Color(0.30, 0.19, 0.12)
-    )
-    house.add_child(door)
+	house.add_child(
+		_make_box_node(
+			"FrontDoor",
+			Vector3(0.08, 1.8, 0.9),
+			Vector3(front_direction * 2.54, 0.9, 0.0),
+			Color(0.30, 0.19, 0.12)
+		)
+	)
 
-    for window_index in range(2):
-        var window_z := -1.45 + float(window_index) * 2.9
-        var window := _make_box_node(
-            "FrontWindow",
-            Vector3(0.08, 0.75, 1.0),
-            Vector3(front_direction * 2.55, 2.0, window_z),
-            Color(0.20, 0.48, 0.59)
-        )
-        house.add_child(window)
+	for index in range(2):
+		var window_z := -1.45 + float(index) * 2.9
+
+		house.add_child(
+			_make_box_node(
+				"FrontWindow",
+				Vector3(0.08, 0.75, 1.0),
+				Vector3(front_direction * 2.55, 2.0, window_z),
+				Color(0.20, 0.48, 0.59)
+			)
+		)
 
 
 func _build_trees() -> void:
-    for index in range(12):
-        var z_position := -35.0 + float(index) * 6.0
-        _build_tree(Vector3(-8.0, 0.0, z_position))
-        _build_tree(Vector3(8.0, 0.0, z_position))
+	for index in range(12):
+		var z_position := -35.0 + float(index) * 6.0
+		_build_tree(Vector3(-8.0, 0.0, z_position))
+		_build_tree(Vector3(8.0, 0.0, z_position))
 
+
+# --------------------------------------------------
+# MAP 02: FISHING LAKE
+# --------------------------------------------------
+
+func _build_fishing_lake() -> void:
+	# Mặt hồ.
+	_add_box(
+		"LakeWater",
+		Vector3(31.0, 0.12, 25.0),
+		Vector3(0.0, -0.12, -6.0),
+		Color(0.06, 0.32, 0.47)
+	)
+
+	# Bờ hồ.
+	_add_box(
+		"LakeBankNorth",
+		Vector3(35.0, 0.35, 1.5),
+		Vector3(0.0, 0.12, -19.5),
+		Color(0.48, 0.43, 0.29)
+	)
+
+	_add_box(
+		"LakeBankSouth",
+		Vector3(35.0, 0.35, 1.5),
+		Vector3(0.0, 0.12, 7.5),
+		Color(0.48, 0.43, 0.29)
+	)
+
+	_add_box(
+		"LakeBankWest",
+		Vector3(1.5, 0.35, 27.0),
+		Vector3(-16.5, 0.12, -6.0),
+		Color(0.48, 0.43, 0.29)
+	)
+
+	_add_box(
+		"LakeBankEast",
+		Vector3(1.5, 0.35, 27.0),
+		Vector3(16.5, 0.12, -6.0),
+		Color(0.48, 0.43, 0.29)
+	)
+
+	# Đường đất từ Spawn Point đến bến câu.
+	_add_box(
+		"DirtPath",
+		Vector3(4.0, 0.08, 15.0),
+		Vector3(0.0, 0.04, 14.0),
+		Color(0.52, 0.39, 0.24)
+	)
+
+	# Bến câu có va chạm để nhân vật đi lên được.
+	_add_static_box(
+		"FishingDock",
+		Vector3(3.5, 0.35, 12.0),
+		Vector3(0.0, 0.25, 0.0),
+		Color(0.39, 0.25, 0.14)
+	)
+
+	# Cây quanh hồ.
+	_build_tree(Vector3(-23.0, 0.0, -24.0))
+	_build_tree(Vector3(-30.0, 0.0, -8.0))
+	_build_tree(Vector3(-23.0, 0.0, 12.0))
+	_build_tree(Vector3(23.0, 0.0, -24.0))
+	_build_tree(Vector3(30.0, 0.0, -8.0))
+	_build_tree(Vector3(23.0, 0.0, 12.0))
+	_build_tree(Vector3(-10.0, 0.0, 30.0))
+	_build_tree(Vector3(10.0, 0.0, 30.0))
+
+
+func _add_static_box(
+	object_name: String,
+	box_size: Vector3,
+	world_position: Vector3,
+	color: Color
+) -> void:
+	var body := StaticBody3D.new()
+	body.name = object_name
+	body.position = world_position
+
+	var mesh_node := _make_box_node(
+		object_name + "Mesh",
+		box_size,
+		Vector3.ZERO,
+		color
+	)
+	body.add_child(mesh_node)
+
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = box_size
+	collision.shape = shape
+	body.add_child(collision)
+
+	add_child(body)
+
+
+# --------------------------------------------------
+# SHARED TREE AND MESH HELPERS
+# --------------------------------------------------
 
 func _build_tree(world_position: Vector3) -> void:
-    var tree := Node3D.new()
-    tree.name = "LowPolyTree"
-    tree.position = world_position
-    add_child(tree)
+	var tree := Node3D.new()
+	tree.name = "LowPolyTree"
+	tree.position = world_position
+	add_child(tree)
 
-    var trunk := CylinderMesh.new()
-    trunk.top_radius = 0.16
-    trunk.bottom_radius = 0.24
-    trunk.height = 2.0
+	var trunk := CylinderMesh.new()
+	trunk.top_radius = 0.16
+	trunk.bottom_radius = 0.24
+	trunk.height = 2.0
 
-    var trunk_node := MeshInstance3D.new()
-    trunk_node.mesh = trunk
-    trunk_node.position.y = 1.0
-    trunk_node.material_override = _make_material(
-        Color(0.31, 0.20, 0.12)
-    )
-    tree.add_child(trunk_node)
+	var trunk_node := MeshInstance3D.new()
+	trunk_node.mesh = trunk
+	trunk_node.position.y = 1.0
+	trunk_node.material_override = _make_material(
+		Color(0.31, 0.20, 0.12)
+	)
+	tree.add_child(trunk_node)
 
-    var crown := SphereMesh.new()
-    crown.radius = 1.0
-    crown.height = 2.0
-    crown.radial_segments = 8
-    crown.rings = 4
+	var crown := SphereMesh.new()
+	crown.radius = 1.0
+	crown.height = 2.0
+	crown.radial_segments = 8
+	crown.rings = 4
 
-    var crown_node := MeshInstance3D.new()
-    crown_node.mesh = crown
-    crown_node.position.y = 2.5
-    crown_node.material_override = _make_material(
-        Color(0.17, 0.39, 0.17)
-    )
-    tree.add_child(crown_node)
+	var crown_node := MeshInstance3D.new()
+	crown_node.mesh = crown
+	crown_node.position.y = 2.5
+	crown_node.material_override = _make_material(
+		Color(0.17, 0.39, 0.17)
+	)
+	tree.add_child(crown_node)
 
 
 func _add_box(
-    object_name: String,
-    box_size: Vector3,
-    world_position: Vector3,
-    color: Color
+	object_name: String,
+	box_size: Vector3,
+	world_position: Vector3,
+	color: Color
 ) -> void:
-    add_child(
-        _make_box_node(
-            object_name,
-            box_size,
-            world_position,
-            color
-        )
-    )
+	add_child(
+		_make_box_node(
+			object_name,
+			box_size,
+			world_position,
+			color
+		)
+	)
 
 
 func _make_box_node(
-    object_name: String,
-    box_size: Vector3,
-    local_position: Vector3,
-    color: Color
+	object_name: String,
+	box_size: Vector3,
+	local_position: Vector3,
+	color: Color
 ) -> MeshInstance3D:
-    var mesh := BoxMesh.new()
-    mesh.size = box_size
+	var mesh := BoxMesh.new()
+	mesh.size = box_size
 
-    var instance := MeshInstance3D.new()
-    instance.name = object_name
-    instance.mesh = mesh
-    instance.position = local_position
-    instance.material_override = _make_material(color)
-    return instance
+	var instance := MeshInstance3D.new()
+	instance.name = object_name
+	instance.mesh = mesh
+	instance.position = local_position
+	instance.material_override = _make_material(color)
+	return instance
 
 
 func _make_material(color: Color) -> StandardMaterial3D:
-    var material := StandardMaterial3D.new()
-    material.albedo_color = color
-    material.roughness = 0.9
-    return material
+	var material := StandardMaterial3D.new()
+	material.albedo_color = color
+	material.roughness = 0.9
+	return material
+
+
+# --------------------------------------------------
+# MAP TRANSITION
+# --------------------------------------------------
+
+func _build_transition() -> void:
+	var transition := Area3D.new()
+	transition.name = "MapTransition"
+	transition.collision_layer = 0
+	transition.collision_mask = 1
+
+	if map_type == "fishing_lake":
+		transition.position = Vector3(0.0, 1.0, 43.0)
+	else:
+		transition.position = Vector3(0.0, 1.0, -43.0)
+
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(5.0, 3.0, 5.0)
+	collision.shape = shape
+	transition.add_child(collision)
+
+	var sign := Label3D.new()
+	sign.name = "DestinationName"
+	sign.text = destination_name
+	sign.position = Vector3(0.0, 2.0, 0.0)
+	sign.font_size = 48
+	sign.outline_size = 8
+	sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sign.no_depth_test = true
+	transition.add_child(sign)
+
+	transition.body_entered.connect(_on_transition_body_entered)
+	add_child(transition)
+
+
+func _on_transition_body_entered(body: Node3D) -> void:
+	if body != player or _transitioning:
+		return
+
+	if destination_scene_path.is_empty():
+		push_error("[World] Destination scene path is empty.")
+		return
+
+	if not ResourceLoader.exists(destination_scene_path, "PackedScene"):
+		push_error(
+			"[World] Destination scene not found: "
+			+ destination_scene_path
+		)
+		return
+
+	_transitioning = true
+
+	get_tree().set_meta(
+		TRAVEL_META_KEY,
+		String(destination_spawn_point_id)
+	)
+
+	# Đổi scene sau khi kết thúc physics callback.
+	call_deferred("_change_destination_scene")
+
+
+func _change_destination_scene() -> void:
+	var result := get_tree().change_scene_to_file(
+		destination_scene_path
+	)
+
+	if result != OK:
+		push_error(
+			"[World] Cannot change scene. Error: "
+			+ str(result)
+		)
+		get_tree().remove_meta(TRAVEL_META_KEY)
+		_transitioning = false
+
+
+func _apply_spawn() -> void:
+	var spawn_position := local_spawn_position
+
+	if get_tree().has_meta(TRAVEL_META_KEY):
+		var requested_spawn := StringName(
+			str(get_tree().get_meta(TRAVEL_META_KEY))
+		)
+		get_tree().remove_meta(TRAVEL_META_KEY)
+
+		if requested_spawn != local_spawn_point_id:
+			push_warning(
+				"[World] Spawn Point ID does not match this map: "
+				+ str(requested_spawn)
+			)
+
+	player.global_position = spawn_position
+
+	print(
+		"[World] Spawn: ",
+		local_spawn_point_id,
+		" at ",
+		spawn_position
+	)

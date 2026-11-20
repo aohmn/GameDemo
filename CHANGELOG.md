@@ -55,3 +55,13 @@
 - Hướng joystick sử dụng hệ trục thế giới cố định.
 - Nhân vật vẫn quay mặt theo hướng đang đi.
 - Chưa xác nhận runtime trên Godot Android.
+
+## Phase 3: Two Map Travel Prototype
+
+- Thêm map Khu dân cư và map Hồ câu.
+- Dùng chung Player Controller, Camera và Virtual Joystick.
+- Thêm vùng chuyển map hai chiều bằng Area3D.
+- Hiển thị tên địa điểm đích bằng Label3D.
+- Truyền Spawn Point ID qua SceneTree metadata khi đổi scene.
+- Dựng hồ, bờ hồ, đường đất và bến câu bằng Primitive Mesh.
+- Chưa xác nhận parser và runtime trên Godot Android.

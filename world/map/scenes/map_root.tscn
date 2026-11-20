@@ -20,6 +20,12 @@ roughness = 0.85
 
 [node name="MapRoot" type="Node3D"]
 script = ExtResource("1_map")
+map_type = "residential"
+destination_scene_path = "res://world/map/scenes/fishing_lake_map.tscn"
+destination_name = "Hồ câu"
+destination_spawn_point_id = &"lake_entry"
+local_spawn_point_id = &"residential_entry"
+local_spawn_position = Vector3(0, 0.05, 12)
 
 [node name="Player" type="CharacterBody3D" parent="."]
 position = Vector3(0, 0.05, 12)
