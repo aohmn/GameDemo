@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## Phase 3.1: Map Fall Protection
+
+- Thêm collision wall vô hình ở bốn cạnh hai map.
+- Thêm barrier ngăn Player đi vào mặt nước hồ câu.
+- Chừa lối đi phía nam hồ để tiếp cận bến câu.
+- Tự phục hồi Player về Spawn Point nếu rơi thấp hơn Y = -10.
+- Chưa xác nhận runtime trên Godot Android.
+
+
 ## Giai đoạn 0: khung khởi động
 
 - Thiết lập Boot scene làm màn hình khởi động.

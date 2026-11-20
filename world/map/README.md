@@ -75,3 +75,13 @@ Hai map dùng chung cấu trúc Player, Camera và Joystick.
 - Chưa lưu trạng thái từng map.
 - Chưa tích hợp SaveCoordinator.
 - Chưa kiểm tra runtime trên Godot Android.
+
+
+## Fall Protection
+
+- Bốn cạnh map có tường collision vô hình.
+- Hồ câu có collision barrier quanh mặt nước.
+- Lối đi phía nam hồ được chừa để Player đến bến câu.
+- Player tự trở về local_spawn_position nếu tọa độ Y thấp hơn -10.
+- Barrier là StaticBody3D, không tạo mesh hiển thị.
+- Cần kiểm tra va chạm và khả năng di chuyển thực tế trên Godot Android.

@@ -4,6 +4,7 @@ class_name Player3DController
 @export var move_speed: float = 5.0
 @export var acceleration: float = 18.0
 @export var gravity: float = 18.0
+@export var fall_recovery_y: float = -10.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var joystick: Node = get_node("../HUD/Joystick")
@@ -59,6 +60,19 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	move_and_slide()
+
+	# Nếu rơi khỏi địa hình, đưa Player về Spawn Point của map hiện tại.
+	if global_position.y < fall_recovery_y:
+		var map_root := get_parent()
+		var spawn_value: Variant = map_root.get("local_spawn_position")
+
+		if spawn_value is Vector3:
+			global_position = spawn_value
+		else:
+			global_position = Vector3(0.0, 0.05, 12.0)
+
+		velocity = Vector3.ZERO
+		print("[Player] Recovered after falling.")
 
 	# Camera chỉ bám vị trí, không xoay theo nhân vật.
 	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET

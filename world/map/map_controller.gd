@@ -29,6 +29,11 @@ func _ready() -> void:
 		_build_buildings()
 		_build_trees()
 
+	_build_world_boundaries()
+
+	if map_type == "fishing_lake":
+		_build_lake_water_barriers()
+
 	_build_transition()
 	_apply_spawn()
 
@@ -115,6 +120,85 @@ func _add_ground_piece(
 	collision.shape = shape
 
 	body.position = world_position
+	body.add_child(collision)
+	add_child(body)
+
+
+# --------------------------------------------------
+# WORLD BOUNDARIES AND FALL PROTECTION
+# --------------------------------------------------
+
+func _build_world_boundaries() -> void:
+	# Tường collision vô hình giữ Player trong phạm vi mặt đất.
+	_add_collision_wall(
+		"BoundaryWest",
+		Vector3(2.0, 8.0, WORLD_SIZE),
+		Vector3(-49.0, 4.0, 0.0)
+	)
+	_add_collision_wall(
+		"BoundaryEast",
+		Vector3(2.0, 8.0, WORLD_SIZE),
+		Vector3(49.0, 4.0, 0.0)
+	)
+	_add_collision_wall(
+		"BoundaryNorth",
+		Vector3(WORLD_SIZE, 8.0, 2.0),
+		Vector3(0.0, 4.0, -49.0)
+	)
+	_add_collision_wall(
+		"BoundarySouth",
+		Vector3(WORLD_SIZE, 8.0, 2.0),
+		Vector3(0.0, 4.0, 49.0)
+	)
+
+
+func _build_lake_water_barriers() -> void:
+	# Chặn ba cạnh hồ và chừa lối đi ở giữa bờ phía nam.
+	_add_collision_wall(
+		"LakeBarrierNorth",
+		Vector3(31.0, 2.0, 1.0),
+		Vector3(0.0, 1.0, -18.5)
+	)
+	_add_collision_wall(
+		"LakeBarrierWest",
+		Vector3(1.0, 2.0, 25.0),
+		Vector3(-15.5, 1.0, -6.0)
+	)
+	_add_collision_wall(
+		"LakeBarrierEast",
+		Vector3(1.0, 2.0, 25.0),
+		Vector3(15.5, 1.0, -6.0)
+	)
+
+	# Hai đoạn tường phía nam, chừa lối rộng 4.5 đơn vị.
+	_add_collision_wall(
+		"LakeBarrierSouthLeft",
+		Vector3(13.25, 2.0, 1.0),
+		Vector3(-8.875, 1.0, 6.5)
+	)
+	_add_collision_wall(
+		"LakeBarrierSouthRight",
+		Vector3(13.25, 2.0, 1.0),
+		Vector3(8.875, 1.0, 6.5)
+	)
+
+
+func _add_collision_wall(
+	object_name: String,
+	box_size: Vector3,
+	world_position: Vector3
+) -> void:
+	var body := StaticBody3D.new()
+	body.name = object_name
+	body.position = world_position
+	body.collision_layer = 1
+	body.collision_mask = 1
+
+	var collision := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = box_size
+	collision.shape = shape
+
 	body.add_child(collision)
 	add_child(body)
 
