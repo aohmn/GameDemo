@@ -23,7 +23,7 @@ thôn bao quanh. Thế giới được mở rộng dần theo từng giai đoạ
 - Các cụm nhà dân cư.
 - Giới hạn địa hình và collision.
 - Minimap vẽ bằng Control drawing.
-- Bản đồ toàn màn hình mở khi chạm minimap.
+- Chạm minimap: Control mở rộng phủ toàn viewport và hiển thị bản đồ lớn độc lập với khung minimap.
 - Hỗ trợ zoom bằng thao tác chụm/xòe hai ngón và nút +/−.
 - Hỗ trợ kéo bản đồ bằng một ngón tay.
 - Chạm vị trí để đặt waypoint; bản đồ giữ trạng thái mở để xem vị trí.
@@ -170,7 +170,8 @@ và kết quả kiểm thử thực tế.
 
 ## 12. Điều khiển World Map
 
-- Chạm minimap: mở bản đồ toàn màn hình.
+- Chạm minimap: mở bản đồ lớn phủ toàn màn hình, không bị giới hạn trong khung minimap.
+- Đóng bản đồ lớn: khôi phục vị trí và kích thước minimap ban đầu.
 - Kéo một ngón: di chuyển khung bản đồ.
 - Chụm/xòe hai ngón: thu nhỏ/phóng to quanh tâm thao tác.
 - Nút `+` và `−`: điều chỉnh zoom.

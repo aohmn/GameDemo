@@ -1,3 +1,11 @@
+## World Map: Full-screen layout fix
+
+- Khi chạm minimap, WorldMinimap mở rộng Control phủ toàn bộ viewport.
+- Bản đồ lớn được vẽ trên toàn màn hình, không còn bị giới hạn trong khung minimap.
+- Khi đóng bản đồ, khôi phục anchors và offsets ban đầu của minimap.
+- Giữ nguyên thao tác zoom, pan và waypoint hiện có.
+- Chưa xác nhận parser và runtime trên Godot Android.
+
 ## World Map: Zoom và Pan
 
 - Thêm zoom bản đồ bằng thao tác chụm/xòe hai ngón.

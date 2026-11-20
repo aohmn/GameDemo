@@ -25,9 +25,56 @@ var _mouse_moved := false
 var _mouse_last_position := Vector2.ZERO
 
 
+var _mini_anchors := Vector4.ZERO
+var _mini_offsets := Vector4.ZERO
+
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	process_mode = Node.PROCESS_MODE_INHERIT
+
+	# Lưu layout minimap để khôi phục sau khi đóng bản đồ lớn.
+	_mini_anchors = Vector4(
+		anchor_left,
+		anchor_top,
+		anchor_right,
+		anchor_bottom
+	)
+	_mini_offsets = Vector4(
+		offset_left,
+		offset_top,
+		offset_right,
+		offset_bottom
+	)
+
+
+func _set_world_map_open(is_open: bool) -> void:
+	_world_map_open = is_open
+
+	if is_open:
+		# Mở rộng Control phủ toàn bộ viewport.
+		anchor_left = 0.0
+		anchor_top = 0.0
+		anchor_right = 1.0
+		anchor_bottom = 1.0
+
+		offset_left = 0.0
+		offset_top = 0.0
+		offset_right = 0.0
+		offset_bottom = 0.0
+	else:
+		# Khôi phục đúng vị trí và kích thước minimap.
+		anchor_left = _mini_anchors.x
+		anchor_top = _mini_anchors.y
+		anchor_right = _mini_anchors.z
+		anchor_bottom = _mini_anchors.w
+
+		offset_left = _mini_offsets.x
+		offset_top = _mini_offsets.y
+		offset_right = _mini_offsets.z
+		offset_bottom = _mini_offsets.w
+
+	queue_redraw()
 
 
 func _process(_delta: float) -> void:
@@ -48,7 +95,7 @@ func _gui_input(event: InputEvent) -> void:
 func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 	if event.pressed:
 		if not _world_map_open:
-			_world_map_open = true
+			_set_world_map_open(true)
 			_opening_touch_index = event.index
 			accept_event()
 			queue_redraw()
@@ -143,7 +190,7 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 
 	if event.pressed:
 		if not _world_map_open:
-			_world_map_open = true
+			_set_world_map_open(true)
 			accept_event()
 			queue_redraw()
 			return
@@ -192,7 +239,7 @@ func _handle_full_map_tap(position: Vector2) -> void:
 			return
 
 		if position.x >= size.x - 70.0:
-			_world_map_open = false
+			_set_world_map_open(false)
 			return
 
 	var map_rect := _full_map_rect()
