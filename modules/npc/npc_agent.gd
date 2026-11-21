@@ -50,11 +50,7 @@ func _ready() -> void:
 
 
 func update_schedule(hour: int) -> void:
-	var schedule_key := "home"
-	if hour >= 7 and hour < 17:
-		schedule_key = "work"
-	elif hour >= 17 and hour < 19:
-		schedule_key = "shopping"
+	var schedule_key := String(JobService.get_activity(hour))
 	var target := home_position
 	var activity := "Ở nhà"
 	if schedule_key == "work":
@@ -123,7 +119,7 @@ func _set_destination(target: Vector3) -> void:
 	if global_position.distance_to(target) <= ARRIVAL_DISTANCE:
 		_route = PackedVector3Array()
 		return
-	_route = PackedVector3Array([target])
+	_route = NavigationService.find_route(global_position, target)
 	if _route.is_empty():
 		_route = PackedVector3Array([target])
 	elif _route[_route.size() - 1].distance_to(target) > ARRIVAL_DISTANCE:
