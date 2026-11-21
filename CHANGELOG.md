@@ -1,3 +1,10 @@
+## Player Sprite (HD-2D)
+
+- Player dùng sprite billboard (`AnimatedSprite3D`); ngoại lệ texture ghi ở `docs/decisions/0001-player-sprite.md`.
+- Thêm `tools/build_player_atlas.py`: cắt 3 sprite sheet, căn đầu/chân, chuẩn hóa kích thước, sinh atlas và SpriteFrames.
+- Thêm `presentation/player_sprite/` (chọn hướng, idle/walk, lật cho hướng phải).
+- `player_controller.gd` báo vận tốc cho node `Visual` và ẩn `VisualRoot` (3D primitive, giữ làm dự phòng); `map_root.tscn` thêm `Visual`.
+- Đã chạy thử trên Godot 4.7 Linux (import, chạy scene, ảnh chụp 4 hướng). Chưa xác nhận trên Godot Android.
 ## NPC Minimap API consistency
 
 - Khai báo tham chiếu NPCDirector có kiểu rõ ràng trong WorldMinimap.

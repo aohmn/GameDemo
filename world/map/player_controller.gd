@@ -15,6 +15,9 @@ signal health_changed(current_health: float, maximum_health: float)
 
 @onready var camera_pivot: Node3D = $CameraPivot
 @onready var joystick: Node = get_node("../HUD/Joystick")
+# [player_sprite] hiển thị sprite, VisualRoot (3D primitive) giữ làm dự phòng
+@onready var visual: Node = get_node_or_null("Visual")
+@onready var fallback_visual: Node3D = get_node_or_null("VisualRoot") as Node3D
 
 const CAMERA_FOLLOW_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
 
@@ -31,6 +34,9 @@ func _ready() -> void:
 	camera_pivot.top_level = true
 	camera_pivot.global_rotation = Vector3.ZERO
 	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET
+	if visual != null and fallback_visual != null:
+		fallback_visual.hide()
+		fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
 
 
 func _physics_process(delta: float) -> void:
@@ -74,6 +80,10 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 
 	move_and_slide()
+
+	# Báo vận tốc thực tế cho phần hiển thị (đứng yên khi bị chặn).
+	if visual != null and visual.has_method("set_motion"):
+		visual.call("set_motion", Vector2(velocity.x, velocity.z))
 
 	# Nếu rơi khỏi địa hình, đưa Player về Spawn Point của map hiện tại.
 	if global_position.y < fall_recovery_y:

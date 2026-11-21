@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_map"]
 [ext_resource type="Script" path="res://world/map/player_controller.gd" id="2_player"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://world/map/characters/player_visual.gd" id="4_visual"]
 [ext_resource type="Script" path="res://world/map/player_hud.gd" id="5_hud"]
 [ext_resource type="Script" path="res://world/map/characters/player_needs.gd" id="6_needs"]
+[ext_resource type="PackedScene" path="res://presentation/player_sprite/player_sprite.tscn" id="90_player_sprite"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
 radius = 0.35
@@ -34,6 +35,8 @@ script = ExtResource("6_needs")
 
 [node name="VisualRoot" type="Node3D" parent="Player"]
 script = ExtResource("4_visual")
+
+[node name="Visual" parent="Player" instance=ExtResource("90_player_sprite")]
 
 [node name="CameraPivot" type="Node3D" parent="Player"]
 position = Vector3(0, 1.5, 0)
