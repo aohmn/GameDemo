@@ -785,7 +785,6 @@ func _build_minimap() -> void:
 	minimap.name = "WorldMinimap"
 	minimap.set_script(MINIMAP_SCRIPT)
 	minimap.set("player", player)
-	minimap.set("npc_director", get_node_or_null("NPCDirector"))
 	minimap.set("map_type", "open_world")
 
 	minimap.set_anchors_preset(Control.PRESET_TOP_RIGHT)

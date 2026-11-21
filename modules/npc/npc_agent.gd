@@ -42,6 +42,7 @@ func configure(profile: NPCProfile) -> void:
 
 
 func _ready() -> void:
+	add_to_group("npc")
 	_build_visual()
 	collision_layer = 2
 	collision_mask = 1

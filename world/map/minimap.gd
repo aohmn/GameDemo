@@ -2,7 +2,6 @@ extends Control
 class_name WorldMinimap
 
 var player: Node3D
-var npc_director: NPCDirector
 var map_type: String = "open_world"
 
 const WORLD_HALF_SIZE := 150.0
@@ -369,15 +368,17 @@ func _draw_minimap() -> void:
 		draw_circle(center, 5.0, Color.WHITE)
 		draw_circle(center, 3.2, Color(1.0, 0.35, 0.08))
 
-	if is_instance_valid(npc_director):
-		for npc: LifeNPC in npc_director.get_npcs():
-			var npc_point := _world_to_minimap(
-				npc.global_position.x,
-				npc.global_position.z
-			)
-			if map_rect.has_point(npc_point):
-				draw_circle(npc_point, 4.5, Color(0.15, 0.9, 1.0))
-				draw_circle(npc_point, 2.0, Color(0.02, 0.12, 0.2))
+	for npc_node in get_tree().get_nodes_in_group("npc"):
+		var npc := npc_node as Node3D
+		if npc == null:
+			continue
+		var npc_point := _world_to_minimap(
+			npc.global_position.x,
+			npc.global_position.z
+		)
+		if map_rect.has_point(npc_point):
+			draw_circle(npc_point, 4.5, Color(0.15, 0.9, 1.0))
+			draw_circle(npc_point, 2.0, Color(0.02, 0.12, 0.2))
 
 	if _has_waypoint:
 		var target := _world_to_minimap(_waypoint.x, _waypoint.z)
@@ -514,22 +515,24 @@ func _draw_full_map() -> void:
 		draw_circle(player_point, 7.0, Color.WHITE)
 		draw_circle(player_point, 4.5, Color(1.0, 0.35, 0.08))
 
-	if is_instance_valid(npc_director):
-		for npc: LifeNPC in npc_director.get_npcs():
-			var npc_point := _world_to_full_map(
-				map_rect,
-				scale_x,
-				scale_y,
-				npc.global_position.x,
-				npc.global_position.z
+	for npc_node in get_tree().get_nodes_in_group("npc"):
+		var npc := npc_node as Node3D
+		if npc == null:
+			continue
+		var npc_point := _world_to_full_map(
+			map_rect,
+			scale_x,
+			scale_y,
+			npc.global_position.x,
+			npc.global_position.z
+		)
+		if map_rect.has_point(npc_point):
+			draw_circle(
+				npc_point,
+				clampf(5.0 * _map_zoom, 3.0, 8.0),
+				Color(0.15, 0.9, 1.0)
 			)
-			if map_rect.has_point(npc_point):
-				draw_circle(
-					npc_point,
-					clampf(5.0 * _map_zoom, 3.0, 8.0),
-					Color(0.15, 0.9, 1.0)
-				)
-				draw_circle(npc_point, 2.0, Color(0.02, 0.12, 0.2))
+			draw_circle(npc_point, 2.0, Color(0.02, 0.12, 0.2))
 
 	if _has_waypoint:
 		var target := _world_to_full_map(
