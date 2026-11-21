@@ -125,3 +125,14 @@
 - Thêm PlayerHUD với avatar hình học không texture, thanh sức khỏe, giờ và thứ lấy từ GameClock.
 - Thêm API sức khỏe runtime `apply_damage()` / `restore_health()` cho Player.
 - Chưa xác nhận parser và gameplay runtime trên Godot Android.
+
+## Phase 4: Player Needs, HUD và Save
+
+- Thêm nhu cầu đói, khát, năng lượng; tiêu hao theo phút GameClock.
+- Thêm API và nút cảm ứng ăn, uống, nghỉ; ăn/uống đang miễn phí dạng prototype cho đến khi tích hợp Inventory; đói/khát kiệt sức gây hao máu nhẹ.
+- Mở rộng HUD hiển thị avatar, máu, ba thanh nhu cầu, giờ và thứ.
+- Thêm SaveCoordinator: lưu GameClock, vị trí, máu và nhu cầu; tự lưu định kỳ và khi app pause/đóng.
+- Sửa tọa độ thao tác minimap về hệ tọa độ local của Control; thêm preview tuyến đường waypoint.
+- Thêm kiểm tra vị trí an toàn cho cây và nhà so với hành lang đường.
+- Tái sử dụng mesh/material và giới hạn tần suất redraw minimap để giảm chi phí trên Android.
+- Chưa xác nhận Godot Parser hoặc gameplay runtime trên Android.

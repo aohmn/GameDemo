@@ -1928,3 +1928,12 @@ PROJECTGAME — XÂY DỰNG MỘT THẾ GIỚI NƠI NGƯỜI CHƠI KHÔNG CHỈ 
 - Bề mặt môi trường dùng spatial shader tạo biến thiên màu bằng hàm toán học, không lấy mẫu texture.
 - Vật liệu nhân vật dùng màu albedo và roughness, phù hợp phong cách stylized bán thực tế trên Android.
 - Đây là bước dựng hình nền tảng; chưa phải model người chi tiết có rig xương và animation hoàn chỉnh.
+
+## Player Needs và Save
+
+- Player có nhu cầu đói, khát, năng lượng trong `world/map/characters/player_needs.gd`.
+- UI đọc trạng thái qua signal `needs_changed`; UI không sở hữu logic tiêu hao. Nút ĂN/UỐNG hiện là thao tác prototype miễn phí, chưa trừ vật phẩm vì Inventory chưa tích hợp.
+- Ăn/uống/nghỉ là API của module Needs; nghỉ tua `GameClock` dùng chung.
+- `SaveCoordinator` lưu GameClock, vị trí Player, máu và nhu cầu vào `user://projectgame_save.cfg`.
+- Save tự động mỗi 60 giây thực và khi ứng dụng pause/đóng.
+- Lần chạy đầu không có save thì giữ giá trị mặc định.

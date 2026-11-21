@@ -11,6 +11,7 @@ func _ready() -> void:
 	var map_instance := MAP_SCENE.instantiate()
 	add_child(map_instance)
 	move_child(map_instance, 0)
+	SaveCoordinator.call_deferred("load_game")
 
 	print("[Boot] ProjectGame 3D khởi động")
 	EventBus.emit_event(CoreEvents.BOOT_COMPLETED)

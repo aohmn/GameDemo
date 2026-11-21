@@ -203,3 +203,14 @@ Zoom được giới hạn từ 1x đến 4x. Waypoint được giữ trong runt
 6. Tua `GameClock` để xác nhận đồng hồ UI thay đổi theo nguồn thời gian chung.
 
 Chưa có kết quả chạy thực tế trên Godot Android cho lần cập nhật này.
+
+## 14. Player Needs và Save
+
+- `characters/player_needs.gd` quản lý đói, khát, năng lượng.
+- Tốc độ tiêu hao tính theo số phút tăng trong `GameClock`, không theo thời gian thực.
+- UI đọc qua `needs_changed`; API ăn/uống/nghỉ thuộc module Needs.
+- `SaveCoordinator` lưu Player và Needs thông qua group `save_participant`.
+- Map controller tái sử dụng BoxMesh, mesh cây và ShaderMaterial theo cache để giảm tạo tài nguyên trùng lặp.
+- Minimap giới hạn redraw xuống 20 lần/giây thay vì redraw mỗi frame.
+- Minimap đổi tọa độ touch từ viewport sang local Control trước khi pan, zoom hoặc đặt waypoint.
+- Waypoint gọi `NavigationService.find_route()` và vẽ preview khi có đường.

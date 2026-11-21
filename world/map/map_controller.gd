@@ -17,10 +17,13 @@ const SURFACE_SHADER: Shader = preload("res://world/map/shaders/procedural_surfa
 @onready var player: CharacterBody3D = $Player
 
 var _transitioning := false
+var _material_cache: Dictionary = {}
+var _box_mesh_cache: Dictionary = {}
+var _tree_trunk_mesh: CylinderMesh
+var _tree_crown_mesh: SphereMesh
 
 
 func _ready() -> void:
-	map_type = "open_world"
 
 	_build_environment()
 	_build_ground()
@@ -310,9 +313,10 @@ func _build_house(
 	world_position: Vector3,
 	wall_color: Color
 ) -> void:
+	var safe_position: Vector3 = _get_road_safe_building_position(world_position)
 	var house := StaticBody3D.new()
 	house.name = "VietnameseHouse"
-	house.position = world_position
+	house.position = safe_position
 	add_child(house)
 
 	var body := _make_box_node(
@@ -545,38 +549,67 @@ func _add_static_box(
 # SHARED TREE AND MESH HELPERS
 # --------------------------------------------------
 
+func _get_road_safe_building_position(world_position: Vector3) -> Vector3:
+	var result := world_position
+	# Nhà rộng 5 m, sâu 6 m; giữ mép công trình cách mép đường ít nhất 1 m.
+	for road_x in [-65.0, 0.0, 65.0]:
+		if absf(result.x - road_x) < 8.0:
+			var x_direction: float = -1.0 if result.x < road_x else 1.0
+			result.x = road_x + x_direction * 8.0
+	for road_z in [-90.0, -12.0, 70.0]:
+		if absf(result.z - road_z) < 8.0:
+			var z_direction: float = -1.0 if result.z < road_z else 1.0
+			result.z = road_z + z_direction * 8.0
+	return result
+
+
 func _build_tree(world_position: Vector3) -> void:
+	if not _is_tree_position_clear(world_position):
+		push_warning("[World] Bỏ cây đặt quá gần hành lang đường: %s" % str(world_position))
+		return
 	var tree := Node3D.new()
 	tree.name = "LowPolyTree"
 	tree.position = world_position
 	add_child(tree)
 
-	var trunk := CylinderMesh.new()
-	trunk.top_radius = 0.16
-	trunk.bottom_radius = 0.24
-	trunk.height = 2.0
-
+	if _tree_trunk_mesh == null:
+		_tree_trunk_mesh = CylinderMesh.new()
+		_tree_trunk_mesh.top_radius = 0.16
+		_tree_trunk_mesh.bottom_radius = 0.24
+		_tree_trunk_mesh.height = 2.0
 	var trunk_node := MeshInstance3D.new()
-	trunk_node.mesh = trunk
+	trunk_node.mesh = _tree_trunk_mesh
 	trunk_node.position.y = 1.0
 	trunk_node.material_override = _make_material(
 		Color(0.31, 0.20, 0.12)
 	)
 	tree.add_child(trunk_node)
 
-	var crown := SphereMesh.new()
-	crown.radius = 1.0
-	crown.height = 2.0
-	crown.radial_segments = 8
-	crown.rings = 4
-
+	if _tree_crown_mesh == null:
+		_tree_crown_mesh = SphereMesh.new()
+		_tree_crown_mesh.radius = 1.0
+		_tree_crown_mesh.height = 2.0
+		_tree_crown_mesh.radial_segments = 8
+		_tree_crown_mesh.rings = 4
 	var crown_node := MeshInstance3D.new()
-	crown_node.mesh = crown
+	crown_node.mesh = _tree_crown_mesh
 	crown_node.position.y = 2.5
 	crown_node.material_override = _make_material(
 		Color(0.17, 0.39, 0.17)
 	)
 	tree.add_child(crown_node)
+
+
+func _is_tree_position_clear(world_position: Vector3) -> bool:
+	# Đường dọc rộng 7–8 m; chừa thêm khoảng an toàn cho tán cây.
+	for road_x in [-65.0, 0.0, 65.0]:
+		if absf(world_position.x - road_x) < 6.5:
+			return false
+	# Đường ngang rộng 7–8 m; cây không được lấn vào hành lang đường.
+	for road_z in [-90.0, -12.0, 70.0]:
+		if absf(world_position.z - road_z) < 5.5:
+			return false
+	return true
 
 
 func _add_box(
@@ -601,8 +634,11 @@ func _make_box_node(
 	local_position: Vector3,
 	color: Color
 ) -> MeshInstance3D:
-	var mesh := BoxMesh.new()
-	mesh.size = box_size
+	var mesh: BoxMesh = _box_mesh_cache.get(box_size) as BoxMesh
+	if mesh == null:
+		mesh = BoxMesh.new()
+		mesh.size = box_size
+		_box_mesh_cache[box_size] = mesh
 
 	var instance := MeshInstance3D.new()
 	instance.name = object_name
@@ -613,11 +649,14 @@ func _make_box_node(
 
 
 func _make_material(color: Color) -> ShaderMaterial:
+	if _material_cache.has(color):
+		return _material_cache[color] as ShaderMaterial
 	var material := ShaderMaterial.new()
 	material.shader = SURFACE_SHADER
 	material.set_shader_parameter("base_color", color)
 	material.set_shader_parameter("roughness_value", 0.88)
 	material.set_shader_parameter("surface_detail", 0.018)
+	_material_cache[color] = material
 	return material
 
 

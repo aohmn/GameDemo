@@ -1,7 +1,7 @@
 # core/services
 
 ## Mục đích
-Các dịch vụ nền tảng dùng chung. Hiện có: GameClock.
+Các dịch vụ nền tảng dùng chung. Hiện có: GameClock và SaveCoordinator.
 
 ## GameClock (autoload "GameClock")
 Nguồn thời gian duy nhất. Không module nào được tự tạo đồng hồ riêng.
@@ -27,7 +27,15 @@ EventBus, CoreEvents.
 ### Kiểm tra
 Chưa có test tự động (thư mục tests/ đã gỡ). Kiểm tra thủ công trên Godot Android.
 
-### Trạng thái và giới hạn đã biết
-- Chưa có tháng, năm, mùa (README §5.4 sẽ làm sau).
-- Chưa nối SaveCoordinator (chưa tồn tại). deserialize chưa phát event nào.
+### SaveCoordinator (autoload "SaveCoordinator")
+Điều phối lưu/tải GameClock và các node trong group `save_participant`.
+
+- `save_game() -> bool`: lưu file `user://projectgame_save.cfg`.
+- `load_game() -> bool`: kiểm tra version và khôi phục trạng thái.
+- Node tham gia phải có `save_id`, `serialize_state()` và `deserialize_state(data)`.
+- Tự lưu mỗi 60 giây thực và khi ứng dụng pause/đóng.
+
+## Trạng thái và giới hạn đã biết
+- Chưa có tháng, năm, mùa.
+- `GameClock.deserialize()` chưa phát event khi nạp dữ liệu.
 - Tốc độ mặc định 1 phút game / 1 giây thật chỉ là giá trị tạm, chưa cân bằng.

@@ -8,10 +8,12 @@ const WORLD_HALF_SIZE := 150.0
 const MINI_SIZE := 144.0
 const MAP_ZOOM_MIN := 1.0
 const MAP_ZOOM_MAX := 4.0
+const NAVIGATION_SERVICE: Script = preload("res://world/navigation/navigation_service.gd")
 
 var _world_map_open := false
 var _waypoint := Vector3.ZERO
 var _has_waypoint := false
+var _route: PackedVector3Array = PackedVector3Array()
 
 var _map_zoom := 1.0
 var _map_pan := Vector2.ZERO
@@ -23,6 +25,7 @@ var _gesture_moved := false
 var _mouse_down := false
 var _mouse_moved := false
 var _mouse_last_position := Vector2.ZERO
+var _redraw_accumulator: float = 0.0
 
 
 var _mini_anchors := Vector4.ZERO
@@ -51,6 +54,14 @@ func _ready() -> void:
 
 func _set_world_map_open(is_open: bool) -> void:
 	_world_map_open = is_open
+	if not is_open:
+		_touch_positions.clear()
+		_opening_touch_index = -1
+		_mouse_down = false
+	if is_open:
+		_map_zoom = 1.0
+		_map_pan = Vector2.ZERO
+		_route.clear()
 
 	if is_open:
 		# Mở rộng Control phủ toàn bộ viewport.
@@ -78,8 +89,11 @@ func _set_world_map_open(is_open: bool) -> void:
 	queue_redraw()
 
 
-func _process(_delta: float) -> void:
-	queue_redraw()
+func _process(delta: float) -> void:
+	_redraw_accumulator += delta
+	if _redraw_accumulator >= 0.05:
+		_redraw_accumulator = 0.0
+		queue_redraw()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -94,6 +108,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _handle_screen_touch(event: InputEventScreenTouch) -> void:
+	var local_position: Vector2 = _screen_to_local(event.position)
 	if event.pressed:
 		if not _world_map_open:
 			_set_world_map_open(true)
@@ -102,7 +117,7 @@ func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 			queue_redraw()
 			return
 
-		_touch_positions[event.index] = event.position
+		_touch_positions[event.index] = local_position
 
 		if _touch_positions.size() == 1:
 			_gesture_moved = false
@@ -121,7 +136,7 @@ func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 		return
 
 	if _world_map_open and not _gesture_moved and _touch_positions.size() == 1:
-		_handle_full_map_tap(event.position)
+		_handle_full_map_tap(local_position)
 
 	_touch_positions.erase(event.index)
 
@@ -133,6 +148,7 @@ func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 
 
 func _handle_screen_drag(event: InputEventScreenDrag) -> void:
+	var local_position: Vector2 = _screen_to_local(event.position)
 	if not _world_map_open:
 		return
 
@@ -140,7 +156,7 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 		return
 
 	var previous_position: Vector2 = _touch_positions[event.index]
-	_touch_positions[event.index] = event.position
+	_touch_positions[event.index] = local_position
 
 	if _touch_positions.size() >= 2:
 		var touch_ids: Array = _touch_positions.keys()
@@ -151,16 +167,16 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 
 		var other_position: Vector2 = _touch_positions[other_id]
 		var old_distance := previous_position.distance_to(other_position)
-		var new_distance := event.position.distance_to(other_position)
+		var new_distance := local_position.distance_to(other_position)
 
 		if old_distance > 1.0 and new_distance > 1.0:
 			var zoom_factor := new_distance / old_distance
-			var focal_point := (event.position + other_position) * 0.5
+			var focal_point := (local_position + other_position) * 0.5
 			_zoom_at(zoom_factor, focal_point)
 
 		_gesture_moved = true
 	else:
-		var movement := event.position - previous_position
+		var movement := local_position - previous_position
 
 		if movement.length() > 1.0:
 			_map_pan += movement
@@ -172,16 +188,17 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 
 
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
+	var local_position: Vector2 = _screen_to_local(event.position)
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
 		if _world_map_open:
-			_zoom_at(1.2, event.position)
+			_zoom_at(1.2, local_position)
 			accept_event()
 			queue_redraw()
 		return
 
 	if event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
 		if _world_map_open:
-			_zoom_at(0.83, event.position)
+			_zoom_at(0.83, local_position)
 			accept_event()
 			queue_redraw()
 		return
@@ -198,7 +215,7 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 
 		_mouse_down = true
 		_mouse_moved = false
-		_mouse_last_position = event.position
+		_mouse_last_position = local_position
 		accept_event()
 	else:
 		if not _mouse_down:
@@ -207,18 +224,19 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 		_mouse_down = false
 
 		if not _mouse_moved:
-			_handle_full_map_tap(event.position)
+			_handle_full_map_tap(local_position)
 
 		accept_event()
 		queue_redraw()
 
 
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
+	var local_position: Vector2 = _screen_to_local(event.position)
 	if not _world_map_open or not _mouse_down:
 		return
 
-	var movement := event.position - _mouse_last_position
-	_mouse_last_position = event.position
+	var movement := local_position - _mouse_last_position
+	_mouse_last_position = local_position
 
 	if movement.length() > 1.0:
 		_map_pan += movement
@@ -251,6 +269,10 @@ func _handle_full_map_tap(position: Vector2) -> void:
 	var world_position := _map_to_world(position)
 	_waypoint = Vector3(world_position.x, 0.0, world_position.y)
 	_has_waypoint = true
+	_route.clear()
+	if is_instance_valid(player):
+		_route = NAVIGATION_SERVICE.find_route(player.global_position, _waypoint)
+	queue_redraw()
 
 
 func _zoom_at(factor: float, focal_point: Vector2) -> void:
@@ -461,6 +483,12 @@ func _draw_full_map() -> void:
 		_draw_full_map_building(map_rect, scale_x, scale_y, -85.0, z_position)
 		_draw_full_map_building(map_rect, scale_x, scale_y, 85.0, z_position)
 
+	if _route.size() >= 2:
+		for route_index in range(_route.size() - 1):
+			var route_start: Vector3 = _route[route_index]
+			var route_end: Vector3 = _route[route_index + 1]
+			_draw_map_line(map_rect, scale_x, scale_y, Vector2(route_start.x, route_start.z), Vector2(route_end.x, route_end.z), Color(1.0, 0.78, 0.20), maxf(2.5, scale_x * 2.5))
+
 	if is_instance_valid(player):
 		var player_point := _world_to_full_map(
 			map_rect,
@@ -583,6 +611,10 @@ func _map_to_world(position: Vector2) -> Vector2:
 	)
 
 
+func _screen_to_local(screen_position: Vector2) -> Vector2:
+	return get_global_transform_with_canvas().affine_inverse() * screen_position
+
+
 func _world_to_minimap(world_x: float, world_z: float) -> Vector2:
 	if not is_instance_valid(player):
 		return Vector2(size.x * 0.5, size.y * 0.57)
@@ -593,7 +625,7 @@ func _world_to_minimap(world_x: float, world_z: float) -> Vector2:
 		world_z - player.global_position.z
 	)
 
-	return center + relative * 0.42
+	return center + relative * (MINI_SIZE / (WORLD_HALF_SIZE * 2.0))
 
 
 func _draw_minimap_world_line(

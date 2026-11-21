@@ -3,6 +3,8 @@ class_name Player3DController
 
 signal health_changed(current_health: float, maximum_health: float)
 
+@export var save_id: String = "player"
+
 @export_range(1.0, 1000.0, 1.0) var maximum_health: float = 100.0
 @export_range(0.0, 1000.0, 1.0) var current_health: float = 100.0
 
@@ -18,6 +20,10 @@ const CAMERA_FOLLOW_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
 
 
 func _ready() -> void:
+	add_to_group("save_participant")
+	var needs_component := get_node_or_null("Needs")
+	if needs_component != null and needs_component.has_signal("health_damage_requested"):
+		needs_component.connect("health_damage_requested", apply_damage)
 	maximum_health = maxf(1.0, maximum_health)
 	current_health = clampf(current_health, 0.0, maximum_health)
 	health_changed.emit(current_health, maximum_health)
@@ -99,3 +105,26 @@ func restore_health(amount: float) -> void:
 		return
 	current_health = minf(maximum_health, current_health + amount)
 	health_changed.emit(current_health, maximum_health)
+
+
+func serialize_state() -> Dictionary:
+	return {
+		"version": 1,
+		"health": current_health,
+		"position": [global_position.x, global_position.y, global_position.z]
+	}
+
+
+func deserialize_state(data: Dictionary) -> bool:
+	if int(data.get("version", -1)) != 1:
+		return false
+	var health_value: Variant = data.get("health", current_health)
+	if typeof(health_value) != TYPE_INT and typeof(health_value) != TYPE_FLOAT:
+		return false
+	current_health = clampf(float(health_value), 0.0, maximum_health)
+	var position_value: Variant = data.get("position", [])
+	if position_value is Array and position_value.size() == 3:
+		global_position = Vector3(float(position_value[0]), float(position_value[1]), float(position_value[2]))
+	velocity = Vector3.ZERO
+	health_changed.emit(current_health, maximum_health)
+	return true

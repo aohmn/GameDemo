@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_map"]
 [ext_resource type="Script" path="res://world/map/player_controller.gd" id="2_player"]
 [ext_resource type="Script" path="res://world/map/virtual_joystick.gd" id="3_joystick"]
 [ext_resource type="Script" path="res://world/map/characters/player_visual.gd" id="4_visual"]
 [ext_resource type="Script" path="res://world/map/player_hud.gd" id="5_hud"]
+[ext_resource type="Script" path="res://world/map/characters/player_needs.gd" id="6_needs"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
 radius = 0.35
@@ -28,6 +29,9 @@ script = ExtResource("2_player")
 position = Vector3(0, 0.9, 0)
 shape = SubResource("CapsuleShape_Player")
 
+[node name="Needs" type="Node" parent="Player"]
+script = ExtResource("6_needs")
+
 [node name="VisualRoot" type="Node3D" parent="Player"]
 script = ExtResource("4_visual")
 
@@ -50,8 +54,8 @@ layer = 1
 anchors_preset = 0
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 260.0
-offset_bottom = 94.0
+offset_right = 292.0
+offset_bottom = 232.0
 script = ExtResource("5_hud")
 
 [node name="Joystick" type="Control" parent="HUD"]
