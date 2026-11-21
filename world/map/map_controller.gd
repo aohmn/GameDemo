@@ -4,9 +4,7 @@ class_name Map3DController
 const WORLD_SIZE := 300.0
 const TRAVEL_META_KEY := "projectgame_spawn_point_id"
 
-const MINIMAP_SCRIPT: Script = preload("res://world/map/minimap.gd")
 const SURFACE_SHADER: Shader = preload("res://world/map/shaders/procedural_surface.gdshader")
-const NPC_DIRECTOR_SCRIPT: Script = preload("res://modules/npc/npc_director.gd")
 
 @export var map_type: String = "residential"
 @export_file("*.tscn") var destination_scene_path: String = ""
@@ -36,15 +34,17 @@ func _ready() -> void:
 	_build_world_boundaries()
 
 	_apply_spawn()
-	if map_type == "residential":
-		var npc_director := Node3D.new()
-		npc_director.set_script(NPC_DIRECTOR_SCRIPT)
-		npc_director.name = "NPCDirector"
-		add_child(npc_director)
 
-	_build_minimap()
+	# NPC và Minimap là node độc lập trong scene; MapController không khởi tạo
+	# hoặc điều khiển logic của hai module này.
+	EventBus.subscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
 
 	print("[World] Continuous world loaded.")
+
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
 
 
 # --------------------------------------------------
@@ -771,27 +771,12 @@ func _apply_spawn() -> void:
 	)
 
 
-# --------------------------------------------------
-# MINIMAP
-# --------------------------------------------------
-
-func _build_minimap() -> void:
-	var hud := get_node_or_null("HUD") as CanvasLayer
-	if hud == null:
-		push_warning("[World] HUD not found. Minimap skipped.")
+func _on_player_recovery_requested(payload: Dictionary) -> void:
+	var requester: Variant = payload.get("player")
+	if not (requester is Node3D) or requester != player:
 		return
-
-	var minimap := Control.new()
-	minimap.name = "WorldMinimap"
-	minimap.set_script(MINIMAP_SCRIPT)
-	minimap.set("player", player)
-	minimap.set("map_type", "open_world")
-
-	minimap.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	minimap.offset_left = -176.0
-	minimap.offset_top = 16.0
-	minimap.offset_right = -16.0
-	minimap.offset_bottom = 176.0
-	minimap.z_index = 100
-
-	hud.add_child(minimap)
+	if not player.has_method("recover_to"):
+		push_warning("[World] Player thiếu API recover_to().")
+		return
+	player.call("recover_to", local_spawn_position)
+	print("[Player] Recovered after falling.")

@@ -29,14 +29,17 @@ Ngoại lệ texture: xem `docs/decisions/0001-player-sprite.md`.
 - Export: `character_height_px`, `world_height_m`, `ground_clearance_m`.
 
 ## Event
-Không phát và không nhận Event.
+Nhận `PlayerEvents.MOTION_CHANGED` (payload `{ "velocity": Vector2 }`) và gọi
+`set_motion`. Không phát event.
 
 ## Dependencies
-Không phụ thuộc module gameplay. `world/map/player_controller.gd` tìm node
-con tên `Visual` (và `VisualRoot` để ẩn) và gọi `set_motion` nếu có (không phụ thuộc cứng).
+Không phụ thuộc module gameplay. `PlayerController` không giữ tham chiếu tới
+sprite; node chỉ subscribe event của Player.
 
 ## Tích hợp
 Thêm instance `player_sprite.tscn` làm con tên `Visual` của node Player.
+Sprite tự đăng ký `PlayerEvents.MOTION_CHANGED`; `PlayerController` không
+tham chiếu node này.
 Có `Visual` thì `VisualRoot` (nhân vật 3D primitive) tự ẩn và tắt xử lý; không bị xóa, dùng làm dự phòng.
 
 ## Tái tạo atlas

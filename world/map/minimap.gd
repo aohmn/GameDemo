@@ -1,19 +1,23 @@
 extends Control
 class_name WorldMinimap
 
-var player: Node3D
 var map_type: String = "open_world"
 
 const WORLD_HALF_SIZE := 150.0
 const MINI_SIZE := 144.0
 const MAP_ZOOM_MIN := 1.0
 const MAP_ZOOM_MAX := 4.0
-const NAVIGATION_SERVICE: Script = preload("res://world/navigation/navigation_service.gd")
 
 var _world_map_open := false
 var _waypoint := Vector3.ZERO
 var _has_waypoint := false
 var _route: PackedVector3Array = PackedVector3Array()
+
+var _player_position := Vector3.ZERO
+var _has_player_position := false
+var _npc_positions: Array[Dictionary] = []
+var _route_request_serial: int = 0
+var _pending_route_request: int = 0
 
 var _map_zoom := 1.0
 var _map_pan := Vector2.ZERO
@@ -37,6 +41,10 @@ func _ready() -> void:
 	clip_contents = true
 	process_mode = Node.PROCESS_MODE_INHERIT
 
+	EventBus.subscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
+	EventBus.subscribe(WorldEvents.NPC_POSITIONS_CHANGED, _on_npc_positions_changed)
+	EventBus.subscribe(WorldEvents.ROUTE_READY, _on_route_ready)
+
 	# Lưu layout minimap để khôi phục sau khi đóng bản đồ lớn.
 	_mini_anchors = Vector4(
 		anchor_left,
@@ -52,6 +60,13 @@ func _ready() -> void:
 	)
 
 
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
+		EventBus.unsubscribe(WorldEvents.NPC_POSITIONS_CHANGED, _on_npc_positions_changed)
+		EventBus.unsubscribe(WorldEvents.ROUTE_READY, _on_route_ready)
+
+
 func _set_world_map_open(is_open: bool) -> void:
 	_world_map_open = is_open
 	if not is_open:
@@ -62,6 +77,7 @@ func _set_world_map_open(is_open: bool) -> void:
 		_map_zoom = 1.0
 		_map_pan = Vector2.ZERO
 		_route.clear()
+		_pending_route_request = 0
 
 	if is_open:
 		# Mở rộng Control phủ toàn bộ viewport.
@@ -273,8 +289,62 @@ func _handle_full_map_tap(position: Vector2) -> void:
 	_waypoint = Vector3(world_position.x, 0.0, world_position.y)
 	_has_waypoint = true
 	_route.clear()
-	if is_instance_valid(player):
-		_route = NAVIGATION_SERVICE.find_route(player.global_position, _waypoint)
+	_route_request_serial += 1
+	_pending_route_request = _route_request_serial
+
+	if _has_player_position:
+		EventBus.emit_event(WorldEvents.ROUTE_REQUESTED, {
+			"request_id": _pending_route_request,
+			"start": _player_position,
+			"destination": _waypoint
+		})
+	else:
+		_pending_route_request = 0
+	queue_redraw()
+
+
+func _on_player_position_changed(payload: Dictionary) -> void:
+	var position_value: Variant = payload.get("position")
+	if position_value is Vector3:
+		_player_position = position_value
+		_has_player_position = true
+
+
+func _on_npc_positions_changed(payload: Dictionary) -> void:
+	var entries_value: Variant = payload.get("npcs")
+	if not (entries_value is Array):
+		return
+	var entries: Array[Dictionary] = []
+	for entry: Variant in entries_value:
+		if not (entry is Dictionary):
+			continue
+		var position_value: Variant = (entry as Dictionary).get("position")
+		if position_value is Vector3:
+			entries.append({
+				"id": str((entry as Dictionary).get("id", "")),
+				"position": position_value
+			})
+	_npc_positions = entries
+
+
+func _on_route_ready(payload: Dictionary) -> void:
+	var request_id_value: Variant = payload.get("request_id", 0)
+	if typeof(request_id_value) != TYPE_INT and typeof(request_id_value) != TYPE_FLOAT:
+		return
+	if int(request_id_value) != _pending_route_request or _pending_route_request == 0:
+		return
+	_pending_route_request = 0
+	var route_value: Variant = payload.get("route")
+	if route_value is PackedVector3Array:
+		_route = route_value
+	elif route_value is Array:
+		var converted := PackedVector3Array()
+		for point: Variant in route_value:
+			if point is Vector3:
+				converted.append(point)
+		_route = converted
+	else:
+		_route.clear()
 	queue_redraw()
 
 
@@ -364,17 +434,18 @@ func _draw_minimap() -> void:
 		4.0
 	)
 
-	if is_instance_valid(player):
+	if _has_player_position:
 		draw_circle(center, 5.0, Color.WHITE)
 		draw_circle(center, 3.2, Color(1.0, 0.35, 0.08))
 
-	for npc_node in get_tree().get_nodes_in_group("npc"):
-		var npc := npc_node as Node3D
-		if npc == null:
+	for npc_entry: Dictionary in _npc_positions:
+		var npc_position_value: Variant = npc_entry.get("position")
+		if not (npc_position_value is Vector3):
 			continue
+		var npc_position := npc_position_value as Vector3
 		var npc_point := _world_to_minimap(
-			npc.global_position.x,
-			npc.global_position.z
+			npc_position.x,
+			npc_position.z
 		)
 		if map_rect.has_point(npc_point):
 			draw_circle(npc_point, 4.5, Color(0.15, 0.9, 1.0))
@@ -504,27 +575,28 @@ func _draw_full_map() -> void:
 			var route_end: Vector3 = _route[route_index + 1]
 			_draw_map_line(map_rect, scale_x, scale_y, Vector2(route_start.x, route_start.z), Vector2(route_end.x, route_end.z), Color(1.0, 0.78, 0.20), maxf(2.5, scale_x * 2.5))
 
-	if is_instance_valid(player):
+	if _has_player_position:
 		var player_point := _world_to_full_map(
 			map_rect,
 			scale_x,
 			scale_y,
-			player.global_position.x,
-			player.global_position.z
+			_player_position.x,
+			_player_position.z
 		)
 		draw_circle(player_point, 7.0, Color.WHITE)
 		draw_circle(player_point, 4.5, Color(1.0, 0.35, 0.08))
 
-	for npc_node in get_tree().get_nodes_in_group("npc"):
-		var npc := npc_node as Node3D
-		if npc == null:
+	for npc_entry: Dictionary in _npc_positions:
+		var npc_position_value: Variant = npc_entry.get("position")
+		if not (npc_position_value is Vector3):
 			continue
+		var npc_position := npc_position_value as Vector3
 		var npc_point := _world_to_full_map(
 			map_rect,
 			scale_x,
 			scale_y,
-			npc.global_position.x,
-			npc.global_position.z
+			npc_position.x,
+			npc_position.z
 		)
 		if map_rect.has_point(npc_point):
 			draw_circle(
@@ -650,13 +722,13 @@ func _screen_to_local(screen_position: Vector2) -> Vector2:
 
 
 func _world_to_minimap(world_x: float, world_z: float) -> Vector2:
-	if not is_instance_valid(player):
-		return Vector2(size.x * 0.5, size.y * 0.57)
-
 	var center := Vector2(size.x * 0.5, size.y * 0.57)
+	if not _has_player_position:
+		return center
+
 	var relative := Vector2(
-		world_x - player.global_position.x,
-		world_z - player.global_position.z
+		world_x - _player_position.x,
+		world_z - _player_position.z
 	)
 
 	return center + relative * (MINI_SIZE / (WORLD_HALF_SIZE * 2.0))

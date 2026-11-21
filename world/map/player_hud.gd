@@ -7,10 +7,8 @@ const HEALTH_LOW_COLOR := Color(0.88, 0.22, 0.16)
 const HUNGER_COLOR := Color(0.91, 0.62, 0.22)
 const THIRST_COLOR := Color(0.25, 0.66, 0.90)
 const ENERGY_COLOR := Color(0.72, 0.62, 0.88)
+const WEEKDAY_NAMES: Array[String] = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
 
-var _player: CharacterBody3D
-var _needs: Node
-var _clock_accumulator: float = 0.0
 var _health_ratio: float = 1.0
 var _health_text: String = "100 / 100"
 var _hunger: float = 100.0
@@ -22,20 +20,24 @@ var _day_text: String = "Thứ Hai"
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_player = get_tree().get_first_node_in_group("player") as CharacterBody3D
-	if is_instance_valid(_player):
-		if _player.has_signal("health_changed"):
-			_player.connect("health_changed", _on_health_changed)
-			_on_health_changed(float(_player.get("current_health")), float(_player.get("maximum_health")))
-		_needs = _player.get_node_or_null("Needs")
-		if is_instance_valid(_needs):
-			_needs.connect("needs_changed", _on_needs_changed)
-			var state_value: Variant = _needs.call("get_state")
-			if state_value is Dictionary:
-				_on_needs_changed(float(state_value.get("hunger", 100.0)), float(state_value.get("thirst", 100.0)), float(state_value.get("energy", 100.0)))
+
+	EventBus.subscribe(PlayerEvents.HEALTH_CHANGED, _on_health_changed)
+	EventBus.subscribe(PlayerEvents.NEEDS_CHANGED, _on_needs_changed)
+	EventBus.subscribe(CoreEvents.HOUR_CHANGED, _on_hour_changed)
+
 	_create_action_buttons()
-	_update_clock()
+
+	# UI mới khởi tạo yêu cầu các module phát lại trạng thái hiện tại.
+	EventBus.emit_event(PlayerEvents.STATE_SNAPSHOT_REQUESTED)
+	EventBus.emit_event(CoreEvents.TIME_SNAPSHOT_REQUESTED)
 	queue_redraw()
+
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(PlayerEvents.HEALTH_CHANGED, _on_health_changed)
+		EventBus.unsubscribe(PlayerEvents.NEEDS_CHANGED, _on_needs_changed)
+		EventBus.unsubscribe(CoreEvents.HOUR_CHANGED, _on_hour_changed)
 
 
 func _create_action_buttons() -> void:
@@ -66,48 +68,63 @@ func _create_action_buttons() -> void:
 	rest_button.pressed.connect(_on_rest_pressed)
 	add_child(rest_button)
 
+
 func _on_eat_pressed() -> void:
-	if is_instance_valid(_needs):
-		_needs.call("consume_food", 35.0)
+	EventBus.emit_event(PlayerEvents.NEEDS_ACTION_REQUESTED, {
+		"action": "eat",
+		"amount": 35.0
+	})
 
 
 func _on_drink_pressed() -> void:
-	if is_instance_valid(_needs):
-		_needs.call("drink_water", 40.0)
+	EventBus.emit_event(PlayerEvents.NEEDS_ACTION_REQUESTED, {
+		"action": "drink",
+		"amount": 40.0
+	})
 
 
 func _on_rest_pressed() -> void:
-	if is_instance_valid(_needs):
-		_needs.call("rest", 60)
+	EventBus.emit_event(PlayerEvents.NEEDS_ACTION_REQUESTED, {
+		"action": "rest",
+		"amount": 60.0
+	})
 
 
-func _process(delta: float) -> void:
-	_clock_accumulator += delta
-	if _clock_accumulator >= 0.25:
-		_clock_accumulator = 0.0
-		_update_clock()
-		queue_redraw()
-
-
-func _on_health_changed(current_health: float, maximum_health: float) -> void:
-	var safe_maximum: float = maxf(1.0, maximum_health)
-	var safe_current: float = clampf(current_health, 0.0, safe_maximum)
+func _on_health_changed(payload: Dictionary) -> void:
+	var current_value: Variant = payload.get("current")
+	var maximum_value: Variant = payload.get("maximum")
+	if not _is_number(current_value) or not _is_number(maximum_value):
+		return
+	var safe_maximum: float = maxf(1.0, float(maximum_value))
+	var safe_current: float = clampf(float(current_value), 0.0, safe_maximum)
 	_health_ratio = safe_current / safe_maximum
 	_health_text = "%d / %d" % [roundi(safe_current), roundi(safe_maximum)]
 	queue_redraw()
 
 
-func _on_needs_changed(hunger: float, thirst: float, energy: float) -> void:
-	_hunger = clampf(hunger, 0.0, 100.0)
-	_thirst = clampf(thirst, 0.0, 100.0)
-	_energy = clampf(energy, 0.0, 100.0)
+func _on_needs_changed(payload: Dictionary) -> void:
+	var hunger_value: Variant = payload.get("hunger")
+	var thirst_value: Variant = payload.get("thirst")
+	var energy_value: Variant = payload.get("energy")
+	if not _is_number(hunger_value) or not _is_number(thirst_value) or not _is_number(energy_value):
+		return
+	_hunger = clampf(float(hunger_value), 0.0, 100.0)
+	_thirst = clampf(float(thirst_value), 0.0, 100.0)
+	_energy = clampf(float(energy_value), 0.0, 100.0)
 	queue_redraw()
 
 
-func _update_clock() -> void:
-	_time_text = "%02d:%02d" % [GameClock.get_hour(), GameClock.get_minute()]
-	var weekday_names: Array[String] = ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"]
-	_day_text = weekday_names[int(GameClock.get_weekday())]
+func _on_hour_changed(payload: Dictionary) -> void:
+	var hour_value: Variant = payload.get("hour")
+	var minute_value: Variant = payload.get("minute")
+	var weekday_value: Variant = payload.get("weekday")
+	if not _is_number(hour_value) or not _is_number(minute_value) or not _is_number(weekday_value):
+		return
+	_time_text = "%02d:%02d" % [int(hour_value), int(minute_value)]
+	var weekday_index: int = int(weekday_value)
+	if weekday_index >= 0 and weekday_index < WEEKDAY_NAMES.size():
+		_day_text = WEEKDAY_NAMES[weekday_index]
+	queue_redraw()
 
 
 func _draw_bar(position: Vector2, width: float, value: float, color: Color, label_text: String) -> void:
@@ -136,3 +153,7 @@ func _draw() -> void:
 	_draw_bar(Vector2(76.0, 78.0), 184.0, _thirst, THIRST_COLOR, "KHÁT  %d%%" % roundi(_thirst))
 	_draw_bar(Vector2(76.0, 108.0), 184.0, _energy, ENERGY_COLOR, "NĂNG LƯỢNG  %d%%" % roundi(_energy))
 	draw_string(ThemeDB.fallback_font, Vector2(16.0, 146.0), _time_text + "  ·  " + _day_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12, Color(1.0, 0.86, 0.58))
+
+
+static func _is_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT

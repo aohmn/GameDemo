@@ -4,14 +4,10 @@ extends Node
 signal balance_changed(new_balance_vnd: int)
 
 const SAVE_VERSION: int = 1
+const SAVE_ID: String = "player_economy"
 const STARTING_BALANCE_VND: int = 250000
 
-@export var save_id: String = "player_economy"
 var balance_vnd: int = STARTING_BALANCE_VND
-
-
-func _ready() -> void:
-	add_to_group("save_participant")
 
 
 func can_afford(amount_vnd: int) -> bool:

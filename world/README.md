@@ -528,11 +528,13 @@ Tài liệu này là hợp đồng kiến trúc tổng thể của World System.
 
 ## Navigation Foundation — route preview
 
-The `world/navigation/` module contains an AStar2D road-graph foundation.
+The `world/navigation/` module contains an AStar2D road-graph foundation and
+runs as the autoload `WorldNavigation`.
 
-- `navigation_service.gd` builds a graph from the configured road intersections.
-- `find_route(start_position, destination)` returns world-space route points.
+- `navigation_service.gd` (autoload `WorldNavigation`) builds a graph from the configured road intersections.
+- Modules request a route with `WorldEvents.ROUTE_REQUESTED` and receive `WorldEvents.ROUTE_READY`; there is no direct function call.
 - `world/map/minimap.gd` requests a route when the player selects a waypoint.
+- NPCs request routes through the same events.
 - The full map draws the returned route and reports whether a route was found.
 
 This is visual route preview only. It does not move the player automatically,

@@ -28,13 +28,17 @@ thôn bao quanh. Thế giới được mở rộng dần theo từng giai đoạ
 - Hỗ trợ kéo bản đồ bằng một ngón tay.
 - Chạm vị trí để đặt waypoint; bản đồ giữ trạng thái mở để xem vị trí.
 - Waypoint được giữ khi đóng và mở lại bản đồ.
+- Preview tuyến đường qua `WorldNavigation` (event-based) khi chọn waypoint.
+- Minimap nhận vị trí Player/NPC qua `WorldEvents`, không đọc node Player hay
+  `NPCDirector`.
+- NPC và Minimap là node độc lập trong scene; `Map3DController` không tạo hay
+  điều khiển logic của chúng.
 
 ### Chưa triển khai
 
 - Chunk streaming và giải phóng khu vực xa.
 - Dữ liệu Region/District/Location độc lập.
-- Navigation pathfinding giữa các địa điểm.
-- Tuyến đường thực tế trên bản đồ.
+- Player tự động đi theo tuyến (hiện chỉ preview).
 - Hệ thống POI và bộ lọc địa điểm.
 - NPC streaming và mô phỏng theo khoảng cách.
 - Lưu waypoint qua SaveCoordinator.
@@ -54,8 +58,8 @@ Không xem các mục chưa triển khai là tính năng đã hoàn thành.
 
 `map_root.tscn` là điểm khởi đầu của thế giới liên tục.
 
-`fishing_lake_map.tscn` hiện được giữ lại làm scene prototype cũ,
-không còn là đích chuyển scene trong luồng thế giới chính.
+`fishing_lake_map.tscn` kế thừa `map_root.tscn`, đổi cấu hình map và tắt NPC
+bằng `spawn_enabled = false`; không cần MapController tạo hoặc gỡ NPC.
 
 ## 4. Quy tắc thế giới
 
@@ -125,10 +129,14 @@ Chunk Manager không sở hữu logic NPC, Economy hoặc Inventory.
 
 - Minimap hiển thị hướng Bắc cố định.
 - Bản đồ toàn màn hình hiển thị phạm vi thế giới hiện tại.
-- Vị trí Player lấy từ Player Node.
+- Vị trí Player nhận qua `WorldEvents.PLAYER_POSITION_CHANGED` do Player phát,
+  không đọc trực tiếp node Player.
+- Danh sách NPC nhận qua `WorldEvents.NPC_POSITIONS_CHANGED` do `NPCDirector`
+  phát, không giữ tham chiếu tới director.
 - Waypoint chỉ là điểm đến được đánh dấu.
 - Chọn waypoint không tự dịch chuyển Player.
-- Tuyến đường chỉ được hiển thị khi Navigation cung cấp dữ liệu đường đi.
+- Tuyến đường lấy qua `WorldEvents.ROUTE_REQUESTED`/`ROUTE_READY`; minimap chỉ
+  vẽ khi `WorldNavigation` trả dữ liệu đường đi.
 
 Hiện tại waypoint chỉ là dữ liệu tạm trong runtime, chưa lưu qua Save.
 
@@ -162,8 +170,8 @@ Tuân thủ AGENTS.md:
 Đây là prototype thế giới liên tục quy mô nhỏ, không phải bản đồ
 thành phố hoàn chỉnh.
 
-Chưa có Chunk Streaming, Navigation routing, Location Registry,
-NPC simulation streaming hoặc kiểm thử hiệu năng dài hạn.
+Chưa có Chunk Streaming, Location Registry, NPC simulation streaming hoặc kiểm
+thử hiệu năng dài hạn. Navigation chỉ là preview tuyến đường, chưa tự dẫn Player.
 
 Không tuyên bố hoàn thành các hệ thống trên cho đến khi có mã nguồn
 và kết quả kiểm thử thực tế.
@@ -189,9 +197,13 @@ Zoom được giới hạn từ 1x đến 4x. Waypoint được giữ trong runt
 - Kênh nước trên bản đồ dùng đúng tọa độ `x = 25`.
 - Cụm cây khu dân cư đặt ngoài mép vỉa hè; nhà gần giao lộ được lùi khỏi đường ngang.
 - `PlayerHUD` hiển thị avatar hình học, thanh sức khỏe, giờ và thứ trong tuần.
-- Đồng hồ UI chỉ đọc `GameClock`; không tự quản lý hoặc tăng thời gian.
-- `Player3DController` cung cấp `apply_damage()` và `restore_health()` cùng signal `health_changed`.
-- Máu hiện là trạng thái runtime của Player, chưa được tích hợp SaveCoordinator hoặc hệ thống chiến đấu.
+- HUD nhận giờ qua `CoreEvents.HOUR_CHANGED`; khi khởi tạo phát
+  `CoreEvents.TIME_SNAPSHOT_REQUESTED` để GameClock trả lại giờ hiện tại. HUD
+  không giữ tham chiếu tới GameClock.
+- `Player3DController` cung cấp `apply_damage()` và `restore_health()`, phát
+  signal `health_changed` và `PlayerEvents.HEALTH_CHANGED`.
+- Máu hiện là trạng thái runtime của Player, chưa được tích hợp hệ thống chiến
+  đấu; save Player đã đăng ký qua SaveCoordinator.
 
 ### Kiểm tra trên Godot Android
 
@@ -208,12 +220,16 @@ Chưa có kết quả chạy thực tế trên Godot Android cho lần cập nh�
 
 - `characters/player_needs.gd` quản lý đói, khát, năng lượng.
 - Tốc độ tiêu hao tính theo số phút tăng trong `GameClock`, không theo thời gian thực.
-- UI đọc qua `needs_changed`; API ăn/uống/nghỉ thuộc module Needs.
-- `SaveCoordinator` lưu Player và Needs thông qua group `save_participant`.
+- Needs phát `PlayerEvents.NEEDS_CHANGED`; nhận `PlayerEvents.NEEDS_ACTION_REQUESTED`
+  từ HUD. Không module nào truy cập trực tiếp node Needs.
+- Needs yêu cầu Player trừ máu qua `PlayerEvents.HEALTH_DAMAGE_REQUESTED`.
+- `SaveCoordinator` lưu Player và Needs qua đăng ký participant độc lập
+  (`register_participant`), không dùng group `save_participant`.
 - Map controller tái sử dụng BoxMesh, mesh cây và ShaderMaterial theo cache để giảm tạo tài nguyên trùng lặp.
 - Minimap giới hạn redraw xuống 20 lần/giây thay vì redraw mỗi frame.
 - Minimap đổi tọa độ touch từ viewport sang local Control trước khi pan, zoom hoặc đặt waypoint.
-- Waypoint gọi `NavigationService.find_route()` và vẽ preview khi có đường.
+- Waypoint phát `WorldEvents.ROUTE_REQUESTED` và vẽ preview khi `WorldNavigation`
+  trả `ROUTE_READY`.
 
 ### Two-finger minimap gesture
 - Hỗ trợ vừa dịch chuyển bản đồ vừa pinch zoom bằng hai ngón.

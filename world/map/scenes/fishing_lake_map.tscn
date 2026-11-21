@@ -9,3 +9,6 @@ destination_name = "Khu dân cư"
 destination_spawn_point_id = &"residential_entry"
 local_spawn_point_id = &"lake_entry"
 local_spawn_position = Vector3(0, 0.05, 22)
+
+[node name="NPCDirector" parent="." index="1"]
+spawn_enabled = false

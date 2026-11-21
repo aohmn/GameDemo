@@ -2,6 +2,7 @@ extends Control
 
 var _direction := Vector2.ZERO
 var _touch_index := -1
+var _last_emitted_direction := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -39,6 +40,7 @@ func _input(event: InputEvent) -> void:
 			if touch.index == _touch_index:
 				_touch_index = -1
 				_direction = Vector2.ZERO
+				_emit_direction()
 				queue_redraw()
 				get_viewport().set_input_as_handled()
 
@@ -61,7 +63,18 @@ func _update_direction(local_position: Vector2) -> void:
 	else:
 		_direction = Vector2.ZERO
 
+	_emit_direction()
 	queue_redraw()
+
+
+## Phát hướng điều khiển cho Player qua EventBus; không giữ tham chiếu Player.
+func _emit_direction() -> void:
+	if _direction.is_equal_approx(_last_emitted_direction):
+		return
+	_last_emitted_direction = _direction
+	EventBus.emit_event(PlayerEvents.MOVE_INPUT_CHANGED, {
+		"direction": _direction
+	})
 
 
 func _draw() -> void:

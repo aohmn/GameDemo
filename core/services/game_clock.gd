@@ -14,11 +14,25 @@ const MAX_SPEED: float = 600.0
 const MAX_MINUTES_PER_FRAME: int = 120
 const MAX_TOTAL_MINUTES: int = 1000000000
 const SAVE_VERSION: int = 1
+const SAVE_ID: String = "game_clock"
 
 var _total_minutes: int = START_TOTAL_MINUTES
 var _speed: float = DEFAULT_SPEED
 var _paused: bool = false
 var _accumulator: float = 0.0
+
+
+func _ready() -> void:
+	EventBus.subscribe(CoreEvents.TIME_SNAPSHOT_REQUESTED, _on_time_snapshot_requested)
+
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(CoreEvents.TIME_SNAPSHOT_REQUESTED, _on_time_snapshot_requested)
+
+
+func _on_time_snapshot_requested(_payload: Dictionary) -> void:
+	EventBus.emit_event(CoreEvents.HOUR_CHANGED, _build_payload(0))
 
 
 func _process(delta: float) -> void:
@@ -105,6 +119,15 @@ func deserialize(data: Dictionary) -> bool:
 	_total_minutes = total
 	_accumulator = 0.0
 	return true
+
+
+## API participant cho SaveCoordinator (tên chuẩn dùng chung).
+func serialize_state() -> Dictionary:
+	return serialize()
+
+
+func deserialize_state(data: Dictionary) -> bool:
+	return deserialize(data)
 
 
 func _build_payload(elapsed_minutes: int) -> Dictionary:

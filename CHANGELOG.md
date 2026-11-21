@@ -1,3 +1,35 @@
+## Tách phụ thuộc module (Minimap, NPC, MapController, Player/HUD, Save)
+
+- Thêm `core/contracts/player_events.gd` (`PlayerEvents`) và
+  `core/contracts/world_events.gd` (`WorldEvents`) làm hợp đồng sự kiện dùng chung.
+- Thêm `modules/jobs/job_events.gd` (`JobEvents`) và autoload `JobSystem`:
+  đọc `GameClock`/`JobService` rồi phát lịch qua `SCHEDULE_CHANGED`; NPC không
+  còn gọi trực tiếp các module này.
+- Chuyển `NavigationService` thành autoload `WorldNavigation`, giao tiếp bằng
+  `ROUTE_REQUESTED`/`ROUTE_READY` thay vì gọi hàm trực tiếp. Vẫn dùng
+  pathfinding `AStar2D` thật, không fallback đi thẳng.
+- NPC: nhận lịch và tuyến đường qua event, nhận vị trí Player qua
+  `PLAYER_POSITION_CHANGED`, phát `NPC_POSITIONS_CHANGED`. Bỏ đọc
+  `GameClock`, `JobService`, `NavigationService`, `ShopService`.
+- Minimap: nhận vị trí Player/NPC và tuyến đường qua event; bỏ tham chiếu
+  `Player`, `NPCDirector`, `NavigationService`.
+- MapController: không còn tạo/điều khiển NPC hay Minimap; NPC và Minimap là
+  node độc lập trong `map_root.tscn`. `fishing_lake_map.tscn` tắt NPC bằng
+  `spawn_enabled = false`.
+- PlayerController/HUD/Needs/Joystick/Visual/Sprite giao tiếp qua `PlayerEvents`
+  và `CoreEvents`; Player không còn truy cập node Needs/Visual/Joystick.
+- Player phát `PLAYER_RECOVERY_REQUESTED`; MapController gọi `Player.recover_to()`
+  thay vì Player đọc nội bộ MapController.
+- SaveCoordinator: bỏ quét group `save_participant` và phụ thuộc GameClock;
+  thêm `register_participant(save_id, participant)` / `unregister_participant`.
+  Save version 2 dùng section `participants`; version 1 được migrate từ section
+  `clock` sang participant `game_clock`.
+- Cập nhật `project.godot` (autoload `JobSystem`, `WorldNavigation`) và tài liệu:
+  `core/contracts/README.md`, `core/events/README.md`, `core/services/README.md`,
+  README các module liên quan, `docs/architecture/module_dependency_survey.md`.
+- Đã kiểm tra cú pháp toàn bộ `.gd` bằng `gdparse` và grep toàn repo; chưa mở
+  Godot Android nên **chưa xác nhận parser/runtime trên thiết bị**.
+
 ## World Map: Two-finger pan and zoom fix
 - Sửa thao tác hai ngón: cập nhật vị trí tâm bản đồ theo chuyển động của hai ngón đồng thời với pinch zoom.
 - Giữ nguyên kéo một ngón, giới hạn zoom và giới hạn pan.

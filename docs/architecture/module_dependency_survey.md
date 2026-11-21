@@ -1,37 +1,83 @@
-# Module Dependency Survey (Phase 0)
+# Module Dependency Survey
+
+Cập nhật theo mã nguồn hiện tại. Mục tiêu: module không gọi trực tiếp module
+gameplay khác; giao tiếp qua EventBus hoặc API được đăng ký.
 
 ## Autoloads (project.godot)
-- EventBus, GameClock, SaveCoordinator, EconomyService.
+Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
+`SaveCoordinator`, `EconomyService`.
 
-## Modules
-Player, NPC (Director/Agent/Profile), Needs (component), Economy, Jobs, Shops, Navigation, World/Map controller, Minimap, PlayerHUD, Save.
+- `EventBus` — phát/nhận sự kiện.
+- `GameClock` — nguồn thời gian duy nhất.
+- `JobSystem` — đọc GameClock/JobService, phát lịch qua `JobEvents`.
+- `WorldNavigation` — nhận `ROUTE_REQUESTED`, phát `ROUTE_READY`.
+- `SaveCoordinator` — điều phối participant đăng ký độc lập.
+- `EconomyService` — nguồn số dư VND.
 
-## Dependency graph (direct)
-- NPCDirector preloads NPCAgent; accesses parent Player; calls ShopService.get_goods(); group save.
-- NPCAgent calls JobService.get_activity, NavigationService.find_route, GameClock.
-- Minimap preloads NavigationService; holds npc_director ref; reads Player.
-- Map3DController preloads Minimap, SurfaceShader, NPCDirector; builds world; sets minimap npc_director.
-- PlayerController accesses joystick via get_node; Needs via get_node; visual via get_node.
-- PlayerHUD accesses map_root Player and Needs via get_node.
-- SaveCoordinator iterates save_participant group and calls serialize/deserialize.
+## Modules và contract sở hữu
+- Core: `core/events` (`CoreEvents`, EventBus), `core/contracts`
+  (`PlayerEvents`, `WorldEvents`), `core/services` (GameClock, SaveCoordinator).
+- Player: `player_controller.gd` (sở hữu health/movement, dùng `PlayerEvents`).
+- Needs: `player_needs.gd` (dùng `PlayerEvents`).
+- Visual/Sprite: `player_visual.gd`, `player_sprite.gd` (subscribe
+  `PlayerEvents.MOTION_CHANGED`).
+- HUD/Joystick: `player_hud.gd`, `virtual_joystick.gd` (dùng `PlayerEvents` +
+  `CoreEvents`).
+- NPC: `npc_director.gd`, `npc_agent.gd` (dùng `JobEvents`, `WorldEvents`).
+- Jobs: `job_service.gd`, `job_events.gd`, `job_system.gd` (autoload).
+- Navigation: `navigation_service.gd` (autoload `WorldNavigation`, dùng
+  `WorldEvents`).
+- World/Map: `map_controller.gd` (dựng địa hình, xử lý recovery qua
+  `WorldEvents.PLAYER_RECOVERY_REQUESTED`).
+- Minimap: `minimap.gd` (dùng `WorldEvents`).
+- Economy: `economy_service.gd` (save qua `SAVE_ID`).
 
-## Cross-module violations
-- NPC -> Jobs, Navigation, Shop, GameClock (direct calls).
-- Minimap -> Player, NPCDirector (direct refs).
-- MapController -> NPCDirector (preload/instantiation), Minimap.
-- PlayerHUD -> Player/Needs.
-- PlayerController -> Needs/Visual/Joystick.
+## Dependency graph (hiện tại)
+- Player → `PlayerEvents`, `WorldEvents`, `SaveCoordinator` (API đăng ký).
+- Needs → `GameClock`, `PlayerEvents`, `SaveCoordinator` (API đăng ký).
+- Visual/Sprite → `PlayerEvents` (chỉ nhận), EventBus.
+- HUD → `PlayerEvents`, `CoreEvents` (chỉ event).
+- Joystick → `PlayerEvents` (chỉ phát).
+- NPCDirector → `JobEvents` (nhận), `WorldEvents` (nhận/phát),
+  `SaveCoordinator` (API đăng ký).
+- LifeNPC → `WorldEvents` (ROUTE_REQUESTED/ROUTE_READY), EventBus.
+- JobSystem → `GameClock`, `JobService`, `JobEvents`, `CoreEvents`.
+- WorldNavigation → `WorldEvents`, `AStar2D`.
+- MapController → `WorldEvents` (recovery), preload shader của chính nó.
+- Minimap → `WorldEvents` (vị trí Player/NPC, tuyến đường).
+- EconomyService → `SaveCoordinator` (đăng ký bởi Bootstrap).
 
-## Proposed phases
-1. Survey done.
-2. Core contracts & events.
-3. Decouple NPC.
-4. Decouple Minimap.
-5. Split MapController responsibilities.
-6. Standardize Player/Needs/Economy/Inventory/Jobs/Shops/Social.
-7. Navigation/World.
-8. Save/Load.
-9. Verification.
+## Điểm đã tách khỏi phụ thuộc trực tiếp
+- NPC không còn gọi `JobService`, `NavigationService`, `GameClock`,
+  `ShopService`; lịch đi qua `JobSystem`/`JobEvents`, tuyến đi qua
+  `WorldNavigation`.
+- Minimap không còn tham chiếu `Player` hay `NPCDirector`; nhận vị trí qua
+  `WorldEvents`.
+- MapController không còn preload/tạo `NPCDirector` hay `Minimap`; hai module là
+  node độc lập trong scene.
+- PlayerController không còn truy cập `Needs`, `Visual`, `Joystick` qua node
+  path; dùng `PlayerEvents`.
+- PlayerHUD không còn đọc node Player/Needs; dùng event.
+- SaveCoordinator không còn quét group `save_participant` hay tham chiếu
+  GameClock; dùng `register_participant(save_id, participant)` và migrate save
+  v1 (`clock` → participant `game_clock`).
 
-## Notes
-No implementation yet. Awaiting approval.
+## Contract công khai
+- `core/contracts/player_events.gd` — `PlayerEvents`.
+- `core/contracts/world_events.gd` — `WorldEvents`.
+- `modules/jobs/job_events.gd` — `JobEvents`.
+- `core/events/core_events.gd` — `CoreEvents`.
+- `core/services/save_coordinator.gd` — API participant.
+
+## Giới hạn còn lại
+- `player_needs.gd` vẫn đọc `GameClock` trực tiếp (module Needs dùng thời gian
+  chung; đây là phụ thuộc Core, không phải module gameplay).
+- HUD vẫn dùng event thời gian của GameClock qua `CoreEvents` (Core → Presentation).
+- Chưa có TransactionCoordinator/Inventory nên giao dịch kinh tế chưa atomic.
+- Chưa có kiểm thử runtime trên Godot Android sau đợt tách module.
+
+## Verification
+- Toàn bộ `.gd` đã kiểm tra cú pháp bằng `gdparse`.
+- Đã grep toàn repo: không còn `save_participant`, `NAVIGATION_SERVICE`,
+  `NPC_DIRECTOR_SCRIPT`, `MINIMAP_SCRIPT`.
+- Chưa mở Godot Android; chưa xác nhận runtime.

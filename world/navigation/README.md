@@ -1,50 +1,48 @@
 # Navigation Foundation
 
 ## Purpose
-Provides a lightweight road-graph route query for the current open-world prototype.
+Cung cấp truy vấn tuyến đường trên đồ thị đường cho prototype thế giới mở.
+Module chạy dưới dạng autoload `WorldNavigation` và **chỉ giao tiếp qua
+EventBus**; không module nào tham chiếu trực tiếp script này.
 
-## Scope
-- Stores the current road intersection graph.
-- Finds a route between the nearest road intersections.
-- Returns world-space points for map presentation.
+## Public API (event-based)
+- Nhận `WorldEvents.ROUTE_REQUESTED`:
+  `{ "request_id": int, "start": Vector3, "destination": Vector3 }`.
+- Phát `WorldEvents.ROUTE_READY`:
+  `{ "request_id": int, "route": PackedVector3Array, "destination": Vector3 }`.
 
-## Public API
-
-    NavigationService.find_route(start_position, destination)
-
-Returns `PackedVector3Array`. An empty array means no route was found.
+`request_id` phải lớn hơn 0 và được người yêu cầu dùng để bỏ qua kết quả không
+khớp (NPC và Minimap có thể cùng yêu cầu). Route rỗng nghĩa là không tìm thấy
+đường.
 
 ## Dependencies
-- Godot 4.x.
+- `EventBus`, `core/contracts/world_events.gd` (`WorldEvents`).
 - Built-in `AStar2D`.
-- No external module dependency.
+- Không preload/không gọi trực tiếp module NPC, Minimap hay Player.
 
 ## Current graph
-The graph uses the existing road axes:
+Đồ thị dùng các trục đường hiện có:
 - X: -65, 0, 65
 - Z: -90, -12, 70
 
+Tuyến luôn đi qua các giao lộ của đồ thị. Đoạn tiếp cận tới đích chỉ được thêm
+sau khi đã có tuyến hợp lệ, nên lỗi pathfinding không bị biến thành đi thẳng.
+
 ## Limitations
-- This is a route-preview foundation, not character path-following.
-- Start and destination are snapped to the nearest intersection.
-- It does not yet model one-way roads, traffic, road closures, sidewalks,
-  building entrances, or obstacle-aware local navigation.
-- Road graph coordinates must be updated when the map road layout changes.
+- Đây là nền tảng tuyến đường, chưa phải local avoidance đầy đủ.
+- Start và destination được snap về giao lộ gần nhất.
+- Chưa mô hình đường một chiều, giao thông, đóng đường, vỉa hè, lối vào nhà hay
+  tránh vật cản cục bộ.
+- Tọa độ đồ thị phải cập nhật khi bố trí đường của map thay đổi.
 
 ## Verification
-Open the project in Godot Android and check for parser errors.
-Then open the full map and tap a destination to inspect the route preview.
+- `gdparse` (đã chạy, không lỗi cú pháp).
+- Mở Godot Android, chạy `map_root.tscn`:
+  - Tua lịch NPC và quan sát NPC đi theo các điểm giao lộ.
+  - Mở bản đồ lớn, chạm một vị trí và xác nhận preview tuyến xuất hiện.
+- Chưa xác nhận runtime trên Godot Android.
 
-
-## Minimap integration
-
-When the player selects a destination on the full map, `WorldMinimap`
-calls `NavigationService.find_route(player.global_position, destination)`.
-The returned world-space points are projected onto the full-map drawing
-and rendered as a route line.
-
-This is a visual route preview only:
-- The player remains under manual joystick control.
-- Selecting a new destination recalculates the route.
-- Opening the full map clears the previous destination and route.
-- An empty or one-point result is displayed as no available route.
+## Tích hợp
+- NPC: `LifeNPC` phát `ROUTE_REQUESTED` khi đổi điểm đến và nhận `ROUTE_READY`.
+- Minimap: `WorldMinimap` phát `ROUTE_REQUESTED` khi chọn waypoint và vẽ
+  `ROUTE_READY` tương ứng.

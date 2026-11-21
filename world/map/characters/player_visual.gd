@@ -12,19 +12,37 @@ var _left_leg: Node3D
 var _right_leg: Node3D
 var _time: float = 0.0
 var _body_materials: Dictionary = {}
+var _planar_velocity := Vector2.ZERO
 
 
 func _ready() -> void:
+	# Khi scene có sprite Visual, node primitive này tự ẩn và tắt xử lý.
+	# PlayerController không cần biết hoặc tham chiếu tới VisualRoot.
+	var sprite_visual := get_parent().get_node_or_null("Visual")
+	if sprite_visual != null:
+		hide()
+		set_process(false)
+		set_physics_process(false)
+		return
 	_build_character()
+	EventBus.subscribe(PlayerEvents.MOTION_CHANGED, _on_motion_changed)
+
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(PlayerEvents.MOTION_CHANGED, _on_motion_changed)
+
+
+func _on_motion_changed(payload: Dictionary) -> void:
+	var velocity_value: Variant = payload.get("velocity")
+	if velocity_value is Vector2:
+		_planar_velocity = velocity_value as Vector2
 
 
 func _process(delta: float) -> void:
 	_time += delta
-	var actor := get_parent() as CharacterBody3D
-	if actor == null:
-		return
 
-	var horizontal_speed := Vector2(actor.velocity.x, actor.velocity.z).length()
+	var horizontal_speed := _planar_velocity.length()
 	var movement_weight := clampf(horizontal_speed / 3.0, 0.0, 1.0)
 	var walk_phase := _time * 8.5
 	var swing := sin(walk_phase) * 0.48 * movement_weight

@@ -7,6 +7,9 @@ const NPC_PROFILES: Array[Resource] = [
 	preload("res://modules/npc/data/minh.tres")
 ]
 
+## Cho phép scene kế thừa (ví dụ hồ câu) tắt NPC mà không cần MapController can thiệp.
+@export var spawn_enabled: bool = true
+
 var save_id: String = "npc_world"
 var _npcs: Array[LifeNPC] = []
 var _nearest_npc: LifeNPC
@@ -14,33 +17,54 @@ var _interaction_layer: CanvasLayer
 var _interaction_button: Button
 var _dialogue_panel: PanelContainer
 var _dialogue_label: Label
-var _last_hour: int = -1
 var _simulation_accumulator: float = 0.0
+var _position_broadcast_accumulator: float = 0.0
+var _last_schedule: Dictionary = {}
+var _player_position := Vector3.ZERO
+var _has_player_position := false
+var _save_registered := false
+
 const SIMULATION_INTERVAL: float = 0.5
+const POSITION_BROADCAST_INTERVAL: float = 0.2
 const INTERACTION_RANGE: float = 3.2
 
 
 func _ready() -> void:
+	if not spawn_enabled:
+		set_process(false)
+		return
+
 	_build_npcs()
 	_build_interaction_ui()
-	_update_schedules()
-	EventBus.subscribe(CoreEvents.HOUR_CHANGED, _on_hour_changed)
-	add_to_group("save_participant")
+
+	EventBus.subscribe(JobEvents.SCHEDULE_CHANGED, _on_schedule_changed)
+	EventBus.subscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
+	_save_registered = SaveCoordinator.register_participant(save_id, self)
+
+	# Yêu cầu lịch hiện tại thay vì đọc GameClock trực tiếp.
+	EventBus.emit_event(JobEvents.SCHEDULE_SNAPSHOT_REQUESTED)
+	_broadcast_positions()
 
 
 func _process(delta: float) -> void:
-	if GameClock.get_hour() != _last_hour:
-		_update_schedules()
 	_simulation_accumulator += delta
-	if _simulation_accumulator < SIMULATION_INTERVAL:
-		return
-	_simulation_accumulator = 0.0
-	_find_nearest_npc()
+	if _simulation_accumulator >= SIMULATION_INTERVAL:
+		_simulation_accumulator = 0.0
+		_find_nearest_npc()
+
+	_position_broadcast_accumulator += delta
+	if _position_broadcast_accumulator >= POSITION_BROADCAST_INTERVAL:
+		_position_broadcast_accumulator = 0.0
+		_broadcast_positions()
 
 
 func _exit_tree() -> void:
 	if EventBus != null:
-		EventBus.unsubscribe(CoreEvents.HOUR_CHANGED, _on_hour_changed)
+		EventBus.unsubscribe(JobEvents.SCHEDULE_CHANGED, _on_schedule_changed)
+		EventBus.unsubscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
+	if _save_registered:
+		SaveCoordinator.unregister_participant(save_id)
+		_save_registered = false
 
 
 func get_npc_count() -> int:
@@ -73,6 +97,8 @@ func deserialize_state(data: Dictionary) -> bool:
 		var state: Variant = states.get(npc.npc_id, {})
 		if state is Dictionary and not state.is_empty():
 			npc.deserialize_state(state)
+	# NPC không đọc GameClock; yêu cầu JobSystem phát lại lịch hiện tại.
+	EventBus.emit_event(JobEvents.SCHEDULE_SNAPSHOT_REQUESTED)
 	return true
 
 
@@ -100,25 +126,34 @@ func _load_npc_profiles() -> Array[Resource]:
 	return profiles
 
 
-func _update_schedules() -> void:
-	var hour: int = GameClock.get_hour()
+func _on_schedule_changed(payload: Dictionary) -> void:
+	var activity_value: Variant = payload.get("activity")
+	if typeof(activity_value) != TYPE_STRING and typeof(activity_value) != TYPE_STRING_NAME:
+		push_warning("NPCDirector: schedule thiếu activity hợp lệ.")
+		return
+	_last_schedule = payload.duplicate(true)
+	var activity := StringName(str(activity_value))
 	for npc: LifeNPC in _npcs:
-		npc.update_schedule(hour)
-	_last_hour = hour
+		if is_instance_valid(npc):
+			npc.apply_schedule(activity)
 
 
-func _on_hour_changed(_payload: Dictionary) -> void:
-	_update_schedules()
+func _on_player_position_changed(payload: Dictionary) -> void:
+	var position_value: Variant = payload.get("position")
+	if position_value is Vector3:
+		_player_position = position_value
+		_has_player_position = true
 
 
 func _find_nearest_npc() -> void:
-	var player := get_tree().get_first_node_in_group("player") as Node3D
-	if player == null:
+	if not _has_player_position:
 		return
 	var nearest: LifeNPC
 	var nearest_distance := INTERACTION_RANGE
 	for npc: LifeNPC in _npcs:
-		var distance := player.global_position.distance_to(npc.global_position)
+		if not is_instance_valid(npc):
+			continue
+		var distance := _player_position.distance_to(npc.global_position)
 		if distance < nearest_distance:
 			nearest = npc
 			nearest_distance = distance
@@ -126,6 +161,17 @@ func _find_nearest_npc() -> void:
 	_interaction_button.visible = is_instance_valid(_nearest_npc)
 	if not is_instance_valid(_nearest_npc):
 		_dialogue_panel.hide()
+
+
+func _broadcast_positions() -> void:
+	var entries: Array[Dictionary] = []
+	for npc: LifeNPC in _npcs:
+		if is_instance_valid(npc):
+			entries.append({
+				"id": npc.npc_id,
+				"position": npc.global_position
+			})
+	EventBus.emit_event(WorldEvents.NPC_POSITIONS_CHANGED, {"npcs": entries})
 
 
 func _build_interaction_ui() -> void:

@@ -18,10 +18,13 @@ var workplace_position: Vector3 = Vector3.ZERO
 var shop_position: Vector3 = Vector3.ZERO
 var cash_vnd: int = 50000
 var current_activity: String = "Ở nhà"
+
 var _route: PackedVector3Array = PackedVector3Array()
 var _route_index: int = 0
 var _destination: Vector3 = Vector3.ZERO
 var _last_schedule_key: String = ""
+var _route_request_serial: int = 0
+var _pending_route_request: int = 0
 var _body_mesh: MeshInstance3D
 
 
@@ -48,22 +51,30 @@ func _ready() -> void:
 	collision_mask = 1
 	floor_snap_length = 0.2
 	set_physics_process(true)
+	EventBus.subscribe(WorldEvents.ROUTE_READY, _on_route_ready)
 
 
-func update_schedule(hour: int) -> void:
-	var schedule_key := String(JobService.get_activity(hour))
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(WorldEvents.ROUTE_READY, _on_route_ready)
+
+
+## Áp dụng hoạt động do module Jobs phát qua JobEvents.SCHEDULE_CHANGED.
+## NPC không đọc GameClock và không gọi JobService trực tiếp.
+func apply_schedule(activity: StringName) -> void:
+	var schedule_key := String(activity)
 	var target := home_position
-	var activity := "Ở nhà"
+	var activity_label := "Ở nhà"
 	if schedule_key == "work":
 		target = workplace_position
-		activity = "Đi làm: %s" % occupation
+		activity_label = "Đi làm: %s" % occupation
 	elif schedule_key == "shopping":
 		target = shop_position
-		activity = "Mua sắm"
+		activity_label = "Mua sắm"
 	if schedule_key == _last_schedule_key:
 		return
 	_last_schedule_key = schedule_key
-	current_activity = activity
+	current_activity = activity_label
 	_set_destination(target)
 
 
@@ -109,22 +120,52 @@ func deserialize_state(data: Dictionary) -> bool:
 	global_position = Vector3(float(position_data[0]), float(position_data[1]), float(position_data[2]))
 	cash_vnd = maxi(0, int(data.get("cash_vnd", cash_vnd)))
 	current_activity = str(data.get("activity", current_activity))
+	# Lịch hiện tại do NPCDirector yêu cầu lại từ JobSystem sau khi tải save.
 	_last_schedule_key = ""
-	update_schedule(GameClock.get_hour())
+	_route.clear()
+	_route_index = 0
+	_pending_route_request = 0
 	return true
 
 
 func _set_destination(target: Vector3) -> void:
 	_destination = target
+	_route.clear()
 	_route_index = 0
+	_route_request_serial += 1
+	_pending_route_request = _route_request_serial
 	if global_position.distance_to(target) <= ARRIVAL_DISTANCE:
-		_route = PackedVector3Array()
+		_pending_route_request = 0
 		return
-	_route = NavigationService.find_route(global_position, target)
-	if _route.is_empty():
-		_route = PackedVector3Array([target])
-	elif _route[_route.size() - 1].distance_to(target) > ARRIVAL_DISTANCE:
-		_route.append(target)
+	EventBus.emit_event(WorldEvents.ROUTE_REQUESTED, {
+		"request_id": _pending_route_request,
+		"start": global_position,
+		"destination": target
+	})
+
+
+func _on_route_ready(payload: Dictionary) -> void:
+	var request_id_value: Variant = payload.get("request_id", 0)
+	if typeof(request_id_value) != TYPE_INT and typeof(request_id_value) != TYPE_FLOAT:
+		return
+	var request_id: int = int(request_id_value)
+	if request_id <= 0 or request_id != _pending_route_request:
+		return
+	_pending_route_request = 0
+
+	var route_value: Variant = payload.get("route")
+	if route_value is PackedVector3Array:
+		_route = route_value
+	elif route_value is Array:
+		var converted := PackedVector3Array()
+		for point: Variant in route_value:
+			if point is Vector3:
+				converted.append(point)
+		_route = converted
+	else:
+		push_warning("LifeNPC: route không hợp lệ cho %s." % npc_id)
+		_route = PackedVector3Array()
+	_route_index = 0
 
 
 func _build_visual() -> void:

@@ -31,6 +31,18 @@ func _ready() -> void:
     pixel_size = world_height_m / character_height_px
     _apply_feet_offset()
     _refresh_animation()
+    EventBus.subscribe(PlayerEvents.MOTION_CHANGED, _on_motion_changed)
+
+
+func _exit_tree() -> void:
+    if EventBus != null:
+        EventBus.unsubscribe(PlayerEvents.MOTION_CHANGED, _on_motion_changed)
+
+
+func _on_motion_changed(payload: Dictionary) -> void:
+    var velocity_value: Variant = payload.get("velocity")
+    if velocity_value is Vector2:
+        set_motion(velocity_value as Vector2)
 
 
 ## planar_velocity: x = trục X thế giới (phải màn hình), y = trục Z (hướng về camera).

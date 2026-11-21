@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_map"]
 [ext_resource type="Script" path="res://world/map/player_controller.gd" id="2_player"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://world/map/characters/player_visual.gd" id="4_visual"]
 [ext_resource type="Script" path="res://world/map/player_hud.gd" id="5_hud"]
 [ext_resource type="Script" path="res://world/map/characters/player_needs.gd" id="6_needs"]
+[ext_resource type="Script" path="res://modules/npc/npc_director.gd" id="7_npc"]
+[ext_resource type="Script" path="res://world/map/minimap.gd" id="8_minimap"]
 [ext_resource type="PackedScene" path="res://presentation/player_sprite/player_sprite.tscn" id="90_player_sprite"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
@@ -50,6 +52,9 @@ collision_mask = 1
 current = true
 fov = 70.0
 
+[node name="NPCDirector" type="Node3D" parent="."]
+script = ExtResource("7_npc")
+
 [node name="HUD" type="CanvasLayer" parent="."]
 layer = 1
 
@@ -71,3 +76,14 @@ offset_right = 184.0
 offset_bottom = -24.0
 mouse_filter = 2
 script = ExtResource("3_joystick")
+
+[node name="WorldMinimap" type="Control" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -176.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 176.0
+grow_horizontal = 0
+z_index = 100
+script = ExtResource("8_minimap")

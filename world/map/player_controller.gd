@@ -14,30 +14,41 @@ signal health_changed(current_health: float, maximum_health: float)
 @export var fall_recovery_y: float = -10.0
 
 @onready var camera_pivot: Node3D = $CameraPivot
-@onready var joystick: Node = get_node("../HUD/Joystick")
-# [player_sprite] hiển thị sprite, VisualRoot (3D primitive) giữ làm dự phòng
-@onready var visual: Node = get_node_or_null("Visual")
-@onready var fallback_visual: Node3D = get_node_or_null("VisualRoot") as Node3D
 
 const CAMERA_FOLLOW_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
+const POSITION_EMIT_INTERVAL: float = 0.1
+
+var _touch_input := Vector2.ZERO
+var _position_emit_accumulator: float = 0.0
+var _recovery_requested := false
 
 
 func _ready() -> void:
-	add_to_group("save_participant")
+	SaveCoordinator.register_participant(save_id, self)
 	add_to_group("player")
-	var needs_component := get_node_or_null("Needs")
-	if needs_component != null and needs_component.has_signal("health_damage_requested"):
-		needs_component.connect("health_damage_requested", apply_damage)
+
+	EventBus.subscribe(PlayerEvents.HEALTH_DAMAGE_REQUESTED, _on_health_damage_requested)
+	EventBus.subscribe(PlayerEvents.MOVE_INPUT_CHANGED, _on_move_input_changed)
+	EventBus.subscribe(PlayerEvents.STATE_SNAPSHOT_REQUESTED, _on_state_snapshot_requested)
+
 	maximum_health = maxf(1.0, maximum_health)
 	current_health = clampf(current_health, 0.0, maximum_health)
-	health_changed.emit(current_health, maximum_health)
+	_emit_health_changed()
+
 	# Camera không kế thừa góc xoay của nhân vật.
 	camera_pivot.top_level = true
 	camera_pivot.global_rotation = Vector3.ZERO
 	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET
-	if visual != null and fallback_visual != null:
-		fallback_visual.hide()
-		fallback_visual.process_mode = Node.PROCESS_MODE_DISABLED
+
+	_emit_position()
+
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(PlayerEvents.HEALTH_DAMAGE_REQUESTED, _on_health_damage_requested)
+		EventBus.unsubscribe(PlayerEvents.MOVE_INPUT_CHANGED, _on_move_input_changed)
+		EventBus.unsubscribe(PlayerEvents.STATE_SNAPSHOT_REQUESTED, _on_state_snapshot_requested)
+	SaveCoordinator.unregister_participant(save_id)
 
 
 func _physics_process(delta: float) -> void:
@@ -48,11 +59,9 @@ func _physics_process(delta: float) -> void:
 		"ui_down"
 	)
 
-	var touch_input: Vector2 = joystick.get_direction()
 	var input_vector := keyboard_input
-
-	if touch_input.length() > keyboard_input.length():
-		input_vector = touch_input
+	if _touch_input.length() > keyboard_input.length():
+		input_vector = _touch_input
 
 	# Camera cố định hướng nên joystick luôn dùng trục thế giới.
 	var direction := Vector3(input_vector.x, 0.0, input_vector.y)
@@ -82,40 +91,46 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Báo vận tốc thực tế cho phần hiển thị (đứng yên khi bị chặn).
-	if visual != null and visual.has_method("set_motion"):
-		visual.call("set_motion", Vector2(velocity.x, velocity.z))
+	# Phần hiển thị tự đăng ký nhận vận tốc; Player không giữ tham chiếu tới Visual.
+	EventBus.emit_event(PlayerEvents.MOTION_CHANGED, {
+		"velocity": Vector2(velocity.x, velocity.z)
+	})
 
-	# Nếu rơi khỏi địa hình, đưa Player về Spawn Point của map hiện tại.
-	if global_position.y < fall_recovery_y:
-		var map_root := get_parent()
-		var spawn_value: Variant = map_root.get("local_spawn_position")
+	_position_emit_accumulator += delta
+	if _position_emit_accumulator >= POSITION_EMIT_INTERVAL:
+		_position_emit_accumulator = 0.0
+		_emit_position()
 
-		if spawn_value is Vector3:
-			global_position = spawn_value
-		else:
-			global_position = Vector3(0.0, 0.05, 12.0)
-
-		velocity = Vector3.ZERO
-		print("[Player] Recovered after falling.")
+	# Nếu rơi khỏi địa hình, yêu cầu World đưa Player về Spawn Point hiện tại.
+	if global_position.y < fall_recovery_y and not _recovery_requested:
+		_recovery_requested = true
+		EventBus.emit_event(WorldEvents.PLAYER_RECOVERY_REQUESTED, {"player": self})
 
 	# Camera chỉ bám vị trí, không xoay theo nhân vật.
 	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET
 
 
-## API sức khỏe tối thiểu của Player; UI chỉ đọc qua signal và thuộc tính.
+## World gọi khi xác nhận Player rơi khỏi địa hình; Player không tự đọc MapController.
+func recover_to(spawn_position: Vector3) -> void:
+	global_position = spawn_position
+	velocity = Vector3.ZERO
+	_recovery_requested = false
+	_emit_position()
+
+
+## API sức khỏe tối thiểu của Player; UI chỉ đọc qua signal và sự kiện.
 func apply_damage(amount: float) -> void:
 	if amount <= 0.0 or current_health <= 0.0:
 		return
 	current_health = maxf(0.0, current_health - amount)
-	health_changed.emit(current_health, maximum_health)
+	_emit_health_changed()
 
 
 func restore_health(amount: float) -> void:
 	if amount <= 0.0 or current_health >= maximum_health:
 		return
 	current_health = minf(maximum_health, current_health + amount)
-	health_changed.emit(current_health, maximum_health)
+	_emit_health_changed()
 
 
 func serialize_state() -> Dictionary:
@@ -137,5 +152,38 @@ func deserialize_state(data: Dictionary) -> bool:
 	if position_value is Array and position_value.size() == 3:
 		global_position = Vector3(float(position_value[0]), float(position_value[1]), float(position_value[2]))
 	velocity = Vector3.ZERO
-	health_changed.emit(current_health, maximum_health)
+	_recovery_requested = false
+	_emit_health_changed()
+	_emit_position()
 	return true
+
+
+func _on_health_damage_requested(payload: Dictionary) -> void:
+	var amount_value: Variant = payload.get("amount")
+	if typeof(amount_value) == TYPE_INT or typeof(amount_value) == TYPE_FLOAT:
+		apply_damage(float(amount_value))
+
+
+func _on_move_input_changed(payload: Dictionary) -> void:
+	var direction_value: Variant = payload.get("direction")
+	if direction_value is Vector2:
+		_touch_input = (direction_value as Vector2).limit_length(1.0)
+
+
+func _on_state_snapshot_requested(_payload: Dictionary) -> void:
+	_emit_health_changed()
+	_emit_position()
+
+
+func _emit_health_changed() -> void:
+	health_changed.emit(current_health, maximum_health)
+	EventBus.emit_event(PlayerEvents.HEALTH_CHANGED, {
+		"current": current_health,
+		"maximum": maximum_health
+	})
+
+
+func _emit_position() -> void:
+	EventBus.emit_event(WorldEvents.PLAYER_POSITION_CHANGED, {
+		"position": global_position
+	})
