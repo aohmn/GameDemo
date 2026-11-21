@@ -25,7 +25,7 @@ Thời gian là số nguyên phút. Ngày 0 là Thứ Hai, bắt đầu 06:00.
 EventBus, CoreEvents.
 
 ### Kiểm tra
-Mở và chạy scene tests/game_clock_selftest.tscn, xem Output (PASS/FAIL).
+Chưa có test tự động (thư mục tests/ đã gỡ). Kiểm tra thủ công trên Godot Android.
 
 ### Trạng thái và giới hạn đã biết
 - Chưa có tháng, năm, mùa (README §5.4 sẽ làm sau).

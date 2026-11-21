@@ -478,8 +478,7 @@ Sau mỗi thay đổi:
 Một tính năng chỉ được coi là xong khi đáp ứng TẤT CẢ:
 
 - Code không có lỗi parser khi mở trong Godot Android.
-,+1c- Có kết quả kiểm tra thủ công trên Godot Android được ghi lại (mức 3 hoặc 4 ở §13).
-  tra thủ công trên Godot Android được ghi lại (mức 3 hoặc 4 ở §13).
+- Có kết quả kiểm tra thủ công trên Godot Android được ghi lại (mức 3 hoặc 4 ở §13).
 - README của module liên quan đã cập nhật.
 - CHANGELOG đã ghi lại thay đổi (nếu là thay đổi đáng kể).
 - Không phá vỡ chức năng đang hoạt động (không có regression đã biết).
