@@ -290,6 +290,9 @@ func _build_buildings() -> void:
 
 	for index in range(6):
 		var z_position := -34.0 + float(index) * 13.0
+		# Lùi căn nhà khỏi đường ngang tại z = -12.
+		if is_equal_approx(z_position, -8.0):
+			z_position = -3.0
 		var wall_color: Color = wall_colors[index % wall_colors.size()]
 
 		_build_house(
@@ -365,8 +368,12 @@ func _build_house(
 func _build_trees() -> void:
 	for index in range(12):
 		var z_position := -35.0 + float(index) * 6.0
-		_build_tree(Vector3(-8.0, 0.0, z_position))
-		_build_tree(Vector3(8.0, 0.0, z_position))
+		# Không trồng cây trong hành lang đường ngang z = -12.
+		if absf(z_position + 12.0) <= 6.0:
+			continue
+		# Đặt cây ngoài vỉa hè và tách khỏi mặt đường chính.
+		_build_tree(Vector3(-19.0, 0.0, z_position))
+		_build_tree(Vector3(19.0, 0.0, z_position))
 
 
 # --------------------------------------------------
@@ -417,6 +424,9 @@ func _build_expanded_world() -> void:
 	# Mang cay xanh o cac khu vuc chuyen tiep.
 	for index in range(12):
 		var z_position := -135.0 + float(index) * 24.0
+		# Tránh hành lang đường ngang phía bắc tại z = -90.
+		if absf(z_position + 90.0) <= 6.0:
+			continue
 		_build_tree(Vector3(-112.0, 0.0, z_position))
 		_build_tree(Vector3(112.0, 0.0, z_position))
 

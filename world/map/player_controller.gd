@@ -1,6 +1,11 @@
 extends CharacterBody3D
 class_name Player3DController
 
+signal health_changed(current_health: float, maximum_health: float)
+
+@export_range(1.0, 1000.0, 1.0) var maximum_health: float = 100.0
+@export_range(0.0, 1000.0, 1.0) var current_health: float = 100.0
+
 @export var move_speed: float = 5.0
 @export var acceleration: float = 18.0
 @export var gravity: float = 18.0
@@ -13,6 +18,9 @@ const CAMERA_FOLLOW_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
 
 
 func _ready() -> void:
+	maximum_health = maxf(1.0, maximum_health)
+	current_health = clampf(current_health, 0.0, maximum_health)
+	health_changed.emit(current_health, maximum_health)
 	# Camera không kế thừa góc xoay của nhân vật.
 	camera_pivot.top_level = true
 	camera_pivot.global_rotation = Vector3.ZERO
@@ -76,3 +84,18 @@ func _physics_process(delta: float) -> void:
 
 	# Camera chỉ bám vị trí, không xoay theo nhân vật.
 	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET
+
+
+## API sức khỏe tối thiểu của Player; UI chỉ đọc qua signal và thuộc tính.
+func apply_damage(amount: float) -> void:
+	if amount <= 0.0 or current_health <= 0.0:
+		return
+	current_health = maxf(0.0, current_health - amount)
+	health_changed.emit(current_health, maximum_health)
+
+
+func restore_health(amount: float) -> void:
+	if amount <= 0.0 or current_health >= maximum_health:
+		return
+	current_health = minf(maximum_health, current_health + amount)
+	health_changed.emit(current_health, maximum_health)

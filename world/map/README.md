@@ -49,6 +49,7 @@ Không xem các mục chưa triển khai là tính năng đã hoàn thành.
 - Controller: `map_controller.gd`
 - Player: `player_controller.gd`
 - Minimap: `minimap.gd`
+- Player HUD: `player_hud.gd`
 - Joystick: `virtual_joystick.gd`
 
 `map_root.tscn` là điểm khởi đầu của thế giới liên tục.
@@ -180,3 +181,25 @@ và kết quả kiểm thử thực tế.
 
 Zoom được giới hạn từ 1x đến 4x. Waypoint được giữ trong runtime khi
 đóng và mở lại bản đồ; hiện chưa được lưu qua SaveCoordinator.
+
+
+## 13. Minimap, Player HUD và bố trí môi trường
+
+- Minimap vẽ đường theo tọa độ thế giới tương đối với Player; hướng Bắc cố định.
+- Kênh nước trên bản đồ dùng đúng tọa độ `x = 25`.
+- Cụm cây khu dân cư đặt ngoài mép vỉa hè; nhà gần giao lộ được lùi khỏi đường ngang.
+- `PlayerHUD` hiển thị avatar hình học, thanh sức khỏe, giờ và thứ trong tuần.
+- Đồng hồ UI chỉ đọc `GameClock`; không tự quản lý hoặc tăng thời gian.
+- `Player3DController` cung cấp `apply_damage()` và `restore_health()` cùng signal `health_changed`.
+- Máu hiện là trạng thái runtime của Player, chưa được tích hợp SaveCoordinator hoặc hệ thống chiến đấu.
+
+### Kiểm tra trên Godot Android
+
+1. Chạy map và xác nhận minimap luôn giữ Player ở tâm, đường di chuyển tương ứng với vị trí thực.
+2. Chạm minimap để mở bản đồ lớn, kéo/zoom và đặt waypoint.
+3. Quan sát các cây dọc khu dân cư và nhà quanh giao lộ, bảo đảm không nằm trên mặt đường.
+4. Xác nhận avatar, thanh máu và đồng hồ hiển thị ở góc trái trên; minimap ở góc phải trên.
+5. Tạm gọi `apply_damage()`/`restore_health()` từ debugger hoặc mã thử để xác nhận thanh máu cập nhật.
+6. Tua `GameClock` để xác nhận đồng hồ UI thay đổi theo nguồn thời gian chung.
+
+Chưa có kết quả chạy thực tế trên Godot Android cho lần cập nhật này.

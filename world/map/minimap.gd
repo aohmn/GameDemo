@@ -31,6 +31,7 @@ var _mini_offsets := Vector4.ZERO
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	clip_contents = true
 	process_mode = Node.PROCESS_MODE_INHERIT
 
 	# Lưu layout minimap để khôi phục sau khi đóng bản đồ lớn.
@@ -313,34 +314,30 @@ func _draw_minimap() -> void:
 
 	draw_rect(map_rect, Color(0.20, 0.34, 0.22), true)
 
-	draw_line(
-		Vector2(center.x, map_rect.position.y),
-		Vector2(center.x, map_rect.end.y),
-		Color(0.24, 0.25, 0.25),
-		8.0
-	)
+	# Vẽ đường theo tọa độ thế giới tương đối với Player, không dùng sơ đồ tĩnh.
+	for road_x in [-65.0, 0.0, 65.0]:
+		_draw_minimap_world_line(
+			Vector2(road_x, -WORLD_HALF_SIZE),
+			Vector2(road_x, WORLD_HALF_SIZE),
+			Color(0.24, 0.25, 0.25),
+			5.0 if is_equal_approx(road_x, 0.0) else 3.0
+		)
 
-	draw_line(
-		Vector2(map_rect.position.x, center.y),
-		Vector2(map_rect.end.x, center.y),
-		Color(0.24, 0.25, 0.25),
-		6.0
-	)
-
-	draw_line(
-		Vector2(center.x + 13.0, map_rect.position.y),
-		Vector2(center.x + 13.0, map_rect.end.y),
-		Color(0.07, 0.35, 0.52),
-		5.0
-	)
-
-	for offset in [-31.0, 31.0]:
-		draw_line(
-			Vector2(center.x + offset, map_rect.position.y),
-			Vector2(center.x + offset, map_rect.end.y),
-			Color(0.28, 0.29, 0.27),
+	for road_z in [-90.0, -12.0, 70.0]:
+		_draw_minimap_world_line(
+			Vector2(-WORLD_HALF_SIZE, road_z),
+			Vector2(WORLD_HALF_SIZE, road_z),
+			Color(0.24, 0.25, 0.25),
 			3.0
 		)
+
+	# Kênh nước nằm ở x = 25 trong world map.
+	_draw_minimap_world_line(
+		Vector2(25.0, -WORLD_HALF_SIZE),
+		Vector2(25.0, WORLD_HALF_SIZE),
+		Color(0.07, 0.35, 0.52),
+		4.0
+	)
 
 	if is_instance_valid(player):
 		draw_circle(center, 5.0, Color.WHITE)
@@ -414,7 +411,7 @@ func _draw_full_map() -> void:
 	var scale_x := map_rect.size.x / (WORLD_HALF_SIZE * 2.0)
 	var scale_y := map_rect.size.y / (WORLD_HALF_SIZE * 2.0)
 
-	var canal_x := 175.0
+	var canal_x := 25.0
 	_draw_map_line(
 		map_rect,
 		scale_x,
@@ -449,6 +446,8 @@ func _draw_full_map() -> void:
 
 	for row in range(6):
 		var z_position := -34.0 + float(row) * 13.0
+		if is_equal_approx(z_position, -8.0):
+			z_position = -3.0
 		_draw_full_map_building(map_rect, scale_x, scale_y, -13.0, z_position)
 		_draw_full_map_building(map_rect, scale_x, scale_y, 13.0, z_position)
 
@@ -594,4 +593,19 @@ func _world_to_minimap(world_x: float, world_z: float) -> Vector2:
 		world_z - player.global_position.z
 	)
 
-	return center + relative * 0.45
+	return center + relative * 0.42
+
+
+func _draw_minimap_world_line(
+	start_world: Vector2,
+	end_world: Vector2,
+	color: Color,
+	line_width: float
+) -> void:
+	draw_line(
+		_world_to_minimap(start_world.x, start_world.y),
+		_world_to_minimap(end_world.x, end_world.y),
+		color,
+		line_width,
+		true
+	)

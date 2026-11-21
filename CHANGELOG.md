@@ -116,3 +116,12 @@
 - Thêm spatial shader tạo biến thiên bề mặt bằng hàm toán học, không dùng texture.
 - Dùng shader vật liệu procedural cho mesh môi trường; tinh chỉnh ambient light, ánh sáng mặt trời, filmic tonemapping và fog.
 - Chưa xác nhận parser hoặc runtime trên Godot Android.
+
+
+## World HUD, Minimap và bố trí đường phố
+
+- Sửa minimap để các tuyến đường và kênh nước được vẽ theo tọa độ thế giới quanh Player; sửa vị trí kênh nước từ `x = 175` về `x = 25`.
+- Điều chỉnh cây khu dân cư ra ngoài vỉa hè và lùi nhà gần giao lộ khỏi mặt đường.
+- Thêm PlayerHUD với avatar hình học không texture, thanh sức khỏe, giờ và thứ lấy từ GameClock.
+- Thêm API sức khỏe runtime `apply_damage()` / `restore_health()` cho Player.
+- Chưa xác nhận parser và gameplay runtime trên Godot Android.

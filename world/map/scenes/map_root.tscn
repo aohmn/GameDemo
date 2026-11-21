@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_map"]
 [ext_resource type="Script" path="res://world/map/player_controller.gd" id="2_player"]
 [ext_resource type="Script" path="res://world/map/virtual_joystick.gd" id="3_joystick"]
 [ext_resource type="Script" path="res://world/map/characters/player_visual.gd" id="4_visual"]
+[ext_resource type="Script" path="res://world/map/player_hud.gd" id="5_hud"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
 radius = 0.35
@@ -44,6 +45,14 @@ fov = 70.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 layer = 1
+
+[node name="PlayerHUD" type="Control" parent="HUD"]
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 260.0
+offset_bottom = 94.0
+script = ExtResource("5_hud")
 
 [node name="Joystick" type="Control" parent="HUD"]
 anchors_preset = 0
