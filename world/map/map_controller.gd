@@ -6,6 +6,7 @@ const TRAVEL_META_KEY := "projectgame_spawn_point_id"
 
 const MINIMAP_SCRIPT: Script = preload("res://world/map/minimap.gd")
 const SURFACE_SHADER: Shader = preload("res://world/map/shaders/procedural_surface.gdshader")
+const NPC_DIRECTOR_SCRIPT: Script = preload("res://modules/npc/npc_director.gd")
 
 @export var map_type: String = "residential"
 @export_file("*.tscn") var destination_scene_path: String = ""
@@ -36,6 +37,11 @@ func _ready() -> void:
 
 	_apply_spawn()
 	_build_minimap()
+	if map_type == "residential":
+		var npc_director := Node3D.new()
+		npc_director.set_script(NPC_DIRECTOR_SCRIPT)
+		npc_director.name = "NPCDirector"
+		add_child(npc_director)
 
 	print("[World] Continuous world loaded.")
 

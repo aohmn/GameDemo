@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ShopGood" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/shops/shop_good.gd" id="1_good"]
+
+[resource]
+script = ExtResource("1_good")
+item_id = "bread"
+display_name = "Bánh mì"
+price_vnd = 12000
+hunger_restore = 30.0

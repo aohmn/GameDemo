@@ -1937,3 +1937,18 @@ PROJECTGAME — XÂY DỰNG MỘT THẾ GIỚI NƠI NGƯỜI CHƠI KHÔNG CHỈ 
 - `SaveCoordinator` lưu GameClock, vị trí Player, máu và nhu cầu vào `user://projectgame_save.cfg`.
 - Save tự động mỗi 60 giây thực và khi ứng dụng pause/đóng.
 - Lần chạy đầu không có save thì giữ giá trị mặc định.
+
+
+## NPC & Life Simulation Prototype
+
+- Thêm `NPCDirector` và một script `LifeNPC` dùng chung; hai NPC mẫu được cấu hình bằng dữ liệu, không có script riêng theo tên.
+- NPC có ID, tên, tuổi, nghề, tính cách, vị trí nhà/nơi làm/nơi mua sắm và tiền mặt mô phỏng.
+- Lịch mẫu lấy giờ từ `GameClock`: ở nhà, đi làm (07:00–17:00), mua sắm (17:00–19:00).
+- NPC dùng `NavigationService` để đi theo các giao lộ; đây mới là route prototype, chưa có tránh vật cản hoặc entrance navigation.
+- Có nút cảm ứng nói chuyện khi Player ở gần NPC; hội thoại hiện là câu chào theo trạng thái và liệt kê hàng mẫu.
+- Thêm `EconomyService` làm nguồn số dư VND integer của Player và `ShopService` chứa danh mục hàng mẫu bằng Godot Resource `.tres`. Chưa có giao dịch mua bán vì Inventory/TransactionCoordinator chưa được triển khai.
+- NPCDirector tham gia SaveCoordinator để lưu vị trí và trạng thái lịch NPC.
+- Chưa có off-screen simulation, NPC streaming, hội thoại phân nhánh, tuyển dụng Player hoặc tồn kho cửa hàng.
+- Tất cả tính năng mới cần được mở và kiểm tra trên Godot Android trước khi đánh dấu Done.
+
+Tiến độ tổng thể và các bước tiếp theo: `docs/roadmap/ROADMAP.md`.

@@ -1,3 +1,26 @@
+## Data format: Godot Resources only
+
+- Thay dữ liệu hồ sơ NPC từ JSON sang `NPCProfile` Resource `.tres`.
+- Thay dữ liệu hàng hóa từ JSON sang `ShopGood` Resource `.tres`.
+- Cập nhật NPCDirector, NPC agent và ShopService dùng Resource có kiểu.
+- Xóa `npc_profiles.json` và `goods.json`; không còn đọc JSON cho cấu hình NPC/Shop.
+- Cập nhật README module và Roadmap.
+- Chưa xác nhận parser/runtime trên Godot Android.
+
+# CHANGELOG
+
+## NPC & Life Simulation — Prototype foundation
+
+- Thêm `NPCDirector` và `LifeNPC` dùng chung, khởi tạo hai NPC dữ liệu mẫu trong khu dân cư.
+- Thêm danh tính NPC, nghề nghiệp, tính cách, vị trí nhà/nơi làm/nơi mua sắm và tiền mặt mô phỏng.
+- Thêm lịch sinh hoạt theo GameClock: ở nhà, đi làm và mua sắm.
+- NPC lấy route từ NavigationService và di chuyển theo các điểm đường hiện có.
+- Thêm nút cảm ứng nói chuyện, hội thoại trạng thái và danh mục hàng mẫu.
+- Thêm JobService, ShopService và EconomyService với số dư VND integer; chưa có giao dịch mua bán vì chưa có Inventory/TransactionCoordinator.
+- Đăng ký NPCDirector vào SaveCoordinator để lưu trạng thái NPC.
+- Cập nhật `docs/roadmap/ROADMAP.md` với tiến độ đã có, phần còn thiếu và kế hoạch kiểm thử.
+- Chưa xác nhận parser hoặc gameplay runtime trên Godot Android.
+
 ## World Map: Full-screen layout fix
 
 - Khi chạm minimap, WorldMinimap mở rộng Control phủ toàn bộ viewport.
@@ -22,8 +45,6 @@
 - Show route-found status; clear the previous route when opening the map.
 - Route preview only; player movement remains manual.
 - Godot Android parser and runtime verification pending.
-
-# CHANGELOG
 
 ## Phase 3.2: World Minimap
 

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="NPCProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/npc/npc_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+npc_id = "lan"
+display_name = "Lan"
+age = 28
+occupation = "Nhân viên cửa hàng"
+personality = "Thân thiện"
+home_position = Vector3(-17, 0, -30)
+workplace_position = Vector3(-58, 0, -20)
+shop_position = Vector3(-58, 0, -20)
+cash_vnd = 850000
