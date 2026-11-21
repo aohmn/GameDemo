@@ -15,8 +15,7 @@ enum Facing { DOWN, UP, LEFT, RIGHT }
 ## Chiều cao nhân vật trong ảnh (px) do tools/build_player_atlas.py in ra.
 @export var character_height_px: float = 120.0
 @export var world_height_m: float = 1.75
-## Nâng sprite lên để chân không chìm vào mặt đường. Map hiện có mặt đường cao 0.14-0.17 m
-## nhưng không có collision, trong khi Player đứng ở độ cao 0. Sửa gốc ở world/map, rồi đặt về 0.
+## Chân sprite đặt tại gốc node; mặt đường và vỉa hè dùng collision riêng.
 @export var ground_clearance_m: float = 0.0
 
 var _facing: Facing = Facing.DOWN
