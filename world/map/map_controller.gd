@@ -36,12 +36,13 @@ func _ready() -> void:
 	_build_world_boundaries()
 
 	_apply_spawn()
-	_build_minimap()
 	if map_type == "residential":
 		var npc_director := Node3D.new()
 		npc_director.set_script(NPC_DIRECTOR_SCRIPT)
 		npc_director.name = "NPCDirector"
 		add_child(npc_director)
+
+	_build_minimap()
 
 	print("[World] Continuous world loaded.")
 
@@ -780,6 +781,7 @@ func _build_minimap() -> void:
 	minimap.name = "WorldMinimap"
 	minimap.set_script(MINIMAP_SCRIPT)
 	minimap.set("player", player)
+	minimap.set("npc_director", get_node_or_null("NPCDirector"))
 	minimap.set("map_type", "open_world")
 
 	minimap.set_anchors_preset(Control.PRESET_TOP_RIGHT)

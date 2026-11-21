@@ -47,6 +47,14 @@ func get_npc_count() -> int:
 	return _npcs.size()
 
 
+func get_npcs() -> Array[LifeNPC]:
+	var result: Array[LifeNPC] = []
+	for npc: LifeNPC in _npcs:
+		if is_instance_valid(npc):
+			result.append(npc)
+	return result
+
+
 func serialize_state() -> Dictionary:
 	var npc_states: Dictionary = {}
 	for npc: LifeNPC in _npcs:
