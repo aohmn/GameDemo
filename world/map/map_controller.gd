@@ -5,6 +5,7 @@ const WORLD_SIZE := 300.0
 const TRAVEL_META_KEY := "projectgame_spawn_point_id"
 
 const MINIMAP_SCRIPT: Script = preload("res://world/map/minimap.gd")
+const SURFACE_SHADER: Shader = preload("res://world/map/shaders/procedural_surface.gdshader")
 
 @export var map_type: String = "residential"
 @export_file("*.tscn") var destination_scene_path: String = ""
@@ -47,16 +48,23 @@ func _build_environment() -> void:
 	environment_data.background_mode = Environment.BG_COLOR
 	environment_data.background_color = Color(0.52, 0.72, 0.86)
 	environment_data.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment_data.ambient_light_color = Color(0.78, 0.82, 0.88)
-	environment_data.ambient_light_energy = 0.65
+	environment_data.ambient_light_color = Color(0.82, 0.86, 0.92)
+	environment_data.ambient_light_energy = 0.82
+	environment_data.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	environment_data.tonemap_exposure = 1.0
+	environment_data.fog_enabled = true
+	environment_data.fog_light_color = Color(0.66, 0.76, 0.81)
+	environment_data.fog_density = 0.0018
 
 	world_environment.environment = environment_data
 	add_child(world_environment)
 
 	var sunlight := DirectionalLight3D.new()
 	sunlight.rotation_degrees = Vector3(-52.0, -32.0, 0.0)
-	sunlight.light_energy = 1.15
+	sunlight.light_energy = 1.25
+	sunlight.light_color = Color(1.0, 0.93, 0.82)
 	sunlight.shadow_enabled = true
+	sunlight.directional_shadow_max_distance = 85.0
 	add_child(sunlight)
 
 
@@ -594,10 +602,12 @@ func _make_box_node(
 	return instance
 
 
-func _make_material(color: Color) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.roughness = 0.9
+func _make_material(color: Color) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = SURFACE_SHADER
+	material.set_shader_parameter("base_color", color)
+	material.set_shader_parameter("roughness_value", 0.88)
+	material.set_shader_parameter("surface_detail", 0.018)
 	return material
 
 

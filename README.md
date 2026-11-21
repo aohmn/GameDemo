@@ -1918,3 +1918,13 @@ Không có một con đường phát triển bắt buộc.
 Giá trị của trò chơi nằm ở những cuộc sống khác nhau mà người chơi có thể tạo ra.
 
 PROJECTGAME — XÂY DỰNG MỘT THẾ GIỚI NƠI NGƯỜI CHƠI KHÔNG CHỈ KHÁM PHÁ, MÀ THỰC SỰ ĐƯỢC SỐNG.
+
+---
+
+## Visual Prototype — Procedural Character & Materials
+
+- Nhân vật người chơi được dựng bằng CapsuleMesh, SphereMesh và CylinderMesh; không dùng ảnh hoặc texture.
+- Tay và chân có chuyển động procedural theo vận tốc nhân vật.
+- Bề mặt môi trường dùng spatial shader tạo biến thiên màu bằng hàm toán học, không lấy mẫu texture.
+- Vật liệu nhân vật dùng màu albedo và roughness, phù hợp phong cách stylized bán thực tế trên Android.
+- Đây là bước dựng hình nền tảng; chưa phải model người chi tiết có rig xương và animation hoàn chỉnh.

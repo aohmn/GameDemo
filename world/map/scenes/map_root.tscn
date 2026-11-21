@@ -1,22 +1,14 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://world/map/map_controller.gd" id="1_map"]
 [ext_resource type="Script" path="res://world/map/player_controller.gd" id="2_player"]
 [ext_resource type="Script" path="res://world/map/virtual_joystick.gd" id="3_joystick"]
+[ext_resource type="Script" path="res://world/map/characters/player_visual.gd" id="4_visual"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
 radius = 0.35
 height = 1.8
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_Player"]
-radius = 0.35
-height = 1.8
-radial_segments = 10
-rings = 6
-
-[sub_resource type="StandardMaterial3D" id="PlayerMaterial"]
-albedo_color = Color(0.82, 0.28, 0.12, 1)
-roughness = 0.85
 
 [node name="MapRoot" type="Node3D"]
 script = ExtResource("1_map")
@@ -35,10 +27,8 @@ script = ExtResource("2_player")
 position = Vector3(0, 0.9, 0)
 shape = SubResource("CapsuleShape_Player")
 
-[node name="BodyMesh" type="MeshInstance3D" parent="Player"]
-position = Vector3(0, 0.9, 0)
-mesh = SubResource("CapsuleMesh_Player")
-material_override = SubResource("PlayerMaterial")
+[node name="VisualRoot" type="Node3D" parent="Player"]
+script = ExtResource("4_visual")
 
 [node name="CameraPivot" type="Node3D" parent="Player"]
 position = Vector3(0, 1.5, 0)

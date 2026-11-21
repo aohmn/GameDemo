@@ -24,6 +24,7 @@ GameClock="*res://core/services/game_clock.gd"
 
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=4
 
 [physics]
 

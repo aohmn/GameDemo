@@ -108,3 +108,11 @@
 - Truyền Spawn Point ID qua SceneTree metadata khi đổi scene.
 - Dựng hồ, bờ hồ, đường đất và bến câu bằng Primitive Mesh.
 - Chưa xác nhận parser và runtime trên Godot Android.
+
+## Visual Pass: Procedural Character and Surface Shader
+
+- Thay capsule hiển thị Player bằng nhân vật 3D dựng từ primitive mesh: đầu, tóc, tai, mắt, thân, tay, chân và giày.
+- Thêm chuyển động tay/chân procedural dựa trên vận tốc Player; giữ nguyên CharacterBody3D và collision hiện tại.
+- Thêm spatial shader tạo biến thiên bề mặt bằng hàm toán học, không dùng texture.
+- Dùng shader vật liệu procedural cho mesh môi trường; tinh chỉnh ambient light, ánh sáng mặt trời, filmic tonemapping và fog.
+- Chưa xác nhận parser hoặc runtime trên Godot Android.
