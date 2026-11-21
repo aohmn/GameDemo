@@ -225,21 +225,21 @@ func _build_roads() -> void:
 	_add_box(
 		"RoadShoulderMain",
 		Vector3(11.0, 0.12, WORLD_SIZE),
-		Vector3(0.0, 0.02, 0.0),
+		Vector3(0.0, -0.01, 0.0),
 		Color(0.48, 0.43, 0.34)
 	)
 
 	_add_box(
 		"MainRoad",
 		Vector3(8.0, 0.10, WORLD_SIZE),
-		Vector3(0.0, 0.09, 0.0),
+		Vector3(0.0, 0.0, 0.0),
 		Color(0.17, 0.19, 0.20)
 	)
 
 	_add_box(
 		"CrossRoad",
 		Vector3(WORLD_SIZE, 0.10, 8.0),
-		Vector3(0.0, 0.10, -12.0),
+		Vector3(0.0, 0.0, -12.0),
 		Color(0.17, 0.19, 0.20)
 	)
 
@@ -247,21 +247,21 @@ func _build_roads() -> void:
 		_add_box(
 			"RoadMarking",
 			Vector3(0.16, 0.025, 1.5),
-			Vector3(0.0, 0.16, float(index) * 2.5),
+			Vector3(0.0, 0.0375, float(index) * 2.5),
 			Color(0.90, 0.87, 0.72)
 		)
 
 	_add_box(
 		"SidewalkLeft",
 		Vector3(1.5, 0.20, WORLD_SIZE),
-		Vector3(-5.8, 0.10, 0.0),
+		Vector3(-5.8, -0.05, 0.0),
 		Color(0.57, 0.55, 0.47)
 	)
 
 	_add_box(
 		"SidewalkRight",
 		Vector3(1.5, 0.20, WORLD_SIZE),
-		Vector3(5.8, 0.10, 0.0),
+		Vector3(5.8, -0.05, 0.0),
 		Color(0.57, 0.55, 0.47)
 	)
 

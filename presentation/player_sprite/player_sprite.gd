@@ -17,7 +17,7 @@ enum Facing { DOWN, UP, LEFT, RIGHT }
 @export var world_height_m: float = 1.75
 ## Nâng sprite lên để chân không chìm vào mặt đường. Map hiện có mặt đường cao 0.14-0.17 m
 ## nhưng không có collision, trong khi Player đứng ở độ cao 0. Sửa gốc ở world/map, rồi đặt về 0.
-@export var ground_clearance_m: float = 0.12
+@export var ground_clearance_m: float = 0.0
 
 var _facing: Facing = Facing.DOWN
 var _moving: bool = false
