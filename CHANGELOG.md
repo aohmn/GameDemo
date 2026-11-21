@@ -182,3 +182,6 @@
 - Sua do cao mat duong trong world/map/map_controller.gd: RoadShoulderMain 0.04, MainRoad/CrossRoad 0.05, DistrictRoad/DistrictCrossRoad 0.045 (chuyen sang _add_static_box), Sidewalk 0.08, RoadMarking day 0.05 cao 0.012 (center y=0.056). Khong con hai khoi khac mau co mat tren bang nhau.
 - Vong lap cay trong _build_expanded_world() bo qua vi tri khong qua _is_tree_position_clear() de het warning.
 - Chua kiem tra tren Godot Android (muc 3, 4 theo AGENTS.md §13).
+
+## Minimap gesture fix
+- Sửa pan kết hợp pinch zoom bằng hai ngón.

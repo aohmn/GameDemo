@@ -150,6 +150,7 @@ func _handle_screen_touch(event: InputEventScreenTouch) -> void:
 
 func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 	var local_position: Vector2 = _screen_to_local(event.position)
+
 	if not _world_map_open:
 		return
 
@@ -157,7 +158,6 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 		return
 
 	var previous_position: Vector2 = _touch_positions[event.index]
-	_touch_positions[event.index] = local_position
 
 	if _touch_positions.size() >= 2:
 		var touch_ids: Array = _touch_positions.keys()
@@ -167,16 +167,21 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 			other_id = touch_ids[1]
 
 		var other_position: Vector2 = _touch_positions[other_id]
+		var old_center := (previous_position + other_position) * 0.5
+		var new_center := (local_position + other_position) * 0.5
 		var old_distance := previous_position.distance_to(other_position)
 		var new_distance := local_position.distance_to(other_position)
 
-		if old_distance > 1.0 and new_distance > 1.0:
-			var zoom_factor := new_distance / old_distance
-			var focal_point := (local_position + other_position) * 0.5
-			_zoom_at(zoom_factor, focal_point)
+		_map_pan += new_center - old_center
+		_clamp_map_pan()
 
+		if old_distance > 1.0 and new_distance > 1.0:
+			_zoom_at(new_distance / old_distance, new_center)
+
+		_touch_positions[event.index] = local_position
 		_gesture_moved = true
 	else:
+		_touch_positions[event.index] = local_position
 		var movement := local_position - previous_position
 
 		if movement.length() > 1.0:
@@ -186,8 +191,6 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 
 	accept_event()
 	queue_redraw()
-
-
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
 	var local_position: Vector2 = _screen_to_local(event.position)
 	if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:

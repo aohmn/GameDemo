@@ -214,3 +214,8 @@ Chưa có kết quả chạy thực tế trên Godot Android cho lần cập nh�
 - Minimap giới hạn redraw xuống 20 lần/giây thay vì redraw mỗi frame.
 - Minimap đổi tọa độ touch từ viewport sang local Control trước khi pan, zoom hoặc đặt waypoint.
 - Waypoint gọi `NavigationService.find_route()` và vẽ preview khi có đường.
+
+### Two-finger minimap gesture
+- Hỗ trợ vừa dịch chuyển bản đồ vừa pinch zoom bằng hai ngón.
+- Giữ thao tác kéo một ngón.
+- Kiểm thử thực tế trên Godot Android trước khi xác nhận hoàn thành.
