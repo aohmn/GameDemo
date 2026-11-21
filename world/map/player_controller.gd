@@ -24,6 +24,7 @@ const CAMERA_FOLLOW_OFFSET: Vector3 = Vector3(0.0, 1.5, 0.0)
 
 func _ready() -> void:
 	add_to_group("save_participant")
+	add_to_group("player")
 	var needs_component := get_node_or_null("Needs")
 	if needs_component != null and needs_component.has_signal("health_damage_requested"):
 		needs_component.connect("health_damage_requested", apply_damage)

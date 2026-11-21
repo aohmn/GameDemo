@@ -22,8 +22,7 @@ var _day_text: String = "Thứ Hai"
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var map_root := get_parent().get_parent()
-	_player = map_root.get_node_or_null("Player") as CharacterBody3D
+	_player = get_tree().get_first_node_in_group("player") as CharacterBody3D
 	if is_instance_valid(_player):
 		if _player.has_signal("health_changed"):
 			_player.connect("health_changed", _on_health_changed)

@@ -112,7 +112,7 @@ func _on_hour_changed(_payload: Dictionary) -> void:
 
 
 func _find_nearest_npc() -> void:
-	var player := get_parent().get_node_or_null("Player") as Node3D
+	var player := get_tree().get_first_node_in_group("player") as Node3D
 	if player == null:
 		return
 	var nearest: LifeNPC
@@ -163,9 +163,5 @@ func _on_interact_pressed() -> void:
 		return
 	if not is_instance_valid(_nearest_npc):
 		return
-	var goods: Array[ShopGood] = ShopService.get_goods()
-	var goods_text := "Hàng mẫu: "
-	for good: ShopGood in goods:
-		goods_text += "%s %sđ; " % [good.display_name, good.price_vnd]
-	_dialogue_label.text = _nearest_npc.get_dialogue() + "\n" + goods_text
+	_dialogue_label.text = _nearest_npc.get_dialogue()
 	_dialogue_panel.visible = true
