@@ -225,7 +225,7 @@ func _build_roads() -> void:
 	_add_static_box(
 		"RoadShoulderMain",
 		Vector3(11.0, 0.12, WORLD_SIZE),
-		Vector3(0.0, -0.01, 0.0),
+		Vector3(0.0, -0.02, 0.0),
 		Color(0.48, 0.43, 0.34)
 	)
 
@@ -246,22 +246,22 @@ func _build_roads() -> void:
 	for index in range(-16, 17, 3):
 		_add_box(
 			"RoadMarking",
-			Vector3(0.16, 0.025, 1.5),
-			Vector3(0.0, 0.0375, float(index) * 2.5),
+			Vector3(0.16, 0.012, 1.5),
+			Vector3(0.0, 0.056, float(index) * 2.5),
 			Color(0.90, 0.87, 0.72)
 		)
 
 	_add_static_box(
 		"SidewalkLeft",
 		Vector3(1.5, 0.20, WORLD_SIZE),
-		Vector3(-5.8, -0.05, 0.0),
+		Vector3(-5.8, -0.02, 0.0),
 		Color(0.57, 0.55, 0.47)
 	)
 
 	_add_static_box(
 		"SidewalkRight",
 		Vector3(1.5, 0.20, WORLD_SIZE),
-		Vector3(5.8, -0.05, 0.0),
+		Vector3(5.8, -0.02, 0.0),
 		Color(0.57, 0.55, 0.47)
 	)
 
@@ -394,19 +394,19 @@ func _build_trees() -> void:
 func _build_expanded_world() -> void:
 	# Hai truc duong phu ket noi cac cum dan cu.
 	for x_position in [-65.0, 65.0]:
-		_add_box(
+		_add_static_box(
 			"DistrictRoad",
 			Vector3(7.0, 0.10, WORLD_SIZE),
-			Vector3(x_position, 0.08, 0.0),
+			Vector3(x_position, -0.005, 0.0),
 			Color(0.20, 0.22, 0.22)
 		)
 
 	# Duong ngang ket noi cac khu vuc.
 	for z_position in [-90.0, 70.0]:
-		_add_box(
+		_add_static_box(
 			"DistrictCrossRoad",
 			Vector3(WORLD_SIZE, 0.10, 7.0),
-			Vector3(0.0, 0.08, z_position),
+			Vector3(0.0, -0.005, z_position),
 			Color(0.20, 0.22, 0.22)
 		)
 
@@ -438,8 +438,12 @@ func _build_expanded_world() -> void:
 		# Tránh hành lang đường ngang phía bắc tại z = -90.
 		if absf(z_position + 90.0) <= 6.0:
 			continue
-		_build_tree(Vector3(-112.0, 0.0, z_position))
-		_build_tree(Vector3(112.0, 0.0, z_position))
+		var left_position := Vector3(-112.0, 0.0, z_position)
+		if _is_tree_position_clear(left_position):
+			_build_tree(left_position)
+		var right_position := Vector3(112.0, 0.0, z_position)
+		if _is_tree_position_clear(right_position):
+			_build_tree(right_position)
 
 	# Cac o dat xanh phia ngoai khu dan cu.
 	_add_box(
