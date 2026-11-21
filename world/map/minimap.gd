@@ -2,7 +2,7 @@ extends Control
 class_name WorldMinimap
 
 var player: Node3D
-var npc_director: Node
+var npc_director: NPCDirector
 var map_type: String = "open_world"
 
 const WORLD_HALF_SIZE := 150.0

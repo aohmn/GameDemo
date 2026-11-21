@@ -50,6 +50,7 @@ Mục tiêu: đưa NPC có danh tính và lịch sinh hoạt vào khu dân cư, 
 ## 4. Các giai đoạn tiếp theo
 
 ### Giai đoạn A — Kiểm thử và ổn định NPC prototype
+- Xác nhận kiểu tham chiếu `NPCDirector` trong WorldMinimap và kiểm tra marker NPC trên cả minimap nhỏ/lớn.
 - Mở project bằng Godot Android, xử lý toàn bộ parser error và resource error.
 - Chạy khu dân cư, xác nhận 2 NPC xuất hiện đúng vị trí.
 - Tua GameClock qua 06:00, 07:00, 17:00, 19:00 để kiểm tra lịch.

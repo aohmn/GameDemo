@@ -14,6 +14,7 @@ Tạo một Resource `.tres` mới dùng script `npc_profile.gd`, điền ID ổ
 
 ## API
 - `NPCDirector.get_npc_count()`
+- `NPCDirector.get_npcs() -> Array[LifeNPC]`: trả về danh sách NPC còn hợp lệ để hệ thống khác đọc vị trí và trạng thái.
 - `NPCDirector.serialize_state()` / `deserialize_state()`
 - `LifeNPC.configure(profile: NPCProfile)`
 - `LifeNPC.update_schedule(hour: int)`

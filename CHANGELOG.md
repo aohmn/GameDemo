@@ -1,3 +1,11 @@
+## NPC Minimap API consistency
+
+- Khai báo tham chiếu NPCDirector có kiểu rõ ràng trong WorldMinimap.
+- Giữ API get_npcs() làm điểm truy cập danh sách NPC hợp lệ.
+- Xác nhận MapController tạo NPCDirector trước khi dựng minimap.
+- Cập nhật README và Roadmap.
+- Chưa xác nhận parser/runtime trên Godot Android.
+
 ## Data format: Godot Resources only
 
 - Thay dữ liệu hồ sơ NPC từ JSON sang `NPCProfile` Resource `.tres`.
