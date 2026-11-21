@@ -1,3 +1,8 @@
+## World Map: Two-finger pan and zoom fix
+- Sửa thao tác hai ngón: cập nhật vị trí tâm bản đồ theo chuyển động của hai ngón đồng thời với pinch zoom.
+- Giữ nguyên kéo một ngón, giới hạn zoom và giới hạn pan.
+- Chưa xác nhận parser và gameplay runtime trên Godot Android.
+
 ## Player Sprite (HD-2D)
 
 - Player dùng sprite billboard (`AnimatedSprite3D`); ngoại lệ texture ghi ở `docs/decisions/0001-player-sprite.md`.
