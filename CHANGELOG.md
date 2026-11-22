@@ -33,6 +33,26 @@
 - `grep` không còn tham chiếu `world/map/player_controller` ở `.gd`/`.tscn`.
 - Chưa kiểm tra: boot/game trên Godot Android.
 
+## Tách Player/Needs/HUD/Visual khỏi world/map — Bước 3: HUD/Joystick
+
+- Di chuyển `world/map/player_hud.gd` → `presentation/hud/player_hud.gd`
+  (giữ `class_name PlayerHUD`) và `world/map/virtual_joystick.gd` →
+  `presentation/hud/virtual_joystick.gd`; đồng nhất file `.uid`.
+- `world/map/scenes/map_root.tscn`: cập nhật đường dẫn ext_resource của node
+  `PlayerHUD` và `Joystick` sang `res://presentation/hud/...`.
+- HUD chỉ đọc sự kiện (`PlayerEvents`/`CoreEvents` qua EventBus), không đọc
+  node Player/Needs — không đổi hành vi.
+- Cập nhật tham chiếu: `world/map/README.md`, `world/README.md`,
+  `docs/architecture/module_dependency_survey.md`.
+- Thêm `presentation/hud/README.md`.
+
+### Kiểm tra (§11) — Mức 2
+- `gdparse presentation/hud/player_hud.gd presentation/hud/virtual_joystick.gd`:
+  không error.
+- `grep` không còn tham chiếu `world/map/player_hud` hay
+  `world/map/virtual_joystick` ở `.gd`/`.tscn`.
+- Chưa kiểm tra: boot/game trên Godot Android.
+
 ## Gỡ phụ thuộc chéo: JobEvents, Presentation, NPCDirector, Economy tùy chọn
 
 - `JobEvents` chuyển từ `modules/jobs/job_events.gd` sang

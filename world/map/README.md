@@ -55,8 +55,8 @@ Không xem các mục chưa triển khai là tính năng đã hoàn thành.
 - Controller: `map_controller.gd`
 - Player: `modules/player/player_controller.gd`
 - Minimap: `minimap.gd`
-- Player HUD: `player_hud.gd`
-- Joystick: `virtual_joystick.gd`
+- Player HUD: `presentation/hud/player_hud.gd`
+- Joystick: `presentation/hud/virtual_joystick.gd`
 
 `map_root.tscn` là điểm khởi đầu của thế giới liên tục. Scene không còn chứa
 `Visual` (sprite Player) hay `NPCDirector`; Bootstrap gắn hai node này lúc chạy

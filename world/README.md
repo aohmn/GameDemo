@@ -377,7 +377,6 @@ Cấu trúc dự kiến:
     ├── map/
     │   ├── scenes/
     │   ├── map_controller.gd
-    │   ├── virtual_joystick.gd
     │   └── README.md
     │
     ├── regions/

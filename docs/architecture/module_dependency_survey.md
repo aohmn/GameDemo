@@ -22,8 +22,8 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
 - Needs: `modules/needs/player_needs.gd` (dùng `PlayerEvents`).
 - Visual/Sprite: `player_visual.gd`, `player_sprite.gd` (subscribe
   `PlayerEvents.MOTION_CHANGED`).
-- HUD/Joystick: `player_hud.gd`, `virtual_joystick.gd` (dùng `PlayerEvents` +
-  `CoreEvents`).
+- HUD/Joystick: `presentation/hud/player_hud.gd`,
+  `presentation/hud/virtual_joystick.gd` (dùng `PlayerEvents` + `CoreEvents`).
 - NPC: `npc_director.gd`, `npc_agent.gd` (dùng `JobEvents`, `WorldEvents`).
 - Jobs: `job_service.gd`, `job_system.gd` (autoload); contract `JobEvents` ở Core.
 - Navigation: `navigation_service.gd` (autoload `WorldNavigation`, dùng
