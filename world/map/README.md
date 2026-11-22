@@ -53,7 +53,7 @@ Không xem các mục chưa triển khai là tính năng đã hoàn thành.
 
 - Scene: `scenes/map_root.tscn`
 - Controller: `map_controller.gd`
-- Player: `player_controller.gd`
+- Player: `modules/player/player_controller.gd`
 - Minimap: `minimap.gd`
 - Player HUD: `player_hud.gd`
 - Joystick: `virtual_joystick.gd`

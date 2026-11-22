@@ -15,6 +15,24 @@
 - `grep` không còn tham chiếu `world/map/characters/player_needs` ở `.gd`/`.tscn`.
 - Chưa kiểm tra: boot/game trên Godot Android.
 
+## Tách Player/Needs/HUD/Visual khỏi world/map — Bước 2: Player
+
+- Di chuyển `world/map/player_controller.gd` → `modules/player/player_controller.gd`
+  (giữ `class_name Player3DController`; đồng nhất file `.uid`).
+- Thêm `@export var joystick_path: NodePath` trong Player; `world/map/scenes/map_root.tscn`
+  gán `joystick_path = NodePath("../HUD/Joystick")` cho node Player.
+  Lưu ý: không còn `get_node("../HUD/Joystick")` trong code hiện tại — Joystick nhận hướng
+  điều khiển bằng `PlayerEvents.MOVE_INPUT_CHANGED` (phát qua EventBus), nên export là điểm
+  gắn kết thay thế, không đổi hành vi.
+- Cập nhật tham chiếu: `world/map/README.md`, `world/README.md`,
+  `docs/architecture/module_dependency_survey.md`.
+- Thêm `modules/player/README.md`.
+
+### Kiểm tra (§11) — Mức 2
+- `gdparse modules/player/player_controller.gd`: không error.
+- `grep` không còn tham chiếu `world/map/player_controller` ở `.gd`/`.tscn`.
+- Chưa kiểm tra: boot/game trên Godot Android.
+
 ## Gỡ phụ thuộc chéo: JobEvents, Presentation, NPCDirector, Economy tùy chọn
 
 - `JobEvents` chuyển từ `modules/jobs/job_events.gd` sang

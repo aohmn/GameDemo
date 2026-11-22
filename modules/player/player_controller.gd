@@ -4,6 +4,7 @@ class_name Player3DController
 signal health_changed(current_health: float, maximum_health: float)
 
 @export var save_id: String = "player"
+@export var joystick_path: NodePath = NodePath("../HUD/Joystick")
 
 @export_range(1.0, 1000.0, 1.0) var maximum_health: float = 100.0
 @export_range(0.0, 1000.0, 1.0) var current_health: float = 100.0

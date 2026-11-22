@@ -18,7 +18,7 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
 - Core: `core/events` (`CoreEvents`, EventBus), `core/contracts`
   (`PlayerEvents`, `WorldEvents`, `JobEvents`), `core/services` (GameClock,
   SaveCoordinator), `core/bootstrap` (composition root).
-- Player: `player_controller.gd` (sở hữu health/movement, dùng `PlayerEvents`).
+- Player: `modules/player/player_controller.gd` (sở hữu health/movement, dùng `PlayerEvents`).
 - Needs: `modules/needs/player_needs.gd` (dùng `PlayerEvents`).
 - Visual/Sprite: `player_visual.gd`, `player_sprite.gd` (subscribe
   `PlayerEvents.MOTION_CHANGED`).
