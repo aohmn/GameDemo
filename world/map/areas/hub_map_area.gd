@@ -27,7 +27,7 @@ func build_content() -> void:
 			"name": "HubGround",
 			"size": Vector3(40.0, 0.5, 40.0),
 			"position": Vector3(0.0, -0.25, 0.0),
-			"color": Color(0.6, 0.58, 0.5),
+			"color": Color(0.36, 0.50, 0.30),
 		}
 	], self)
 
@@ -35,13 +35,13 @@ func build_content() -> void:
 		{
 			"name": "RoadMain",
 			"size": Vector3(36.0, 0.10, 2.5),
-			"position": Vector3(0.0, -0.05, -9.0),
+			"position": Vector3(0.0, 0.0, -9.0),
 			"color": Color(0.2, 0.19, 0.18),
 		},
 		{
 			"name": "RoadSpine",
 			"size": Vector3(2.5, 0.10, 26.0),
-			"position": Vector3(0.0, -0.05, 5.0),
+			"position": Vector3(0.0, 0.0, 5.0),
 			"color": Color(0.2, 0.19, 0.18),
 		},
 	], self)

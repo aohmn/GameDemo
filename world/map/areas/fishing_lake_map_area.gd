@@ -4,7 +4,7 @@ extends MapArea
 class_name FishingLakeMapArea
 
 ## Nền hồ câu — tái sử dụng từ map_controller (cũ).
-const LAKE_GROUND_SPECS := [
+const LAKE_GROUND_SPECS: Array[Dictionary] = [
 	{
 		"name": "GroundNorth",
 		"size": Vector3(100.0, 0.5, 31.0),

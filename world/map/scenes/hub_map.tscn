@@ -2,4 +2,5 @@
 
 [ext_resource type="Script" path="res://world/map/areas/hub_map_area.gd" id="1_area"]
 
-[node name="HubMap" type="Node3D" script=ExtResource("1_area")]
+[node name="HubMap" type="Node3D"]
+script = ExtResource("1_area")

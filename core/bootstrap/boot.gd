@@ -47,6 +47,8 @@ func _ready() -> void:
 func _add_shared_systems() -> void:
 	# Hệ thống dùng chung (Player, Camera, HUD, Joystick, Minimap) tạo một lần.
 	_shared = SHARED_SCENE.instantiate()
+	# Gắn sprite TRƯỚC khi vào cây để VisualRoot thấy Visual trong _ready và tự ẩn.
+	_attach_player_visual(_shared)
 	add_child(_shared)
 	_player = _shared.get_node_or_null("Player") as CharacterBody3D
 

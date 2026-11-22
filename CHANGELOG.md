@@ -1,3 +1,12 @@
+## Fix: Player rơi xuyên sàn, màn hình đen sau refactor map hub
+
+- hub_map.tscn và fishing_lake_map.tscn: `script` đặt đúng dòng thuộc tính (trước đó bị bỏ qua nên map không dựng nội dung).
+- fishing_lake_map_area.gd: LAKE_GROUND_SPECS khai báo Array[Dictionary].
+- shared_map.tscn: thêm lại WorldEnvironment và Sun (mất sau refactor).
+- boot.gd: gắn sprite trước khi SharedMap vào cây để VisualRoot tự ẩn.
+- hub_map_area.gd: nâng mặt đường tránh nhiễu sọc, đổi màu nền hub.
+- Đã chạy thử trên Godot 4.7 Linux (import, boot, hub → hồ → hub, ảnh chụp). Chưa xác nhận trên Godot Android.
+
 # CHANGELOG
 
 ## Bugfix: Player spawn — phân biệt initial/load_save/transition và gửi tốc độ = 0 khi chuyển map
