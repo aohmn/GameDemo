@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## Bugfix: Player spawn — phân biệt initial/load_save/transition và gửi tốc độ = 0 khi chuyển map
+
+- `Player`: thêm `spawn_context: String` — "initial" (Player._ready), "load_save"
+  (Player.deserialize_state), "transition" (MapArea._apply_spawn).
+- `MapArea._apply_spawn()`: gọi `Player.velocity = Vector3.ZERO`; Player chuyển map
+  đến đúng điểm entry của map đích (không giữ tọa độ map cũ).
+- `Bootstrap._ready()`: sau `_show_map`, đặt `_player.spawn_context = "initial"` —
+  `load_game` (deferred) chuyển sang "load_save" nếu có save.
+
+### Kiểm tra (§11)
+- `gdparse` cho các .gd liên quan — chạy, không lỗi.
+- Grep: `spawn_context` — boot: initial → transition (MapArea._apply_spawn) → initial → load_save (nếu có save); chuyển map: transition; Player không giữ velocity khi chuyển map.
+- Chưa xác nhận trên Godot Android.
+
 ## Bugfix: Player rơi khỏi hồ câu — thiếu nền đất
 
 - `FishingLakeMapArea.build_content()`: thêm `GroundBuilder.build(LAKE_GROUND_SPECS, self)` — dựng nền hồ câu (GroundNorth/South/West/East quanh hồ, tái sử dụng từ map_controller cũ).
