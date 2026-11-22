@@ -54,6 +54,8 @@ func _apply_spawn() -> void:
 	if not is_instance_valid(player):
 		return
 	player.global_position = get_entry_point()
+	player.velocity = Vector3.ZERO
+	player.spawn_context = "transition"
 	print("[World] Spawn: ", name, " at ", get_entry_point())
 
 

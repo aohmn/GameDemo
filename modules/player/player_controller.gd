@@ -23,8 +23,12 @@ var _touch_input := Vector2.ZERO
 var _position_emit_accumulator: float = 0.0
 var _recovery_requested := false
 
+## Trạng thái spawn: "initial" (boot), "load_save" (tải save), "transition" (chuyển map).
+var spawn_context: String = "initial"
+
 
 func _ready() -> void:
+	spawn_context = "initial"
 	SaveCoordinator.register_participant(save_id, self)
 	add_to_group("player")
 
@@ -154,6 +158,7 @@ func deserialize_state(data: Dictionary) -> bool:
 		global_position = Vector3(float(position_value[0]), float(position_value[1]), float(position_value[2]))
 	velocity = Vector3.ZERO
 	_recovery_requested = false
+	spawn_context = "load_save"
 	_emit_health_changed()
 	_emit_position()
 	return true

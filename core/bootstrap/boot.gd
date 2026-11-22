@@ -19,6 +19,7 @@ const NPC_SPAWN_META: StringName = &"npc_spawn_enabled"
 
 var _active_map: Node
 var _shared: Node3D
+var _player: CharacterBody3D
 
 
 func _ready() -> void:
@@ -35,6 +36,8 @@ func _ready() -> void:
 
 	_add_shared_systems()
 	_show_map(MAP_SCENE)
+	# Fresh boot: load_game (deferred) sẽ chuyển sang "load_save" nếu có save.
+	_player.spawn_context = "initial"
 	SaveCoordinator.call_deferred("load_game")
 
 	print("[Boot] ProjectGame 3D khởi động")
@@ -45,6 +48,7 @@ func _add_shared_systems() -> void:
 	# Hệ thống dùng chung (Player, Camera, HUD, Joystick, Minimap) tạo một lần.
 	_shared = SHARED_SCENE.instantiate()
 	add_child(_shared)
+	_player = _shared.get_node_or_null("Player") as CharacterBody3D
 
 
 func _exit_tree() -> void:
