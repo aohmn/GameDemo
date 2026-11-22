@@ -9,6 +9,7 @@ Dữ liệu máu đăng ký participant độc lập qua `SaveCoordinator`.
   (`move_and_slide`), tăng tốc theo `acceleration`, hồi máu khi rơi
   (`fall_recovery_y`).
 - Nhận hướng đi qua `PlayerEvents.MOVE_INPUT_CHANGED` (bởi Joystick).
+- Vận tốc di chuyển `move_speed` (5.0), gia tốc `acceleration` (18.0).
 - API: `apply_damage()`, `restore_health()`, `recover_to(spawn_position)`,
   `serialize_state()`/`deserialize_state()`.
 - Joystick: `@export var joystick_path: NodePath` gán trong

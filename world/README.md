@@ -344,7 +344,7 @@ World cần hỗ trợ tải và giải phóng khu vực theo nhu cầu.
 
 Việc tải Scene cần phối hợp với hệ thống chuyển Scene cấp ứng dụng.
 
-Không để World tự tạo một SceneRouter trùng lặp.
+Không để World tự tạo một SceneRouter trùng lặp — SceneRouter chưa có trong repo (ràng buộc khi sau này thêm).
 
 ## 10. Save và Load
 
@@ -433,7 +433,7 @@ Các thành phần hiện tại nằm trong:
 - Long-distance Route.
 - World Loading Manager.
 - World Map UI.
-- Hybrid Travel.
+- Hybrid Travel — cơ chế di chuyển xa (thiết kế ở §6.2, chưa triển khôngi).
 - Tích hợp Location với SaveCoordinator.
 
 Các nội dung này là định hướng kiến trúc, không phải tính năng đã hoàn thành.

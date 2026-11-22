@@ -1,8 +1,8 @@
 # ProjectGame — Roadmap và tiến độ
 
-Cập nhật: 2026-11-21  
-Nguồn chính: `GameDemo3` / nhánh `main`  
-Nguyên tắc trạng thái: **Đã có mã nguồn** không đồng nghĩa **đã kiểm chứng runtime**. Theo `AGENTS.md` §13 và §16, tính năng chỉ được đánh dấu Done sau khi mở và chạy kiểm tra trên Godot Android.
+Cập nhật: 2026-11-22  
+Nguồn chính: repo `GameDemo` / nhánh `main`  
+Nguyên tắc trạng thái: **Đã có mã nguồn** không đồng nghĩa **đã kiểm chứng runtime**. Theo `AGENTS.md` §11, tính năng chỉ được đánh dấu Done sau khi mở và chạy kiểm tra trên Godot Android.
 
 ## 1. Tiến độ đã làm
 

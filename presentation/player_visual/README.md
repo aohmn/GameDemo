@@ -25,7 +25,7 @@ bằng `CapsuleMesh`, `SphereMesh`, `CylinderMesh` (không dùng texture hoặc 
 ## Kiểm tra
 
 - `gdparse presentation/player_visual/player_visual.gd` — không error.
-- Chạy map không có sprite: Player/VisualRoot hiển thị với 15 mesh con; di chuyển,
+- Chạy map không có sprite: Player/VisualRoot hiển thị với 23 mesh nối điểm; di chuyển,
   tay/chân động theo vận tốc.
 
 ## Giới hạn

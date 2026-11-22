@@ -2,6 +2,8 @@
 
 EconomyService (autoload) là nguồn số dư VND duy nhất của Player trong prototype.
 
+Số dư ban đầu: `STARTING_BALANCE_VND` = 250000 VND (`economy_service.gd`).
+
 ## API công khai
 - `can_afford(amount_vnd: int) -> bool`
 - `add_money(amount_vnd: int) -> bool`

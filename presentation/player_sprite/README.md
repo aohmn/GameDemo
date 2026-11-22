@@ -18,10 +18,8 @@ Ngoại lệ texture: xem `docs/decisions/0001-player-sprite.md`.
     └── README.md
     assets/characters/player/
     ├── source/              # 3 sprite sheet gốc
-    ├── player_atlas.png     # SINH RA bởi tools/build_player_atlas.py
+    ├── player_atlas.png     # SINH RA bởi công cụ (đã gỡ khỏi repo — xem docs/decisions/0001)
     └── player_frames.tres   # SINH RA, đừng sửa tay
-    tools/build_player_atlas.py
-    tools/patch_player_visual.py
 
 ## API công khai
 - `set_motion(planar_velocity: Vector2)`: x = trục X thế giới, y = trục Z.
@@ -47,18 +45,19 @@ Có `Visual` thì `VisualRoot` (nhân vật 3D primitive) tự ẩn và tắt x�
 
 ## Tái tạo atlas
     python3 tools/build_player_atlas.py assets/characters/player/source assets/characters/player
+    (Công cụ đã gỡ khỏi repo; nếu cần tái tạo atlas/SpriteFrames, cần có code công cụ.)
 Sau đó cập nhật `character_height_px` theo số script in ra. Đổi thứ tự hoặc
-fps animation: sửa `ANIMATIONS` trong tool rồi chạy lại.
+fps animation: tạo lại công cụ (chưa có trong repo) và chạy lệnh ở trên.
 
 ## Kiểm tra
 - Mở `scenes/boot/boot.tscn`, chạy thử 4 hướng bằng joystick; xác nhận Player
   có node con `Visual` do Bootstrap gắn.
 - Quan sát: không nháy khi đi chéo, chân đúng mặt đất, idle và walk cùng cỡ.
 - Xóa tạm thư mục `presentation/`, import và boot: không `Parse Error`,
-  `Visual` vắng mặt, `VisualRoot` hiển thị với 15 mesh con, Player vẫn đi được.
+  `Visual` vắng mặt, `VisualRoot` hiển thị với 23 mesh nối điểm, Player vẫn đi được.
 
 ## Giới hạn đã biết
 - Chưa có chạy, ngồi, ngủ, tương tác, hướng chéo.
 - Thứ tự 14 frame của `walk_left` (hai hàng ghép lại) chưa được xác nhận trên máy thật.
-- `ground_clearance_m = 0.12` là giải pháp tạm vì mặt đường trong map cao hơn collision.
+- `ground_clearance_m = 0.0` là giá trị mặc định hiện tại (chưa chuẩn hóa giá trị thật cho mặt đường map).
 - Chưa kiểm tra trên Godot Android, chưa đo hiệu năng.

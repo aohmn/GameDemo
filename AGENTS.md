@@ -5,16 +5,23 @@
 
 Thư mục làm việc duy nhất: `/storage/emulated/0/Download/GameDemo/`
 
-Cấu trúc đích dài hạn (chỉ tạo thư mục khi có tính năng thực sự dùng):
+Cấu trúc hiện tại (danh sách theo `find`/`ls`, tự cập nhật khi file được tạo/di chuyển):
 
     GameDemo/
-    ├── AGENTS.md, README.md, CHANGELOG.md, CONTRIBUTING.md, LICENSE, project.godot, export_presets.cfg, .gitignore
-    ├── docs/{architecture,design,roadmap,decisions}/
-    ├── addons/, assets/{materials,shaders,fonts,audio,animations}/
-    ├── scenes/{boot,main_menu,loading,debug}/
-    ├── core/{bootstrap,contracts,services,events,registry,utilities}/
-    ├── modules/{player,needs,interaction,economy,inventory,jobs,shops,npc,social, housing,vehicles,transportation,world,environment,crafting,quests,activities}/
-    └── world/, presentation/, data/, systems/, localization/, tools/, builds/
+    ├── AGENTS.md, README.md, CHANGELOG.md, LICENSE, project.godot, .gitignore
+    ├── docs/{architecture,decisions,roadmap}/
+    ├── core/{bootstrap,contracts,services,events}/
+    ├── modules/{player,needs,jobs,shops,npc,economy}/
+    ├── scenes/boot/
+    ├── world/{map,navigation}/
+    ├── presentation/{player_sprite,player_visual,hud}/
+    ├── assets/characters/player/{source,player_atlas.png,player_frames.tres}
+    ├── icon.svg
+    ├── .godot/, gdtoolkit/ (tooling, chưa commit)
+
+Cấu trúc đích dài hạn (chỉ tạo thư mục khi có tính năng thực sự dùng): `docs/design/`,
+thư mục đích khác trong dòng đầu (`CONTRIBUTING.md`, `export_presets.cfg`,
+`scenes/main_menu/`, `data/`, `systems/`, `localization/`, `tools/`, `builds/`, ...).
 
 - Không tạo thư mục rỗng để "đủ bộ"; không tạo module mới nếu module hiện có mở rộng được.
 - Mỗi module phải có `README.md`: mục đích, API, event, phụ thuộc, cách kiểm tra.
@@ -62,11 +69,11 @@ Thiết kế Modular Architecture + Data-driven. Không tạo GameManager khổn
 
 Không tạo nhiều hệ thống cùng quản lý một loại dữ liệu; không tạo bản sao trạng thái toàn cục. Các dịch vụ dùng chung:
 
-- GameClock (thời gian), Economy (tiền), Inventory (vật phẩm), EventBus (sự kiện).
-- SaveCoordinator (lưu/tải), SceneRouter (chuyển scene), ModuleRegistry (đăng ký module).
-- SettingsService (cấu hình), LocalizationService (ngôn ngữ).
+- GameClock (thời gian), Economy (tiền), EventBus (sự kiện).
+- SaveCoordinator (lưu/tải) — điều phối participant, không biết GameClock/module.
+- Inventory, SceneRouter, ModuleRegistry, SettingsService, LocalizationService: chưa có — không liệt kê là dịch vụ dùng chung cho đến khi triển khai.
 
-Mọi giao dịch tiền/vật phẩm/tài sản phải ATOMIC: kiểm tra đủ điều kiện → thực hiện toàn bộ → rollback nếu bất kỳ bước nào thất bại. `TransactionCoordinator` điều phối giao dịch nhiều module; chỉ commit khi tất cả thành công.
+Mọi giao dịch tiền/vật phẩm/tài sản phải ATOMIC: kiểm tra đủ điều kiện → thực hiện toàn bộ → rollback nếu bất kỳ bước nào thất bại. `TransactionCoordinator` (chưa có — thiết kế, đặt khi triển khai) điều phối giao dịch nhiều module; chỉ commit khi tất cả thành công.
 ## 7. DỮ LIỆU, WORLD VÀ NPC
 
 - Tách dữ liệu khỏi logic; ưu tiên Resource/JSON phù hợp; mọi đối tượng có ID ổn định.

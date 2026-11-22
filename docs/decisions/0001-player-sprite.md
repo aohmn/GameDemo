@@ -2,7 +2,7 @@
 
 - Ngày: 2026-11-21
 - Trạng thái: Chấp nhận (người dùng chọn phương án B)
-- Liên quan: AGENTS §0, §3, §4
+- Liên quan: AGENTS §3, §4
 
 ## Bối cảnh
 
@@ -20,8 +20,9 @@ Cho phép MỘT ngoại lệ hẹp: texture sprite của nhân vật Player, hi�
   dùng texture (§4 giữ nguyên).
 - NPC hoặc nhân vật khác muốn dùng sprite phải ghi thêm quyết định riêng.
 - Ảnh phải nằm trong repo (`assets/characters/`), không tải từ Internet.
-- Ảnh gốc giữ ở `assets/characters/player/source/`. Atlas và SpriteFrames
-  được sinh lại bằng `tools/build_player_atlas.py`, không sửa tay.
+- Ảnh gốc giữ ở `assets/characters/player/source/`. Atlas và SpriteFrames được
+  sinh lại bằng công cụ `tools/build_player_atlas.py` (công cụ này hiện đã gỡ khỏi
+  repo; atlas và SpriteFrames vẫn nằm sẵn ở `assets/characters/player/`). Không sửa tay.
 
 ## Hệ quả
 
@@ -37,8 +38,9 @@ Cho phép MỘT ngoại lệ hẹp: texture sprite của nhân vật Player, hi�
 - Sheet gốc không đều ô và idle nhỏ hơn walk ~8%; công cụ tự cắt, căn chân,
   căn đầu và thu nhỏ idle cho khớp.
 - Ảnh gốc bị resize (viền mờ) nên dùng lọc tuyến tính, không dùng nearest.
-- Hiển thị đứng trong world 3D nên cần `ground_clearance_m` tạm thời cho tới
-  khi mặt đường trong `world/map` được sửa cho khớp collision.
+- Hiển thị đứng trong world 3D: giá trị mặc định của `ground_clearance_m` hiện là
+  `0.0` (khai báo trong `player_sprite.gd`); giá trị tạm `0.12` trong tài liệu này
+  chưa phải giá trị đang dùng.
 
 ## Phương án đã loại
 

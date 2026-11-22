@@ -1,3 +1,5 @@
+# CHANGELOG
+
 ## Tách Player/Needs/HUD/Visual khỏi world/map — Bước 1: Needs
 
 - Di chuyển `world/map/characters/player_needs.gd` → `modules/needs/player_needs.gd`
@@ -109,7 +111,7 @@ rồi boot 150 frame. Không trường hợp nào có `Parse Error`.
 | `modules/npc` | Không có | Boot chạy; không có `NPCDirector`, nhóm `npc` rỗng; Player di chuyển bình thường |
 | `modules/shops` | Không có | Boot chạy; không ảnh hưởng luồng hiện tại (shop chỉ có dữ liệu mẫu) |
 | `modules/economy` | 2 lỗi thiếu autoload `EconomyService` | Boot chạy; `economy=false`; không có số dư VND |
-| `presentation` | Không có | Boot chạy; `Visual` vắng mặt, `VisualRoot` 3D hiển thị (15 mesh con); Player di chuyển bình thường |
+| `presentation` | Không có | Boot chạy; `Visual` vắng mặt, `VisualRoot` 3D hiển thị (15 mesh con tại lúc ghi chép; hiện `presentation/player_visual` có 23 mesh); Player di chuyển bình thường |
 
 ### Bằng chứng
 - Ảnh chụp boot trước/sau thay đổi giống hệt nhau:
@@ -171,6 +173,7 @@ rồi boot 150 frame. Không trường hợp nào có `Parse Error`.
 
 - Player dùng sprite billboard (`AnimatedSprite3D`); ngoại lệ texture ghi ở `docs/decisions/0001-player-sprite.md`.
 - Thêm `tools/build_player_atlas.py`: cắt 3 sprite sheet, căn đầu/chân, chuẩn hóa kích thước, sinh atlas và SpriteFrames.
+  (Công cụ này hiện đã gỡ khỏi repo; atlas và SpriteFrames vẫn nằm ở `assets/characters/player/`.)
 - Thêm `presentation/player_sprite/` (chọn hướng, idle/walk, lật cho hướng phải).
 - `player_controller.gd` báo vận tốc cho node `Visual` và ẩn `VisualRoot` (3D primitive, giữ làm dự phòng); `map_root.tscn` thêm `Visual`.
 - Đã chạy thử trên Godot 4.7 Linux (import, chạy scene, ảnh chụp 4 hướng). Chưa xác nhận trên Godot Android.
@@ -190,8 +193,6 @@ rồi boot 150 frame. Không trường hợp nào có `Parse Error`.
 - Xóa `npc_profiles.json` và `goods.json`; không còn đọc JSON cho cấu hình NPC/Shop.
 - Cập nhật README module và Roadmap.
 - Chưa xác nhận parser/runtime trên Godot Android.
-
-# CHANGELOG
 
 ## NPC & Life Simulation — Prototype foundation
 
@@ -345,7 +346,7 @@ rồi boot 150 frame. Không trường hợp nào có `Parse Error`.
 ## World Map: Road height fix
 - Sua do cao mat duong trong world/map/map_controller.gd: RoadShoulderMain 0.04, MainRoad/CrossRoad 0.05, DistrictRoad/DistrictCrossRoad 0.045 (chuyen sang _add_static_box), Sidewalk 0.08, RoadMarking day 0.05 cao 0.012 (center y=0.056). Khong con hai khoi khac mau co mat tren bang nhau.
 - Vong lap cay trong _build_expanded_world() bo qua vi tri khong qua _is_tree_position_clear() de het warning.
-- Chua kiem tra tren Godot Android (muc 3, 4 theo AGENTS.md §13).
+- Chưa xác nhận trên Godot Android (theo thang mức AGENTS.md §11).
 
 ## Minimap gesture fix
 - Sửa pan kết hợp pinch zoom bằng hai ngón.

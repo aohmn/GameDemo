@@ -51,6 +51,8 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
 - EconomyService → `SaveCoordinator` (đăng ký bởi Bootstrap nếu tồn tại).
 - Bootstrap → Core services + tùy chọn `presentation/player_sprite/player_sprite.tscn`,
   `modules/npc/npc_director.gd`, `/root/EconomyService`.
+- Bootstrap → `WorldEvents` (nhận `MAP_CHANGE_REQUESTED`), thay đổi map trong
+  phạm vi có quyền điều khiển node Boot.
 
 ## Điểm đã tách khỏi phụ thuộc trực tiếp
 - NPC không còn gọi `JobService`, `NavigationService`, `GameClock`,
