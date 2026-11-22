@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Bugfix: Player rơi khỏi hồ câu — thiếu nền đất
+
+- `FishingLakeMapArea.build_content()`: thêm `GroundBuilder.build(LAKE_GROUND_SPECS, self)` — dựng nền hồ câu (GroundNorth/South/West/East quanh hồ, tái sử dụng từ map_controller cũ).
+- Player tại `lake_entry` (0, 0.05, 22): có đất để đứng — đỡ rơi qua `fall_recovery_y` (hệ thống recover bình thường khi rơi).
+
+### Kiểm tra (§11)
+- `gdparse world/map/areas/fishing_lake_map_area.gd` — chạy, không lỗi.
+- Grep: nền hồ câu xuất hiện trong scene khi chạy Godot Android.
+- Chưa xác nhận trên Godot Android.
+
 ## Bugfix: MapArea dựng nội dung, không trùng Player/HUD, NPC cập nhật theo map
 
 - `MapArea._ready()` gọi `build_content()` đúng 1 lần/map instance:

@@ -3,6 +3,34 @@
 extends MapArea
 class_name FishingLakeMapArea
 
+## Nền hồ câu — tái sử dụng từ map_controller (cũ).
+const LAKE_GROUND_SPECS := [
+	{
+		"name": "GroundNorth",
+		"size": Vector3(100.0, 0.5, 31.0),
+		"position": Vector3(0.0, -0.25, -34.5),
+		"color": Color(0.29, 0.48, 0.23),
+	},
+	{
+		"name": "GroundSouth",
+		"size": Vector3(100.0, 0.5, 43.0),
+		"position": Vector3(0.0, -0.25, 28.5),
+		"color": Color(0.29, 0.48, 0.23),
+	},
+	{
+		"name": "GroundWest",
+		"size": Vector3(34.0, 0.5, 100.0),
+		"position": Vector3(-33.0, -0.25, 0.0),
+		"color": Color(0.29, 0.48, 0.23),
+	},
+	{
+		"name": "GroundEast",
+		"size": Vector3(34.0, 0.5, 100.0),
+		"position": Vector3(33.0, -0.25, 0.0),
+		"color": Color(0.29, 0.48, 0.23),
+	},
+]
+
 
 func get_entry_point() -> Vector3:
 	return Vector3(0.0, 0.05, 22.0)
@@ -13,6 +41,7 @@ func get_spawn_points() -> Dictionary:
 
 
 func build_content() -> void:
+	GroundBuilder.build(LAKE_GROUND_SPECS, self)
 	ObjectBuilder.build_fishing_lake(self)
 	TransitionBuilder.build([
 		{
