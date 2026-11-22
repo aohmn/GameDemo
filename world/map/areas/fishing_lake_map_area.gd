@@ -37,7 +37,10 @@ func get_entry_point() -> Vector3:
 
 
 func get_spawn_points() -> Dictionary:
-	return {"lake_entry": Vector3(0.0, 0.05, 22.0)}
+	return {
+		"lake_entry": Vector3(0.0, 0.05, 22.0),
+		"from_hub": Vector3(0.0, 0.05, 37.5),
+	}
 
 
 func build_content() -> void:
@@ -50,5 +53,6 @@ func build_content() -> void:
 			"size": Vector3(5.0, 3.0, 5.0),
 			"sign_text": "Khu dân cư",
 			"dest_scene": "res://world/map/scenes/hub_map.tscn",
+			"dest_spawn": "from_lake",
 		},
 	], self, Callable(self, "_on_transition_entered"))

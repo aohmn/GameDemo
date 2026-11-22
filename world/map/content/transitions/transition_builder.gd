@@ -27,5 +27,5 @@ static func build(specs: Array[Dictionary], parent: Node3D, on_enter: Callable) 
 		sign.no_depth_test = true
 		area.add_child(sign)
 
-		area.body_entered.connect(on_enter.bind(spec["dest_scene"]))
+		area.body_entered.connect(on_enter.bind(spec["dest_scene"], str(spec.get("dest_spawn", ""))))
 		parent.add_child(area)

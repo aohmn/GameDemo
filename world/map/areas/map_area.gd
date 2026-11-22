@@ -5,6 +5,8 @@
 extends Node3D
 class_name MapArea
 
+const SPAWN_META: StringName = &"spawn_id"
+
 var _transitioning := false
 
 
@@ -49,18 +51,31 @@ func _on_player_recovery_requested(payload: Dictionary) -> void:
 	print("[Player] Recovered after falling.")
 
 
+## Điểm xuất hiện theo spawn_id do Bootstrap gắn vào map; thiếu thì dùng entry mặc định.
+func _resolve_spawn_point() -> Vector3:
+	var spawn_id: String = str(get_meta(SPAWN_META, ""))
+	if spawn_id.is_empty():
+		return get_entry_point()
+	var points: Dictionary = get_spawn_points()
+	if points.has(spawn_id):
+		return points[spawn_id]
+	push_warning("[World] %s không có spawn point '%s'; dùng entry mặc định." % [name, spawn_id])
+	return get_entry_point()
+
+
 func _apply_spawn() -> void:
 	var player := get_tree().get_first_node_in_group("player") as CharacterBody3D
 	if not is_instance_valid(player):
 		return
-	player.global_position = get_entry_point()
+	var spawn_position := _resolve_spawn_point()
+	player.global_position = spawn_position
 	player.velocity = Vector3.ZERO
 	player.spawn_context = "transition"
-	print("[World] Spawn: ", name, " at ", get_entry_point())
+	print("[World] Spawn: ", name, " at ", spawn_position)
 
 
 ## Player Player đi vào transition area -> gửi yêu cầu chuyển map.
-func _on_transition_entered(body: Node3D, dest_scene: String) -> void:
+func _on_transition_entered(body: Node3D, dest_scene: String, dest_spawn: String = "") -> void:
 	var player := get_tree().get_first_node_in_group("player") as CharacterBody3D
 	if not is_instance_valid(player) or body != player or _transitioning:
 		return
@@ -69,5 +84,6 @@ func _on_transition_entered(body: Node3D, dest_scene: String) -> void:
 		return
 	_transitioning = true
 	EventBus.emit_event(WorldEvents.MAP_CHANGE_REQUESTED, {
-		"scene_path": dest_scene
+		"scene_path": dest_scene,
+		"spawn_id": dest_spawn,
 	})

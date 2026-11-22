@@ -1,3 +1,11 @@
+## Fix: spawn theo cổng chuyển map
+
+- Cổng chuyển map khai báo `dest_spawn`; Bootstrap truyền `spawn_id` qua event MAP_CHANGE_REQUESTED và metadata map.
+- MapArea chọn điểm xuất hiện theo `spawn_id` (thiếu thì dùng entry mặc định, có cảnh báo).
+- Hub -> hồ: xuất hiện cạnh cổng về hub (`from_hub`). Hồ -> hub: xuất hiện cạnh cổng sang hồ (`from_lake`).
+- Điểm xuất hiện nằm ngoài vùng cổng để không bị chuyển ngược ngay.
+- Đã chạy thử trên Godot 4.7 Linux (hai chiều, đứng yên 4 giây không bật ngược). Chưa xác nhận trên Godot Android.
+
 ## Fix: Player rơi xuyên sàn, màn hình đen sau refactor map hub
 
 - hub_map.tscn và fishing_lake_map.tscn: `script` đặt đúng dòng thuộc tính (trước đó bị bỏ qua nên map không dựng nội dung).

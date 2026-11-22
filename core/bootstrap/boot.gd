@@ -82,10 +82,10 @@ func _on_map_change_requested(payload: Dictionary) -> void:
 		push_error("[Boot] MAP_CHANGE_REQUESTED thiếu scene_path.")
 		return
 	# Đổi map ngoài physics callback để an toàn khi xóa/thêm node.
-	call_deferred("_change_map", scene_path)
+	call_deferred("_change_map", scene_path, str(payload.get("spawn_id", "")))
 
 
-func _change_map(scene_path: String) -> void:
+func _change_map(scene_path: String, spawn_id: String = "") -> void:
 	if not ResourceLoader.exists(scene_path, "PackedScene"):
 		push_error("[Boot] Không tìm thấy scene map: " + scene_path)
 		return
@@ -93,16 +93,18 @@ func _change_map(scene_path: String) -> void:
 	if map_scene == null:
 		push_error("[Boot] Không tải được scene map: " + scene_path)
 		return
-	_show_map(map_scene)
+	_show_map(map_scene, spawn_id)
 
 
 ## Dựng map trước khi map vào tree để các node con nhìn thấy nhau ngay trong _ready.
-func _show_map(map_scene: PackedScene) -> void:
+func _show_map(map_scene: PackedScene, spawn_id: String = "") -> void:
 	var map_instance := map_scene.instantiate()
 	if map_instance == null:
 		push_error("[Boot] Không instantiate được scene map.")
 		return
 
+	if not spawn_id.is_empty():
+		map_instance.set_meta(&"spawn_id", spawn_id)
 	_attach_player_visual(_shared)
 	_attach_npc_director(map_instance, _shared)
 

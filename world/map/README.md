@@ -80,3 +80,10 @@ Hub sở hữu:
 - Chưa có chunk streaming/region streaming.
 - Hồ câu chưa có va chạm cho nước.
 - Chưa có runtime verification trên Godot Android.
+
+## Spawn theo cổng chuyển map
+
+- Mỗi cổng trong `TransitionBuilder` có `dest_scene` và `dest_spawn` (id điểm xuất hiện ở map đích).
+- Map đích khai báo điểm đó trong `get_spawn_points()`; thiếu id thì dùng `get_entry_point()`.
+- Điểm xuất hiện phải nằm NGOÀI vùng cổng để không bị chuyển ngược ngay.
+- Thêm map/cổng mới: khai báo `dest_spawn` ở cổng và `get_spawn_points()` ở map đích.

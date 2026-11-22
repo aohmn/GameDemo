@@ -10,7 +10,10 @@ func get_entry_point() -> Vector3:
 
 
 func get_spawn_points() -> Dictionary:
-	return {"hub_entry": Vector3(0.0, 0.05, -8.0)}
+	return {
+		"hub_entry": Vector3(0.0, 0.05, -8.0),
+		"from_lake": Vector3(0.0, 0.05, 8.5),
+	}
 
 
 func get_road_points() -> Array[Vector2]:
@@ -53,5 +56,6 @@ func build_content() -> void:
 			"size": Vector3(5.0, 3.0, 5.0),
 			"sign_text": "Hồ câu",
 			"dest_scene": "res://world/map/scenes/fishing_lake_map.tscn",
+			"dest_spawn": "from_hub",
 		},
 	], self, Callable(self, "_on_transition_entered"))
