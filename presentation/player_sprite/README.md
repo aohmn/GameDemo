@@ -37,7 +37,10 @@ Không phụ thuộc module gameplay. `PlayerController` không giữ tham chi�
 sprite; node chỉ subscribe event của Player.
 
 ## Tích hợp
-Thêm instance `player_sprite.tscn` làm con tên `Visual` của node Player.
+`core/bootstrap/boot.gd` instantiate `player_sprite.tscn` và gắn làm con tên
+`Visual` của node Player sau khi dựng map, trước khi map vào tree. Scene world
+không còn `ext_resource` tới sprite. Nếu scene không tồn tại, Bootstrap bỏ qua
+và `VisualRoot` (nhân vật 3D primitive) vẫn hiển thị.
 Sprite tự đăng ký `PlayerEvents.MOTION_CHANGED`; `PlayerController` không
 tham chiếu node này.
 Có `Visual` thì `VisualRoot` (nhân vật 3D primitive) tự ẩn và tắt xử lý; không bị xóa, dùng làm dự phòng.
@@ -48,8 +51,11 @@ Sau đó cập nhật `character_height_px` theo số script in ra. Đổi thứ
 fps animation: sửa `ANIMATIONS` trong tool rồi chạy lại.
 
 ## Kiểm tra
-- Mở scene `world/map/scenes/map_root.tscn`, chạy thử 4 hướng bằng joystick.
+- Mở `scenes/boot/boot.tscn`, chạy thử 4 hướng bằng joystick; xác nhận Player
+  có node con `Visual` do Bootstrap gắn.
 - Quan sát: không nháy khi đi chéo, chân đúng mặt đất, idle và walk cùng cỡ.
+- Xóa tạm thư mục `presentation/`, import và boot: không `Parse Error`,
+  `Visual` vắng mặt, `VisualRoot` hiển thị với 15 mesh con, Player vẫn đi được.
 
 ## Giới hạn đã biết
 - Chưa có chạy, ngồi, ngủ, tương tác, hướng chéo.

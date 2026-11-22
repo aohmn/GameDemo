@@ -20,6 +20,14 @@ func emit_event(event_name: StringName, payload: Dictionary = {}) -> void:
 		handler.call(payload)
 
 
+## Cho phép nơi phát biết có ai đang nghe để chọn fallback (ví dụ đổi scene).
+func has_listeners(event_name: StringName) -> bool:
+	if not _handlers.has(event_name):
+		return false
+	var list: Array = _handlers[event_name]
+	return not list.is_empty()
+
+
 func subscribe(event_name: StringName, handler: Callable) -> void:
 	if not handler.is_valid():
 		push_warning("EventBus.subscribe: handler không hợp lệ cho sự kiện '%s'" % event_name)

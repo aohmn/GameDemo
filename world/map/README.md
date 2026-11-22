@@ -31,8 +31,10 @@ thôn bao quanh. Thế giới được mở rộng dần theo từng giai đoạ
 - Preview tuyến đường qua `WorldNavigation` (event-based) khi chọn waypoint.
 - Minimap nhận vị trí Player/NPC qua `WorldEvents`, không đọc node Player hay
   `NPCDirector`.
-- NPC và Minimap là node độc lập trong scene; `Map3DController` không tạo hay
-  điều khiển logic của chúng.
+- `Map3DController` không tạo hay điều khiển Presentation, NPC, Minimap.
+  `core/bootstrap/boot.gd` gắn Presentation (`Visual`) và `NPCDirector` vào map
+  sau khi instantiate, trước khi `add_child`, để scene world không phụ thuộc
+  cứng vào hai module này.
 
 ### Chưa triển khai
 
@@ -56,10 +58,18 @@ Không xem các mục chưa triển khai là tính năng đã hoàn thành.
 - Player HUD: `player_hud.gd`
 - Joystick: `virtual_joystick.gd`
 
-`map_root.tscn` là điểm khởi đầu của thế giới liên tục.
+`map_root.tscn` là điểm khởi đầu của thế giới liên tục. Scene không còn chứa
+`Visual` (sprite Player) hay `NPCDirector`; Bootstrap gắn hai node này lúc chạy
+nếu module tương ứng tồn tại.
 
 `fishing_lake_map.tscn` kế thừa `map_root.tscn`, đổi cấu hình map và tắt NPC
-bằng `spawn_enabled = false`; không cần MapController tạo hoặc gỡ NPC.
+bằng metadata `metadata/npc_spawn_enabled = false`; không cần MapController
+tạo hoặc gỡ NPC.
+
+Đổi map đi qua `WorldEvents.MAP_CHANGE_REQUESTED` (`{ "scene_path": String }`).
+Bootstrap giữ nguyên node Boot, thay map con và gắn lại Presentation/NPC cho
+map mới. Nếu chạy trực tiếp scene map mà không có Bootstrap, MapController
+quay lại `change_scene_to_file()` như trước.
 
 ## 4. Quy tắc thế giới
 
@@ -154,8 +164,9 @@ Tuân thủ AGENTS.md:
 ## 10. Kiểm thử Godot Android
 
 1. Mở project bằng Godot Android.
-2. Chạy Boot scene.
-3. Kiểm tra Player xuất hiện ở khu dân cư.
+2. Chạy Boot scene (`scenes/boot/boot.tscn`), không chạy trực tiếp scene map.
+3. Kiểm tra Player xuất hiện ở khu dân cư, có sprite `Visual`; nếu xóa
+   `presentation/` thì phải thấy nhân vật 3D `VisualRoot`.
 4. Di chuyển trên đường chính.
 5. Kiểm tra các khu vực mở rộng và giới hạn bản đồ.
 6. Chạm minimap để mở bản đồ toàn màn hình.

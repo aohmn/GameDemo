@@ -1,3 +1,61 @@
+## Gỡ phụ thuộc chéo: JobEvents, Presentation, NPCDirector, Economy tùy chọn
+
+- `JobEvents` chuyển từ `modules/jobs/job_events.gd` sang
+  `core/contracts/job_events.gd` (giữ `class_name` và nội dung). NPC dùng
+  contract Core, không còn tham chiếu thư mục `modules/jobs`.
+- `world/map/scenes/map_root.tscn` bỏ `ext_resource` `player_sprite.tscn` và
+  node `Visual`; bỏ luôn node `NPCDirector`. `fishing_lake_map.tscn` bỏ
+  `NPCDirector`, tắt NPC bằng `metadata/npc_spawn_enabled = false`.
+- `core/bootstrap/boot.gd` trở thành composition root:
+  - gắn `Visual` (sprite) vào `Player` nếu
+    `res://presentation/player_sprite/player_sprite.tscn` tồn tại, ngược lại giữ
+    `VisualRoot` 3D;
+  - tạo `NPCDirector` nếu `res://modules/npc/npc_director.gd` tồn tại, đặt
+    `spawn_enabled` theo metadata của map;
+  - đăng ký `EconomyService` qua `get_node_or_null("/root/EconomyService")` +
+    kiểm tra null, không tham chiếu tên autoload ở compile-time.
+- Đổi map đi qua `WorldEvents.MAP_CHANGE_REQUESTED`; Bootstrap giữ node Boot
+  sống, thay map con và gắn lại Presentation/NPC, nên map hồ câu cũng có sprite.
+  `MapController` fallback `change_scene_to_file()` khi không có listener.
+- Thêm `EventBus.has_listeners()` để MapController chọn event hay fallback.
+- Cập nhật README: `core/bootstrap`, `core/contracts`, `core/events`,
+  `core/services`, `world/map`, `world/navigation`,
+  `presentation/player_sprite`, `modules/jobs`, `modules/npc`,
+  `docs/architecture/module_dependency_survey.md`,
+  `docs/decisions/0001-player-sprite.md`.
+
+### Bảng nghiệm thu "xóa X → hỏng gì"
+
+Mỗi trường hợp: bản sao repo sạch, xóa thư mục, `godot --headless --import`,
+rồi boot 150 frame. Không trường hợp nào có `Parse Error`.
+
+| Xóa | Lỗi import/boot còn lại | Hành vi quan sát |
+|---|---|---|
+| `modules/jobs` | 3 lỗi thiếu `res://modules/jobs/job_system.gd` (autoload `JobSystem`) | Boot chạy; NPC vẫn spawn (2), nhưng không nhận `SCHEDULE_CHANGED` mới |
+| `modules/npc` | Không có | Boot chạy; không có `NPCDirector`, nhóm `npc` rỗng; Player di chuyển bình thường |
+| `modules/shops` | Không có | Boot chạy; không ảnh hưởng luồng hiện tại (shop chỉ có dữ liệu mẫu) |
+| `modules/economy` | 2 lỗi thiếu autoload `EconomyService` | Boot chạy; `economy=false`; không có số dư VND |
+| `presentation` | Không có | Boot chạy; `Visual` vắng mặt, `VisualRoot` 3D hiển thị (15 mesh con); Player di chuyển bình thường |
+
+### Bằng chứng
+- Ảnh chụp boot trước/sau thay đổi giống hệt nhau:
+  SHA-256 `3f9f9e9a324ae573e9b126cded056c5f9c375ce5bf062621be552da0b6d9fed0`.
+- Chuyển map sang `fishing_lake_map.tscn`: có `Visual`, có `NPCDirector` với
+  `spawn_enabled=false`, nhóm `npc` = 0, Player ở `lake_entry` (0, 0.05, 22).
+- Đo di chuyển sau 40 physics frame: 2.5967 đơn vị ở mọi trường hợp (kể cả khi
+  xóa `presentation` hoặc `modules/npc`).
+
+### Mức kiểm tra (§11)
+- **Mức 2**: `gdparse` toàn bộ file thay đổi, grep đường dẫn, cấu trúc file.
+- **Thêm (ngoài thang §11)**: import và boot 150 frame bằng Godot 4.7 headless
+  trên Linux/proot, có ảnh chụp.
+- **Mức 3–4**: người dùng đã mở project và chạy kiểm tra thực tế trên Godot
+  Android, xác nhận trước khi commit (2026-11-22). Repo không lưu log chi tiết
+  từng bước cảm ứng, âm thanh và hiệu năng.
+- Giới hạn công cụ: Godot ARM64 chính thức crash khi quét `/dev` dưới proot;
+  bản dùng để test có patch cục bộ tại offset `0x40f4b8` (`mov x0,#0`) chỉ trong
+  binary test, không liên quan mã nguồn game.
+
 ## Tách phụ thuộc module (Minimap, NPC, MapController, Player/HUD, Save)
 
 - Thêm `core/contracts/player_events.gd` (`PlayerEvents`) và

@@ -52,16 +52,24 @@ Không dùng group `save_participant`. Sau khi tải save, director phát
 GameClock.
 
 ## Phụ thuộc
-- `core/events` (EventBus), `core/contracts` (`WorldEvents`),
-  `modules/jobs/job_events.gd` (`JobEvents`).
+- `core/events` (EventBus), `core/contracts` (`WorldEvents`,
+  `core/contracts/job_events.gd` → `JobEvents`).
 - `SaveCoordinator` chỉ qua API đăng ký participant.
 - Không preload hay gọi trực tiếp GameClock, JobService, ShopService,
   NavigationService.
+- Không tham chiếu thư mục `modules/jobs`; `JobEvents` là contract Core.
 
 ## Vòng đời scene
-`NPCDirector` là node độc lập trong `world/map/scenes/map_root.tscn`;
-`Map3DController` không tạo hay điều khiển NPC. Scene kế thừa có thể đặt
-`spawn_enabled = false` để tắt NPC mà không cần sửa controller.
+`NPCDirector` không còn là node gắn cứng trong `map_root.tscn` hay
+`fishing_lake_map.tscn`. `core/bootstrap/boot.gd` kiểm tra
+`res://modules/npc/npc_director.gd` có tồn tại hay không rồi tạo node
+`NPCDirector` và gắn vào map. Nhờ vậy xóa module NPC không làm hỏng scene
+world; game vẫn chạy, chỉ không có NPC.
+
+Scene world khai báo có tạo NPC hay không bằng metadata, không bằng node:
+`metadata/npc_spawn_enabled = false` (ví dụ `fishing_lake_map.tscn`).
+Bootstrap đọc metadata này và đặt `spawn_enabled` tương ứng. `Map3DController`
+không tạo hay điều khiển NPC.
 
 ## Giới hạn prototype
 - Hai NPC dữ liệu mẫu.
@@ -75,6 +83,11 @@ GameClock.
 
 ## Kiểm tra
 - `gdparse` cho các file `.gd` (đã chạy, không lỗi cú pháp).
-- Mở Godot Android, chạy `map_root.tscn`, tua GameClock qua 07:00 và 17:00 để
+- Chạy `scenes/boot/boot.tscn` (không chạy trực tiếp `map_root.tscn`) để
+  Bootstrap tạo `NPCDirector`; xác nhận node `NPCDirector` tồn tại và nhóm
+  `npc` có 2 NPC.
+- Xóa tạm thư mục `modules/npc/`, import và boot 150 frame: game vẫn chạy,
+  không có `Parse Error`, không có `NPCDirector`, nhóm `npc` rỗng.
+- Mở Godot Android, chạy `boot.tscn`, tua GameClock qua 07:00 và 17:00 để
   xác nhận NPC nhận lịch qua event và đi theo tuyến đường.
 - Lưu rồi tải lại để xác nhận đăng ký participant và khôi phục trạng thái NPC.

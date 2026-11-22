@@ -7,13 +7,18 @@ và thay đổi trạng thái. Yêu cầu cần kết quả trực tiếp thì d
 ## Cấu trúc
 - `event_bus.gd`: autoload `EventBus`.
 - `core_events.gd`: class `CoreEvents`, chỉ chứa tên sự kiện nền tảng của Core.
-- Hợp đồng sự kiện dùng chung nằm ở `core/contracts/`: `PlayerEvents`, `WorldEvents`.
-- Module gameplay tự khai báo hợp đồng riêng, ví dụ `modules/jobs/job_events.gd`.
+- Hợp đồng sự kiện dùng chung nằm ở `core/contracts/`: `PlayerEvents`,
+  `WorldEvents`, `JobEvents`.
+- Module gameplay tự khai báo hợp đồng riêng khi sự kiện chỉ phục vụ nội bộ
+  module; contract dùng chung phải đặt ở `core/contracts/`.
 
 ## API công khai
 - `emit_event(event_name: StringName, payload: Dictionary = {}) -> void`
 - `subscribe(event_name: StringName, handler: Callable) -> void`
 - `unsubscribe(event_name: StringName, handler: Callable) -> void`
+- `has_listeners(event_name: StringName) -> bool` — cho nơi phát biết có ai
+  đang nghe để chọn fallback (ví dụ MapController chọn giữa event và
+  `change_scene_to_file()`).
 
 Handler nhận đúng 1 tham số: `payload` (Dictionary).
 `subscribe` không đăng ký trùng cùng một Callable. Handler không còn hợp lệ bị dọn khi emit.
@@ -38,16 +43,20 @@ Tên sự kiện gameplay nằm trong module/hợp đồng sở hữu, không th
 
 ### WorldEvents
 - `PLAYER_POSITION_CHANGED`, `NPC_POSITIONS_CHANGED`, `ROUTE_REQUESTED`,
-  `ROUTE_READY`, `PLAYER_RECOVERY_REQUESTED`.
+  `ROUTE_READY`, `PLAYER_RECOVERY_REQUESTED`, `MAP_CHANGE_REQUESTED`.
 
 ### JobEvents
-- `SCHEDULE_CHANGED`, `SCHEDULE_SNAPSHOT_REQUESTED`.
+- `SCHEDULE_CHANGED`, `SCHEDULE_SNAPSHOT_REQUESTED`. Định nghĩa tại
+  `core/contracts/job_events.gd`; logic phát lịch vẫn ở `modules/jobs`.
 
-Chi tiết payload: xem `core/contracts/README.md` và `modules/jobs/README.md`.
+Chi tiết payload: xem `core/contracts/README.md`.
 
 ## Dependencies
 Chỉ phụ thuộc kiểu built-in của Godot. Không phụ thuộc module gameplay.
 
 ## Kiểm tra
-Đã kiểm tra cú pháp bằng `gdparse`. Chạy game trên Godot Android để xác nhận
-không có lỗi runtime khi subscribe/unsubscribe; chưa thực hiện trong đợt này.
+Đã kiểm tra cú pháp bằng `gdparse`, import headless Godot 4.7 và boot 150 frame
+(không lỗi `Parse Error`). Đã thử xóa từng module `jobs`, `npc`, `shops`,
+`economy`, `presentation`: EventBus vẫn nạp bình thường. Chạy game trên Godot
+Android để xác nhận không có lỗi runtime khi subscribe/unsubscribe; chưa thực
+hiện trong đợt này.

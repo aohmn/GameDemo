@@ -4,9 +4,11 @@ Module cung cấp khung lịch làm việc chung và cầu nối sự kiện cho
 
 ## Thành phần
 - `job_service.gd`: `JobService` (RefCounted, static) — dữ liệu lịch thuần.
-- `job_events.gd`: `JobEvents` — hợp đồng tên sự kiện và mô tả payload.
 - `job_system.gd`: autoload `JobSystem` — đọc `GameClock` + `JobService` và
   phát lịch qua EventBus.
+- `JobEvents` không còn nằm trong module này. Hợp đồng sự kiện dùng chung
+  được đặt tại `core/contracts/job_events.gd` để module khác (ví dụ NPC)
+  không phải tham chiếu thư mục `modules/jobs`.
 
 ## API công khai
 - `JobService.get_activity(hour: int) -> StringName`: `work` (07–17),
@@ -33,7 +35,9 @@ sau `GameClock` để đọc được giờ ban đầu.
 
 ## Phụ thuộc
 - `GameClock` (autoload), `EventBus`, `CoreEvents`.
-- Không phụ thuộc module NPC hay bất kỳ module gameplay nào.
+- `JobEvents` từ `core/contracts/job_events.gd`.
+- Không phụ thuộc module NPC hay bất kỳ module gameplay nào. Module khác chỉ
+  cần `core/contracts/job_events.gd`, không cần import thư mục `modules/jobs`.
 
 ## Giới hạn
 Chưa có tuyển dụng Player, chấm công, tính lương hoặc hợp đồng lao động.
@@ -41,5 +45,9 @@ Chưa có lịch theo thứ trong tuần, ngày nghỉ hay sự kiện.
 
 ## Kiểm tra
 - `gdparse` cho các file `.gd` (đã chạy, không lỗi cú pháp).
+- Import headless Godot 4.7 + boot 150 frame: `SCHEDULE_CHANGED` được phát,
+  không `Parse Error`.
+- Xóa tạm `modules/jobs/`, import + boot: chỉ còn lỗi thiếu autoload `JobSystem`
+  (đúng dự kiến); scene world và NPC vẫn chạy.
 - Mở Godot Android, tua giờ và xác nhận `SCHEDULE_CHANGED` được phát; NPC cập
   nhật hoạt động tương ứng.

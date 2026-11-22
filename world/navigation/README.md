@@ -37,7 +37,7 @@ sau khi đã có tuyến hợp lệ, nên lỗi pathfinding không bị biến t
 
 ## Verification
 - `gdparse` (đã chạy, không lỗi cú pháp).
-- Mở Godot Android, chạy `map_root.tscn`:
+- Mở Godot Android, chạy `scenes/boot/boot.tscn` (Bootstrap gắn NPC/Presentation):
   - Tua lịch NPC và quan sát NPC đi theo các điểm giao lộ.
   - Mở bản đồ lớn, chạm một vị trí và xác nhận preview tuyến xuất hiện.
 - Chưa xác nhận runtime trên Godot Android.

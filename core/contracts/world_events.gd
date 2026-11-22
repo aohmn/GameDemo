@@ -23,3 +23,8 @@ const ROUTE_READY: StringName = &"world_route_ready"
 ## Player rơi khỏi địa hình và cần World đưa về spawn hợp lệ.
 ## Payload: { "player": Node3D }
 const PLAYER_RECOVERY_REQUESTED: StringName = &"world_player_recovery_requested"
+
+## Map hiện tại yêu cầu đổi sang scene world khác. Bootstrap sở hữu vòng đời
+## map và chịu trách nhiệm gắn lại Presentation/NPC cho map mới.
+## Payload: { "scene_path": String }
+const MAP_CHANGE_REQUESTED: StringName = &"world_map_change_requested"

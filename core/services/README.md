@@ -49,10 +49,12 @@ participant; đăng ký lại sẽ thay thế. Participant được dọn khỏi
 node đã bị giải phóng.
 
 ### Người đăng ký hiện tại
-- `boot.gd`: GameClock (`game_clock`), EconomyService (`player_economy`).
+- `boot.gd`: GameClock (`game_clock`); EconomyService (`player_economy`) chỉ
+  khi autoload `/root/EconomyService` tồn tại.
 - `Player3DController`: `player`.
 - `PlayerNeeds`: `player_needs`.
-- `NPCDirector`: `npc_world` (chỉ đăng ký khi `spawn_enabled`).
+- `NPCDirector`: `npc_world` (chỉ đăng ký khi `spawn_enabled`). Bootstrap tạo
+  node này nếu `modules/npc/npc_director.gd` tồn tại.
 
 ### Save version
 - Version hiện tại: 2, dữ liệu nằm trong section `participants`.
@@ -66,3 +68,7 @@ node đã bị giải phóng.
   qua event thời gian kế tiếp hoặc yêu cầu snapshot.
 - Tốc độ mặc định 1 phút game / 1 giây thật chỉ là giá trị tạm, chưa cân bằng.
 - Chưa chạy thử save/load trên Godot Android.
+- SaveCoordinator không biết module nào đăng ký. Khi module bị gỡ (economy,
+  npc), participant tương ứng chỉ đơn giản không xuất hiện trong save.
+- Bootstrap đăng ký EconomyService qua `get_node_or_null()` và kiểm tra null,
+  nên `boot.gd` không lỗi compile khi thiếu module economy.

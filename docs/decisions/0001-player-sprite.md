@@ -27,7 +27,10 @@ Cho phép MỘT ngoại lệ hẹp: texture sprite của nhân vật Player, hi�
 
 - Repo đã có nhân vật 3D primitive `Player/VisualRoot` (`world/map/characters/player_visual.gd`).
   Giữ nguyên làm dự phòng: khi có node `Visual` (sprite) thì `VisualRoot` bị ẩn và tắt xử lý,
-  không bị xóa. Muốn quay lại 3D: xóa node `Visual` khỏi `map_root.tscn`.
+  không bị xóa. `map_root.tscn` không còn gắn cứng sprite: `core/bootstrap/boot.gd`
+  instantiate `player_sprite.tscn` và gắn `Visual` lúc chạy nếu file tồn tại.
+  Muốn quay lại 3D: xóa thư mục `presentation/` (hoặc giữ nguyên, Bootstrap sẽ
+  bỏ qua khi thiếu file).
 
 - Thiếu walk sang phải: dùng lật ngang của walk trái.
 - Chưa có hướng chéo: chọn hướng gần nhất theo trục lớn hơn (có độ trễ).

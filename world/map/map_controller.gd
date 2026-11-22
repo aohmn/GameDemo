@@ -35,8 +35,8 @@ func _ready() -> void:
 
 	_apply_spawn()
 
-	# NPC và Minimap là node độc lập trong scene; MapController không khởi tạo
-	# hoặc điều khiển logic của hai module này.
+	# NPC, Presentation và Minimap do Bootstrap ghép vào map; MapController
+	# không khởi tạo hoặc điều khiển logic của các module này.
 	EventBus.subscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
 
 	print("[World] Continuous world loaded.")
@@ -733,6 +733,15 @@ func _on_transition_body_entered(body: Node3D) -> void:
 
 
 func _change_destination_scene() -> void:
+	# Bootstrap sở hữu vòng đời map để có thể gắn lại Presentation/NPC cho map
+	# mới. Nếu chạy scene map trực tiếp (không có Bootstrap), giữ fallback đổi
+	# scene của Godot như trước.
+	if EventBus.has_listeners(WorldEvents.MAP_CHANGE_REQUESTED):
+		EventBus.emit_event(WorldEvents.MAP_CHANGE_REQUESTED, {
+			"scene_path": destination_scene_path
+		})
+		return
+
 	var result := get_tree().change_scene_to_file(
 		destination_scene_path
 	)
