@@ -25,13 +25,22 @@ var _tree_crown_mesh: SphereMesh
 func _ready() -> void:
 
 	_build_environment()
-	_build_ground()
-	_build_roads()
-	_build_canal()
-	_build_buildings()
-	_build_trees()
-	_build_expanded_world()
-	_build_world_boundaries()
+	match map_type:
+		"fishing_lake":
+			# Hồ câu: nội dung hồ cá + gần hồ + hàng rào nước (không có đường/nhà/cây cốt như khu dân cư).
+			_build_fishing_lake()
+			_build_lake_ground()
+			_build_lake_water_barriers()
+		_:
+			# Bản đồ chính (khu dân cư): không dựng nội dung hồ cá.
+			_build_ground()
+			_build_roads()
+			_build_canal()
+			_build_buildings()
+			_build_trees()
+			_build_expanded_world()
+			_build_world_boundaries()
+	_build_transition()
 
 	_apply_spawn()
 

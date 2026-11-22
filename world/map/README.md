@@ -35,6 +35,12 @@ thôn bao quanh. Thế giới được mở rộng dần theo từng giai đoạ
   `core/bootstrap/boot.gd` gắn Presentation (`Visual`) và `NPCDirector` vào map
   sau khi instantiate, trước khi `add_child`, để scene world không phụ thuộc
   cứng vào hai module này.
+- Bản đồ hồ câu (`fishing_lake_map.tscn`, `map_type = "fishing_lake"`): dựng nội
+  dung hồ cá — `LakeWater`, LakeBanks, `DirtPath`, `FishingDock`, cây quanh hồ —
+  cùng GroundNorth/South/West/East gần hồ và hàng rào nước; gắn `MapTransition`
+  (Area3D tại z = 43, Label3D điểm đích "Khu dân cư").
+- Bản đồ chính (`map_root.tscn`, `map_type = "residential"`): dựng đường, nhà,
+  cây, ranh giới — không dựng nội dung hồ cá; `MapTransition` ở z = -43.
 
 ### Chưa triển khai
 

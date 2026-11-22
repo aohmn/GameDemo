@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## Map Controller: dựng nội dung hồ cá theo map_type + kết nối transition
+
+- `_ready()` gọi đúng theo `map_type`:
+  - `fishing_lake` → `_build_fishing_lake()` (LakeWater, LakeBanks, DirtPath,
+    FishingDock, cây quanh hồ), `_build_lake_ground()` (GroundNorth/South/West/East
+    gần hồ), `_build_lake_water_barriers()` (hàng rào nước); không dựng nội dung
+    đường/nhà/cây cốt của khu dân cư.
+  - Khác (khu dân cư) → `_build_ground()`, `_build_roads()`, `_build_canal()`,
+    `_build_buildings()`, `_build_trees()`, `_build_expanded_world()`,
+    `_build_world_boundaries()`; không dựng nội dung hồ cá.
+- `_build_transition()` gọi cho cả hai map (tạo `MapTransition` Area3D + Label3D
+  `DestinationName` — hàm này đã tồn tại nhưng chưa được gọi): tại `fishing_lake`
+  ở z = 43, khu dân cư ở z = -43; Player đi vào gửi
+  `WorldEvents.MAP_CHANGE_REQUESTED` (fallback `change_scene_to_file()` khi không
+  có Bootstrap).
+- Sửa ngoại lệ texture: chỉ gọi hàm đã tồn tại, không tạo/thay thế tài nguyên;
+  không sửa module khác.
+
+### Kiểm tra (§11)
+- `gdparse world/map/map_controller.gd`: không lỗi cú pháp (đã chạy).
+- Grep: 3 hàm dựng hồ cá + `_build_transition` được gọi trong `_ready()`; đường dẫn
+  scene của cả hai map tồn tại (`world/map/scenes/map_root.tscn`,
+  `world/map/scenes/fishing_lake_map.tscn`).
+- Chưa xác nhận trên Godot Android (theo thang AGENTS.md §11).
+
 ## Tách Player/Needs/HUD/Visual khỏi world/map — Bước 1: Needs
 
 - Di chuyển `world/map/characters/player_needs.gd` → `modules/needs/player_needs.gd`
