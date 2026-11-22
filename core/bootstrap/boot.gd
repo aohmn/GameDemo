@@ -131,12 +131,19 @@ func _attach_player_visual(shared_node: Node) -> void:
 	player.add_child(visual)
 
 
-## NPC độc lập với map: luôn gắn vào SharedMap scene, không tái tạo mỗi lần chuyển map.
+## NPC thuộc cấu hình của map hiện tại: mỗi lần chuyển map cập nhật lại
+## NPCDirector — xóa mọi NPC cũ; map metadata bật tạo mới, tắt không spawn.
 func _attach_npc_director(map_instance: Node, shared_node: Node) -> void:
-	if shared_node.get_node_or_null("NPCDirector") != null:
-		return
+	var old_director := shared_node.get_node_or_null("NPCDirector")
+	if old_director != null:
+		shared_node.remove_child(old_director)
+		old_director.queue_free()
+
 	if not ResourceLoader.exists(NPC_DIRECTOR_SCRIPT_PATH, "Script"):
 		return
+	if not _is_npc_spawn_enabled(map_instance):
+		return
+
 	var npc_script := load(NPC_DIRECTOR_SCRIPT_PATH) as Script
 	if npc_script == null:
 		push_warning("[Boot] Không tải được NPCDirector; bỏ qua NPC.")
@@ -146,7 +153,7 @@ func _attach_npc_director(map_instance: Node, shared_node: Node) -> void:
 		push_warning("[Boot] Không tạo được NPCDirector; bỏ qua NPC.")
 		return
 	director.name = "NPCDirector"
-	director.set("spawn_enabled", _is_npc_spawn_enabled(map_instance))
+	director.set("spawn_enabled", true)
 
 	# Giữ thứ tự cũ: NPCDirector đứng trước HUD trong cây scene.
 	var hud := shared_node.get_node_or_null("HUD")

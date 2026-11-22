@@ -11,12 +11,18 @@ var _transitioning := false
 func _ready() -> void:
 	EventBus.subscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
 	WorldNavigation.set_graph(get_road_points())
+	build_content()
 	_apply_spawn()
 
 
 func _exit_tree() -> void:
 	if EventBus != null:
 		EventBus.unsubscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
+
+
+## Dựng nội dung map — gọi đúng 1 lần mỗi map instance (từ _ready).
+func build_content() -> void:
+	pass
 
 
 ## Điểm xuất phát của Player khi vào map này.

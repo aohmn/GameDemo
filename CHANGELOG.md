@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## Bugfix: MapArea dựng nội dung, không trùng Player/HUD, NPC cập nhật theo map
+
+- `MapArea._ready()` gọi `build_content()` đúng 1 lần/map instance:
+  - Hub dựng nền + đường chính + đường dọc + cổng chuyển sang hồ câu.
+  - Hồ câu dựng địa hình (LakeWater, LakeBanks, DirtPath, FishingDock, cây
+    quanh hồ) — không tạo nội dung trùng khi chuyển map.
+- `hub_map.tscn` — bỏ Player, HUD, Joystick, Minimap — chỉ giữ root HubMap;
+  Player/Camera/HUD/Joystick/Minimap chỉ nằm trong `shared_map.tscn`.
+- `Bootstrap._attach_npc_director` — mỗi lần chuyển map: xóa NPCDirector cũ;
+  map `npc_spawn_enabled = false` → không tạo NPC; bật → tạo mới đúng số lượng.
+
+### Kiểm tra (§11)
+- `gdparse` cho các .gd liên quan — chạy, không lỗi.
+- Grep: Player/HUD chỉ nằm trong shared_map.tscn; Player không bị nhân đôi trong
+  hub_map/fishing_lake_map.
+- Chưa xác nhận trên Godot Android.
+
 ## Thiết kế map mới: bản đồ trung tâm 40×40m + khu vực độc lập
 
 - Thu nhỏ bản đồ chính (hub): 40×40m — chỉ nền + đường chính (`RoadMain`) +
