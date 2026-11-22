@@ -12,6 +12,7 @@ Game mô phỏng cuộc sống (Life Simulation) thế giới mở tại Việt 
 - **Kinh tế**: số dư VND integer, API thu/chi (`modules/economy`); shop có danh mục hàng mẫu (`modules/shops`).
 - **GameClock**: nguồn thời gian duy nhất (phút, đồng bộ save) — `core/services`.
 - **World**: khu dân cư + hồ câu prototype, đường chính/ngang, nhà, cây, ranh giới, minimap pan/zoom (`world/`).
+- **Minimap**: hiển thị bản đồ nhỏ bán kính ~30 m quanh Player; không chiếu cả map toàn cảnh. Kích thước và tâm vùng vẽ lấy từ MapArea(map_bounds Rect2). Vạch đường từ WorldNavigation.get_road_points(). Cắt nét vẽ trong ô bản đồ (clip). Hub 40x40 vừa khít ô bản đồ lớn.
 - **Tương tác trong bản đồ**: waypoint + tuyến đường dựng qua `WorldEvents` (`world/map`, `world/navigation`).
 - **Tương tác chung**: HUD, Joystick, Needs, Player — giao tiếp qua EventBus contracts (`core/contracts`).
 

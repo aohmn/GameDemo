@@ -7,6 +7,8 @@ class_name MapArea
 
 const SPAWN_META: StringName = &"spawn_id"
 
+var map_bounds: Rect2 = Rect2(Vector2(-50, -50), Vector2(100, 100))
+
 var _transitioning := false
 
 

@@ -6,6 +6,18 @@
 - Điểm xuất hiện nằm ngoài vùng cổng để không bị chuyển ngược ngay.
 - Đã chạy thử trên Godot 4.7 Linux (hai chiều, đứng yên 4 giây không bật ngược). Chưa xác nhận trên Godot Android.
 
+## Minimap: sửa cho map mới + lỗi cảm ứng
+
+- Bỏ WORLD_HALF_SIZE = 150, dùng map_bounds Rect2 từ MapArea代替.
+- Minimap nhỏ hiển thị bán kính ~30 m quanh Player, KHÔNG chiếu cả map toàn cảnh.
+- Vạch đường lấy từ WorldNavigation.get_road_points() như hiện tại, không có tọa độ cứng.
+- Cắt nét vẽ trong ô bản đồ (clip), vạch không tràn ra ngoài.
+- Yêu cầu cảm ứng B1: bỏ qua InputEventMouse có device == DEVICE_ID_EMULATION (Android gửi cả chạm lẫn chuột giả lập).
+- Yêu cầu cảm ứng B2: ngưỡng kéo tăng từ 1 px lên > 12 px để ngón không mất cú chạm.
+- Yêu cầu cảm ứng B3: nút -, +, ĐÓNG có vùng chạm tối thiểu 48x48, dùng chung Rect2 cho vẽ và bắt chạm.
+- Yêu cầu cảm ứng B4: chỉ queue_redraw khi cần (map mở, player/NPC di chuyển > 0.5 m), tối đa 10 lần/giây (mỗi 0.1s).
+- Đã sửa world/map/minimap.gd và world/map/areas/map_area.gd.
+
 ## Fix: Player rơi xuyên sàn, màn hình đen sau refactor map hub
 
 - hub_map.tscn và fishing_lake_map.tscn: `script` đặt đúng dòng thuộc tính (trước đó bị bỏ qua nên map không dựng nội dung).
