@@ -19,7 +19,7 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
   (`PlayerEvents`, `WorldEvents`, `JobEvents`), `core/services` (GameClock,
   SaveCoordinator), `core/bootstrap` (composition root).
 - Player: `player_controller.gd` (sở hữu health/movement, dùng `PlayerEvents`).
-- Needs: `player_needs.gd` (dùng `PlayerEvents`).
+- Needs: `modules/needs/player_needs.gd` (dùng `PlayerEvents`).
 - Visual/Sprite: `player_visual.gd`, `player_sprite.gd` (subscribe
   `PlayerEvents.MOTION_CHANGED`).
 - HUD/Joystick: `player_hud.gd`, `virtual_joystick.gd` (dùng `PlayerEvents` +
@@ -85,7 +85,7 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
 - `core/services/save_coordinator.gd` — API participant.
 
 ## Giới hạn còn lại
-- `player_needs.gd` vẫn đọc `GameClock` trực tiếp (module Needs dùng thời gian
+- `modules/needs/player_needs.gd` vẫn đọc `GameClock` trực tiếp (module Needs dùng thời gian
   chung; đây là phụ thuộc Core, không phải module gameplay).
 - HUD vẫn dùng event thời gian của GameClock qua `CoreEvents` (Core → Presentation).
 - Chưa có TransactionCoordinator/Inventory nên giao dịch kinh tế chưa atomic.

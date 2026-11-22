@@ -5,7 +5,7 @@
 [ext_resource type="Script" path="res://world/map/virtual_joystick.gd" id="3_joystick"]
 [ext_resource type="Script" path="res://world/map/characters/player_visual.gd" id="4_visual"]
 [ext_resource type="Script" path="res://world/map/player_hud.gd" id="5_hud"]
-[ext_resource type="Script" path="res://world/map/characters/player_needs.gd" id="6_needs"]
+[ext_resource type="Script" path="res://modules/needs/player_needs.gd" id="6_needs"]
 [ext_resource type="Script" path="res://world/map/minimap.gd" id="8_minimap"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]

@@ -229,7 +229,7 @@ Chưa có kết quả chạy thực tế trên Godot Android cho lần cập nh�
 
 ## 14. Player Needs và Save
 
-- `characters/player_needs.gd` quản lý đói, khát, năng lượng.
+- `modules/needs/player_needs.gd` quản lý đói, khát, năng lượng.
 - Tốc độ tiêu hao tính theo số phút tăng trong `GameClock`, không theo thời gian thực.
 - Needs phát `PlayerEvents.NEEDS_CHANGED`; nhận `PlayerEvents.NEEDS_ACTION_REQUESTED`
   từ HUD. Không module nào truy cập trực tiếp node Needs.

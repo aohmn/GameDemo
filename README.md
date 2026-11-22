@@ -1931,7 +1931,7 @@ PROJECTGAME — XÂY DỰNG MỘT THẾ GIỚI NƠI NGƯỜI CHƠI KHÔNG CHỈ 
 
 ## Player Needs và Save
 
-- Player có nhu cầu đói, khát, năng lượng trong `world/map/characters/player_needs.gd`.
+- Player có nhu cầu đói, khát, năng lượng trong `modules/needs/player_needs.gd`.
 - Needs phát `PlayerEvents.NEEDS_CHANGED`; HUD nhận qua EventBus và gửi thao tác qua `PlayerEvents.NEEDS_ACTION_REQUESTED`, không truy cập trực tiếp node Needs. Nút ĂN/UỐNG hiện là thao tác prototype miễn phí, chưa trừ vật phẩm vì Inventory chưa tích hợp.
 - Ăn/uống/nghỉ là API của module Needs; nghỉ tua `GameClock` dùng chung.
 - `SaveCoordinator` lưu qua participant đăng ký độc lập (`register_participant`); dữ liệu gồm GameClock, vị trí/máu Player, nhu cầu và NPC, ghi vào `user://projectgame_save.cfg`.

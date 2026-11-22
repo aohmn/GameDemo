@@ -1,3 +1,20 @@
+## Tách Player/Needs/HUD/Visual khỏi world/map — Bước 1: Needs
+
+- Di chuyển `world/map/characters/player_needs.gd` → `modules/needs/player_needs.gd`
+  (giữ `class_name PlayerNeeds`; đồng nhất file `.uid`).
+- `world/map/scenes/map_root.tscn`: ext_resource của node Needs gắn sang
+  `res://modules/needs/player_needs.gd`.
+- Giao tiếp của Needs với HUD/Player chỉ qua `PlayerEvents` + `EventBus`
+  (`core/contracts/player_events.gd`) — không đổi hành vi.
+- Cập nhật tham chiếu: `world/map/README.md`, `world/map/characters/README.md`,
+  `docs/architecture/module_dependency_survey.md`, `README.md`.
+- Thêm `modules/needs/README.md`.
+
+### Kiểm tra (§11) — Mức 2
+- `gdparse modules/needs/player_needs.gd`: không error.
+- `grep` không còn tham chiếu `world/map/characters/player_needs` ở `.gd`/`.tscn`.
+- Chưa kiểm tra: boot/game trên Godot Android.
+
 ## Gỡ phụ thuộc chéo: JobEvents, Presentation, NPCDirector, Economy tùy chọn
 
 - `JobEvents` chuyển từ `modules/jobs/job_events.gd` sang
