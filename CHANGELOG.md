@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## Thiết kế map mới: bản đồ trung tâm 40×40m + khu vực độc lập
+
+- Thu nhỏ bản đồ chính (hub): 40×40m — chỉ nền + đường chính (`RoadMain`) +
+  đường dọc đi qua (`RoadSpine`) + lối chuyển vào Hồ câu. Không còn nhà, cây,
+  công trình hay hồ cá lẫn vào hub.
+- Tách hệ thống chung ra `scenes/shared/shared_map.tscn`: Player, Camera, HUD,
+  Joystick, Minimap — độc lập với nội dung từng map. Nối NPCDirector vào shared
+  scene thay vì map.
+- Tách nội dung map thành modules: `world/map/areas/` (MapArea, HubMapArea,
+  FishingLakeMapArea) + `world/map/content/` (ground_builder, road_builder,
+  building_builder, tree_builder, object_builder, transition_builder).
+  Xóa `map_controller.gd` (logic đã chuyển sang areas + builders).
+- Hồ câu: scene riêng (`scenes/fishing_lake_map.tscn` +
+  `areas/fishing_lake_map_area.gd`), nội dung: LakeWater, LakeBanks, DirtPath,
+  FishingDock, cây quanh hồ. Lối chuyển Player ↔ hub qua
+  `WorldEvents.MAP_CHANGE_REQUESTED` — cơ chế chuyển map không thay đổi.
+- `MapArea` gọi `WorldNavigation.set_graph(points)` — đồ thị đường theo khu vực;
+  Minimap vẽ đường từ `WorldNavigation.get_road_points()`.
+- Định vị NPC (Lan, Minh) vào hub: Lan (-10, 0, -8), Minh (-8, 0, 6).
+- Cập nhật: `world/map/README.md`, `docs/architecture/module_dependency_survey.md`.
+
+### Kiểm tra (§11)
+- `gdparse` toàn bộ .gd mới và sửa (chạy, không lỗi).
+- Đọc toàn bộ repo để rà soát code↔docs; tất cả đều tương thích với thiết kế mới.
+- Chưa xác nhận trên Godot Android (CHƯA — theo thang AGENTS.md §11).
+
 ## Map Controller: dựng nội dung hồ cá theo map_type + kết nối transition
 
 - `_ready()` gọi đúng theo `map_type`:

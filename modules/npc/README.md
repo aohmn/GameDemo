@@ -60,16 +60,15 @@ GameClock.
 - Không tham chiếu thư mục `modules/jobs`; `JobEvents` là contract Core.
 
 ## Vòng đời scene
-`NPCDirector` không còn là node gắn cứng trong `map_root.tscn` hay
-`fishing_lake_map.tscn`. `core/bootstrap/boot.gd` kiểm tra
-`res://modules/npc/npc_director.gd` có tồn tại hay không rồi tạo node
-`NPCDirector` và gắn vào map. Nhờ vậy xóa module NPC không làm hỏng scene
+`NPCDirector` là node độc lập gắn vào `shared_map.tscn` (SharedMap scene độc
+lập với map). `core/bootstrap/boot.gd` kiểm tra
+`res://modules/npc/npc_director.gd` có tồn tại hay không rồi nối
+`NPCDirector` vào SharedMap. Nhờ vậy xóa module NPC không làm hỏng scene
 world; game vẫn chạy, chỉ không có NPC.
 
 Scene world khai báo có tạo NPC hay không bằng metadata, không bằng node:
 `metadata/npc_spawn_enabled = false` (ví dụ `fishing_lake_map.tscn`).
-Bootstrap đọc metadata này và đặt `spawn_enabled` tương ứng. `Map3DController`
-không tạo hay điều khiển NPC.
+Bootstrap đọc metadata này và đặt `spawn_enabled` tương ứng.
 
 ## Giới hạn prototype
 - Hai NPC dữ liệu mẫu.

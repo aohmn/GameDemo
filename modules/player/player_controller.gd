@@ -111,7 +111,7 @@ func _physics_process(delta: float) -> void:
 	camera_pivot.global_position = global_position + CAMERA_FOLLOW_OFFSET
 
 
-## World gọi khi xác nhận Player rơi khỏi địa hình; Player không tự đọc MapController.
+## World gọi khi xác nhận Player rơi khỏi địa hình; Player không tự đọc scene Map/Area.
 func recover_to(spawn_position: Vector3) -> void:
 	global_position = spawn_position
 	velocity = Vector3.ZERO

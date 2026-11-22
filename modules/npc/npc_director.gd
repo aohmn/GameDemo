@@ -7,7 +7,7 @@ const NPC_PROFILES: Array[Resource] = [
 	preload("res://modules/npc/data/minh.tres")
 ]
 
-## Cho phép scene kế thừa (ví dụ hồ câu) tắt NPC mà không cần MapController can thiệp.
+## Cho phép scene kế thừa (ví dụ hồ câu) tắt NPC mà không cần scene map can thiệp.
 @export var spawn_enabled: bool = true
 
 var save_id: String = "npc_world"

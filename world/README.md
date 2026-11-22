@@ -376,7 +376,8 @@ Cấu trúc dự kiến:
     ├── README.md
     ├── map/
     │   ├── scenes/
-    │   ├── map_controller.gd
+    │   ├── areas/
+    │   ├── content/
     │   └── README.md
     │
     ├── regions/

@@ -34,7 +34,7 @@ Dữ liệu máu đăng ký participant độc lập qua `SaveCoordinator`.
   `PlayerEvents.HEALTH_DAMAGE_REQUESTED` (payload `amount`),
   `PlayerEvents.STATE_SNAPSHOT_REQUESTED`.
 - World gọi `recover_to()` khi rơi ngoài địa hình qua
-  `WorldEvents.PLAYER_RECOVERY_REQUESTED`; Player không đọc `MapController`.
+  `WorldEvents.PLAYER_RECOVERY_REQUESTED`; Player không đọc scene Map/Area.
 
 ## Phụ thuộc
 

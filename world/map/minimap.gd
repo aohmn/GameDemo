@@ -1,8 +1,6 @@
 extends Control
 class_name WorldMinimap
 
-var map_type: String = "open_world"
-
 const WORLD_HALF_SIZE := 150.0
 const MINI_SIZE := 144.0
 const MAP_ZOOM_MIN := 1.0
@@ -410,29 +408,14 @@ func _draw_minimap() -> void:
 	draw_rect(map_rect, Color(0.20, 0.34, 0.22), true)
 
 	# Vẽ đường theo tọa độ thế giới tương đối với Player, không dùng sơ đồ tĩnh.
-	for road_x in [-65.0, 0.0, 65.0]:
+	var world_points := WorldNavigation.get_road_points()
+	for i in range(world_points.size() - 1):
 		_draw_minimap_world_line(
-			Vector2(road_x, -WORLD_HALF_SIZE),
-			Vector2(road_x, WORLD_HALF_SIZE),
-			Color(0.24, 0.25, 0.25),
-			5.0 if is_equal_approx(road_x, 0.0) else 3.0
-		)
-
-	for road_z in [-90.0, -12.0, 70.0]:
-		_draw_minimap_world_line(
-			Vector2(-WORLD_HALF_SIZE, road_z),
-			Vector2(WORLD_HALF_SIZE, road_z),
+			world_points[i],
+			world_points[i + 1],
 			Color(0.24, 0.25, 0.25),
 			3.0
 		)
-
-	# Kênh nước nằm ở x = 25 trong world map.
-	_draw_minimap_world_line(
-		Vector2(25.0, -WORLD_HALF_SIZE),
-		Vector2(25.0, WORLD_HALF_SIZE),
-		Color(0.07, 0.35, 0.52),
-		4.0
-	)
 
 	if _has_player_position:
 		draw_circle(center, 5.0, Color.WHITE)
@@ -519,55 +502,17 @@ func _draw_full_map() -> void:
 	var scale_x := map_rect.size.x / (WORLD_HALF_SIZE * 2.0)
 	var scale_y := map_rect.size.y / (WORLD_HALF_SIZE * 2.0)
 
-	var canal_x := 25.0
-	_draw_map_line(
-		map_rect,
-		scale_x,
-		scale_y,
-		Vector2(canal_x, -WORLD_HALF_SIZE),
-		Vector2(canal_x, WORLD_HALF_SIZE),
-		Color(0.06, 0.34, 0.52),
-		maxf(4.0, scale_x * 5.2)
-	)
-
-	for x_position in [-65.0, 0.0, 65.0]:
+	var world_points := WorldNavigation.get_road_points()
+	for i in range(world_points.size() - 1):
 		_draw_map_line(
 			map_rect,
 			scale_x,
 			scale_y,
-			Vector2(x_position, -WORLD_HALF_SIZE),
-			Vector2(x_position, WORLD_HALF_SIZE),
+			world_points[i],
+			world_points[i + 1],
 			Color(0.25, 0.26, 0.26),
-			maxf(2.0, scale_x * 7.0)
+			maxf(2.0, scale_x * 3.0)
 		)
-
-	for z_position in [-90.0, -12.0, 70.0]:
-		_draw_map_line(
-			map_rect,
-			scale_x,
-			scale_y,
-			Vector2(-WORLD_HALF_SIZE, z_position),
-			Vector2(WORLD_HALF_SIZE, z_position),
-			Color(0.25, 0.26, 0.26),
-			maxf(2.0, scale_y * 7.0)
-		)
-
-	for row in range(6):
-		var z_position := -34.0 + float(row) * 13.0
-		if is_equal_approx(z_position, -8.0):
-			z_position = -3.0
-		_draw_full_map_building(map_rect, scale_x, scale_y, -13.0, z_position)
-		_draw_full_map_building(map_rect, scale_x, scale_y, 13.0, z_position)
-
-	for row in range(4):
-		var z_position := -125.0 + float(row) * 22.0
-		_draw_full_map_building(map_rect, scale_x, scale_y, -85.0, z_position)
-		_draw_full_map_building(map_rect, scale_x, scale_y, 85.0, z_position)
-
-	for row in range(3):
-		var z_position := 88.0 + float(row) * 20.0
-		_draw_full_map_building(map_rect, scale_x, scale_y, -85.0, z_position)
-		_draw_full_map_building(map_rect, scale_x, scale_y, 85.0, z_position)
 
 	if _route.size() >= 2:
 		for route_index in range(_route.size() - 1):
@@ -651,33 +596,6 @@ func _draw_map_line(
 		end_point,
 		color,
 		width * _map_zoom,
-		true
-	)
-
-
-func _draw_full_map_building(
-	map_rect: Rect2,
-	scale_x: float,
-	scale_y: float,
-	world_x: float,
-	world_z: float
-) -> void:
-	var point := _world_to_full_map(
-		map_rect,
-		scale_x,
-		scale_y,
-		world_x,
-		world_z
-	)
-
-	var building_size := Vector2(
-		maxf(3.0, 5.0 * scale_x),
-		maxf(3.0, 6.0 * scale_y)
-	) * _map_zoom
-
-	draw_rect(
-		Rect2(point - building_size * 0.5, building_size),
-		Color(0.76, 0.61, 0.43),
 		true
 	)
 

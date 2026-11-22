@@ -29,9 +29,11 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
 - Jobs: `job_service.gd`, `job_system.gd` (autoload); contract `JobEvents` ở Core.
 - Navigation: `navigation_service.gd` (autoload `WorldNavigation`, dùng
   `WorldEvents`).
-- World/Map: `map_controller.gd` (dựng địa hình, xử lý recovery qua
-  `WorldEvents.PLAYER_RECOVERY_REQUESTED`, yêu cầu đổi map qua
-  `WorldEvents.MAP_CHANGE_REQUESTED`).
+- World/Map: `world/map/areas/map_area.gd` (MapArea: data spawn/entry point,
+  road points cho `WorldNavigation`, xử lý recovery, request transition) +
+  `world/map/areas/hub_map_area.gd` + `world/map/areas/fishing_lake_map_area.gd`
+  + builders trong `world/map/content/`. Hệ thống chung: `world/map/scenes/shared/shared_map.tscn`
+  (Player, HUD, Joystick, Minimap — độc lập với map).
 - Minimap: `minimap.gd` (dùng `WorldEvents`).
 - Economy: `economy_service.gd` (save qua `SAVE_ID`).
 
@@ -45,12 +47,13 @@ Thứ tự: `EventBus`, `GameClock`, `JobSystem`, `WorldNavigation`,
   `SaveCoordinator` (API đăng ký).
 - LifeNPC → `WorldEvents` (ROUTE_REQUESTED/ROUTE_READY), EventBus.
 - JobSystem → `GameClock`, `JobService`, `JobEvents`, `CoreEvents`.
-- WorldNavigation → `WorldEvents`, `AStar2D`.
-- MapController → `WorldEvents` (recovery, map change), preload shader của chính nó.
-- Minimap → `WorldEvents` (vị trí Player/NPC, tuyến đường).
+- WorldNavigation → `WorldEvents`, `AStar2D` (đồ thị đường theo khu vực được cập nhật bởi `MapArea`).
+- MapArea → `WorldEvents` (recovery, transition) + `WorldNavigation.set_graph()`.
+- Minimap → `WorldEvents` (vị trí Player/NPC, tuyến đường qua `WorldNavigation`).
 - EconomyService → `SaveCoordinator` (đăng ký bởi Bootstrap nếu tồn tại).
-- Bootstrap → Core services + tùy chọn `presentation/player_sprite/player_sprite.tscn`,
-  `modules/npc/npc_director.gd`, `/root/EconomyService`.
+- Bootstrap → `shared_map.tscn` (nối NPCDirector vào), Core services + tùy chọn
+  `presentation/player_sprite/player_sprite.tscn`, `modules/npc/npc_director.gd`,
+  `/root/EconomyService`.
 - Bootstrap → `WorldEvents` (nhận `MAP_CHANGE_REQUESTED`), thay đổi map trong
   phạm vi có quyền điều khiển node Boot.
 

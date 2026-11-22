@@ -1,15 +1,13 @@
 extends Node
 ## WorldNavigation (autoload): cung cấp tuyến đường qua EventBus.
-## Module khác không tham chiếu trực tiếp script này; chúng phát
-## WorldEvents.ROUTE_REQUESTED và nhận WorldEvents.ROUTE_READY.
-##
-## Đồ thị đường hiện tại dựa trên các trục đường của Map3DController.
-## Tuyến đường luôn đi qua các giao lộ của đồ thị; không có fallback
-## di chuyển thẳng khi không tìm thấy đường.
+## Đồ thị đường được nắm theo khu vực: MapArea gọi `set_graph()` với road
+## points của map hiện tại (`MapArea.get_road_points()`).
+## Hồ câu: đồ thị rỗng → không tìm được tuyến.
 
-const ROAD_X: Array[float] = [-65.0, 0.0, 65.0]
-const ROAD_Z: Array[float] = [-90.0, -12.0, 70.0]
 const ROAD_POINT_HEIGHT: float = 0.15
+
+var _points: Array[Vector2] = []
+var _width: float = 2.5
 
 
 func _ready() -> void:
@@ -19,6 +17,18 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if EventBus != null:
 		EventBus.unsubscribe(WorldEvents.ROUTE_REQUESTED, _on_route_requested)
+
+
+## Thiết lập đồ thị đường cho khu vực hiện tại (gọi từ MapArea).
+func set_graph(points: Array[Vector2], width: float = 2.5) -> void:
+	if _points == points and is_equal_approx(_width, width):
+		return
+	_points = points.duplicate()
+	_width = width
+
+
+func get_road_points() -> Array[Vector2]:
+	return _points.duplicate()
 
 
 func _on_route_requested(payload: Dictionary) -> void:
@@ -39,7 +49,7 @@ func _on_route_requested(payload: Dictionary) -> void:
 		return
 
 	var destination := destination_value as Vector3
-	var route: PackedVector3Array = _compute_route(start_value as Vector3, destination)
+	var route := _compute_route(start_value as Vector3, destination)
 
 	EventBus.emit_event(WorldEvents.ROUTE_READY, {
 		"request_id": request_id,
@@ -48,31 +58,18 @@ func _on_route_requested(payload: Dictionary) -> void:
 	})
 
 
-static func _compute_route(
-	start_position: Vector3,
-	destination: Vector3
-) -> PackedVector3Array:
+func _compute_route(start_position: Vector3, destination: Vector3) -> PackedVector3Array:
 	var graph := AStar2D.new()
 
-	for row in range(ROAD_Z.size()):
-		for column in range(ROAD_X.size()):
-			var point_id := row * ROAD_X.size() + column
-			var point := Vector2(ROAD_X[column], ROAD_Z[row])
-			graph.add_point(point_id, point)
+	for i in range(_points.size()):
+		graph.add_point(i, _points[i])
+	for i in range(_points.size()):
+		for j in range(i + 1, _points.size()):
+			if _points[i].distance_to(_points[j]) <= _width * 4.0:
+				graph.connect_points(i, j)
 
-	for row in range(ROAD_Z.size()):
-		for column in range(ROAD_X.size() - 1):
-			var left_id := row * ROAD_X.size() + column
-			graph.connect_points(left_id, left_id + 1)
-
-	for row in range(ROAD_Z.size() - 1):
-		for column in range(ROAD_X.size()):
-			var upper_id := row * ROAD_X.size() + column
-			var lower_id := upper_id + ROAD_X.size()
-			graph.connect_points(upper_id, lower_id)
-
-	var start_id := _find_nearest_intersection(start_position)
-	var destination_id := _find_nearest_intersection(destination)
+	var start_id := _find_nearest_point(start_position)
+	var destination_id := _find_nearest_point(destination)
 	if start_id < 0 or destination_id < 0:
 		return PackedVector3Array()
 
@@ -85,8 +82,8 @@ static func _compute_route(
 		var road_point: Vector2 = graph.get_point_position(point_id)
 		route.append(Vector3(road_point.x, ROAD_POINT_HEIGHT, road_point.y))
 
-	# Đoạn tiếp cận cuối từ giao lộ gần nhất tới đích. Chỉ thêm khi đã có
-	# tuyến đường hợp lệ, để không biến lỗi pathfinding thành đi thẳng.
+	# Đoạn tiếp cận tới đích chỉ thêm khi đã có tuyến hợp lệ, để không biến
+	# lỗi pathfinding thành đi thẳng.
 	if route.is_empty():
 		return route
 	var last_point: Vector3 = route[route.size() - 1]
@@ -97,17 +94,15 @@ static func _compute_route(
 	return route
 
 
-static func _find_nearest_intersection(position: Vector3) -> int:
+func _find_nearest_point(position: Vector3) -> int:
 	var nearest_id := -1
 	var nearest_distance := INF
 
-	for row in range(ROAD_Z.size()):
-		for column in range(ROAD_X.size()):
-			var point_id := row * ROAD_X.size() + column
-			var road_point := Vector2(ROAD_X[column], ROAD_Z[row])
-			var distance := Vector2(position.x, position.z).distance_squared_to(road_point)
-			if distance < nearest_distance:
-				nearest_distance = distance
-				nearest_id = point_id
+	for i in range(_points.size()):
+		var road_point := _points[i]
+		var distance := Vector2(position.x, position.z).distance_squared_to(road_point)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest_id = i
 
 	return nearest_id

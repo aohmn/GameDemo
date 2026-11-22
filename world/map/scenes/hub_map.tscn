@@ -1,0 +1,75 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://world/map/areas/hub_map_area.gd" id="1_area"]
+[ext_resource type="Script" path="res://modules/player/player_controller.gd" id="2_player"]
+[ext_resource type="Script" path="res://presentation/hud/virtual_joystick.gd" id="3_joystick"]
+[ext_resource type="Script" path="res://presentation/player_visual/player_visual.gd" id="4_visual"]
+[ext_resource type="Script" path="res://presentation/hud/player_hud.gd" id="5_hud"]
+[ext_resource type="Script" path="res://modules/needs/player_needs.gd" id="6_needs"]
+[ext_resource type="Script" path="res://world/map/minimap.gd" id="8_minimap"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape_Player"]
+radius = 0.35
+height = 1.8
+
+[node name="HubMap" type="Node3D" script=ExtResource("1_area")]
+
+[node name="Player" type="CharacterBody3D" parent="."]
+position = Vector3(0, 0.05, -8)
+script = ExtResource("2_player")
+joystick_path = NodePath("../HUD/Joystick")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+position = Vector3(0, 0.9, 0)
+shape = SubResource("CapsuleShape_Player")
+
+[node name="Needs" type="Node" parent="Player"]
+script = ExtResource("6_needs")
+
+[node name="VisualRoot" type="Node3D" parent="Player"]
+script = ExtResource("4_visual")
+
+[node name="CameraPivot" type="Node3D" parent="Player"]
+position = Vector3(0, 1.5, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="Player/CameraPivot"]
+rotation_degrees = Vector3(-55, 0, 0)
+spring_length = 8.0
+collision_mask = 1
+
+[node name="Camera3D" type="Camera3D" parent="Player/CameraPivot/SpringArm3D"]
+current = true
+fov = 70.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="PlayerHUD" type="Control" parent="HUD"]
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 292.0
+offset_bottom = 232.0
+script = ExtResource("5_hud")
+
+[node name="Joystick" type="Control" parent="HUD"]
+anchors_preset = 0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -184.0
+offset_right = 184.0
+offset_bottom = -24.0
+mouse_filter = 2
+script = ExtResource("3_joystick")
+
+[node name="WorldMinimap" type="Control" parent="HUD"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -176.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = 176.0
+grow_horizontal = 0
+z_index = 100
+script = ExtResource("8_minimap")

@@ -1,9 +1,12 @@
 extends Control
 ## Bootstrap: composition root của game.
-## Chỉ nơi đây biết cách ghép World, Presentation và module gameplay tùy chọn.
+## - Tạo và giữ SharedMap scene (Player, HUD, Joystick — hệ thống chung độc lập với map).
+## - Nối NPCDirector vào shared scene.
+## - Chuyển map qua WorldEvents.MAP_CHANGE_REQUESTED (Bootstrap sở hữu vòng đời map).
 ## Các module không tự gắn cứng vào scene của nhau (AGENTS §5).
 
-const MAP_SCENE: PackedScene = preload("res://world/map/scenes/map_root.tscn")
+const SHARED_SCENE: PackedScene = preload("res://world/map/scenes/shared/shared_map.tscn")
+const MAP_SCENE: PackedScene = preload("res://world/map/scenes/hub_map.tscn")
 
 ## Presentation là tùy chọn: thiếu sprite thì VisualRoot (3D) vẫn hiển thị.
 const SPRITE_SCENE_PATH: String = "res://presentation/player_sprite/player_sprite.tscn"
@@ -15,6 +18,7 @@ const NPC_DIRECTOR_SCRIPT_PATH: String = "res://modules/npc/npc_director.gd"
 const NPC_SPAWN_META: StringName = &"npc_spawn_enabled"
 
 var _active_map: Node
+var _shared: Node3D
 
 
 func _ready() -> void:
@@ -26,15 +30,21 @@ func _ready() -> void:
 	SaveCoordinator.register_participant(GameClock.SAVE_ID, GameClock)
 	_register_economy_participant()
 
-	# World chỉ phát yêu cầu đổi map; Bootstrap sở hữu vòng đời map và
-	# gắn lại Presentation/NPC cho map mới.
+	# World chỉ phát yêu cầu đổi map; Bootstrap sở hữu vòng đời map.
 	EventBus.subscribe(WorldEvents.MAP_CHANGE_REQUESTED, _on_map_change_requested)
 
+	_add_shared_systems()
 	_show_map(MAP_SCENE)
 	SaveCoordinator.call_deferred("load_game")
 
 	print("[Boot] ProjectGame 3D khởi động")
 	EventBus.emit_event(CoreEvents.BOOT_COMPLETED)
+
+
+func _add_shared_systems() -> void:
+	# Hệ thống dùng chung (Player, Camera, HUD, Joystick, Minimap) tạo một lần.
+	_shared = SHARED_SCENE.instantiate()
+	add_child(_shared)
 
 
 func _exit_tree() -> void:
@@ -80,16 +90,15 @@ func _change_map(scene_path: String) -> void:
 	_show_map(map_scene)
 
 
-## Dựng map, gắn Presentation/NPC trước khi map vào tree để các node con
-## nhìn thấy nhau ngay trong _ready (giống bố cục scene trước đây).
+## Dựng map trước khi map vào tree để các node con nhìn thấy nhau ngay trong _ready.
 func _show_map(map_scene: PackedScene) -> void:
 	var map_instance := map_scene.instantiate()
 	if map_instance == null:
 		push_error("[Boot] Không instantiate được scene map.")
 		return
 
-	_attach_player_visual(map_instance)
-	_attach_npc_director(map_instance)
+	_attach_player_visual(_shared)
+	_attach_npc_director(map_instance, _shared)
 
 	if _active_map != null and is_instance_valid(_active_map):
 		if _active_map.get_parent() == self:
@@ -101,8 +110,8 @@ func _show_map(map_scene: PackedScene) -> void:
 	move_child(map_instance, 0)
 
 
-func _attach_player_visual(map_instance: Node) -> void:
-	var player := map_instance.get_node_or_null("Player")
+func _attach_player_visual(shared_node: Node) -> void:
+	var player := shared_node.get_node_or_null("Player") as Node3D
 	if player == null:
 		return
 	if player.get_node_or_null("Visual") != null:
@@ -122,8 +131,9 @@ func _attach_player_visual(map_instance: Node) -> void:
 	player.add_child(visual)
 
 
-func _attach_npc_director(map_instance: Node) -> void:
-	if map_instance.get_node_or_null("NPCDirector") != null:
+## NPC độc lập với map: luôn gắn vào SharedMap scene, không tái tạo mỗi lần chuyển map.
+func _attach_npc_director(map_instance: Node, shared_node: Node) -> void:
+	if shared_node.get_node_or_null("NPCDirector") != null:
 		return
 	if not ResourceLoader.exists(NPC_DIRECTOR_SCRIPT_PATH, "Script"):
 		return
@@ -139,10 +149,10 @@ func _attach_npc_director(map_instance: Node) -> void:
 	director.set("spawn_enabled", _is_npc_spawn_enabled(map_instance))
 
 	# Giữ thứ tự cũ: NPCDirector đứng trước HUD trong cây scene.
-	var hud := map_instance.get_node_or_null("HUD")
-	map_instance.add_child(director)
+	var hud := shared_node.get_node_or_null("HUD")
+	shared_node.add_child(director)
 	if hud != null:
-		map_instance.move_child(director, hud.get_index())
+		shared_node.move_child(director, hud.get_index())
 
 
 func _is_npc_spawn_enabled(map_instance: Node) -> bool:

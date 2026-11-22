@@ -36,14 +36,14 @@ hiện tại mà không cần đọc node nội bộ của Player hoặc Needs.
 | `NPC_POSITIONS_CHANGED` | NPCDirector → Minimap | `{ "npcs": Array[Dictionary] }` |
 | `ROUTE_REQUESTED` | NPC/Minimap → WorldNavigation | `{ "request_id": int, "start": Vector3, "destination": Vector3 }` |
 | `ROUTE_READY` | WorldNavigation → người yêu cầu | `{ "request_id": int, "route": PackedVector3Array, "destination": Vector3 }` |
-| `PLAYER_RECOVERY_REQUESTED` | Player → MapController | `{ "player": Node3D }` |
-| `MAP_CHANGE_REQUESTED` | MapController → Bootstrap | `{ "scene_path": String }` |
+| `PLAYER_RECOVERY_REQUESTED` | Player → MapArea | `{ "player": Node3D }` |
+| `MAP_CHANGE_REQUESTED` | MapArea → Bootstrap | `{ "scene_path": String }` |
 
 `request_id` phải lớn hơn 0 và được dùng để bỏ qua kết quả không khớp.
 `NPC_POSITIONS_CHANGED` thay thế toàn bộ danh sách NPC đang hoạt động.
 `MAP_CHANGE_REQUESTED` để World không tự gọi `change_scene_to_file()`: Bootstrap
 sở hữu vòng đời map và gắn lại Presentation/NPC cho map mới. Nếu không có
-Bootstrap lắng nghe, MapController quay lại `change_scene_to_file()`.
+Bootstrap lắng nghe.
 
 ## JobEvents
 

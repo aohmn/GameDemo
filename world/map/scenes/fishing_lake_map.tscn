@@ -1,12 +1,6 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="PackedScene" path="res://world/map/scenes/map_root.tscn" id="1_base"]
+[ext_resource type="Script" path="res://world/map/areas/fishing_lake_map_area.gd" id="1_area"]
 
-[node name="FishingLakeMap" instance=ExtResource("1_base")]
-map_type = "fishing_lake"
-destination_scene_path = "res://world/map/scenes/map_root.tscn"
-destination_name = "Khu dân cư"
-destination_spawn_point_id = &"residential_entry"
-local_spawn_point_id = &"lake_entry"
-local_spawn_position = Vector3(0, 0.05, 22)
+[node name="FishingLakeMap" type="Node3D" script=ExtResource("1_area")]
 metadata/npc_spawn_enabled = false

@@ -17,8 +17,7 @@ và thay đổi trạng thái. Yêu cầu cần kết quả trực tiếp thì d
 - `subscribe(event_name: StringName, handler: Callable) -> void`
 - `unsubscribe(event_name: StringName, handler: Callable) -> void`
 - `has_listeners(event_name: StringName) -> bool` — cho nơi phát biết có ai
-  đang nghe để chọn fallback (ví dụ MapController chọn giữa event và
-  `change_scene_to_file()`).
+  đang nghe để chọn fallback (ví dụ khi chạy map mà không có Bootstrap).
 
 Handler nhận đúng 1 tham số: `payload` (Dictionary).
 `subscribe` không đăng ký trùng cùng một Callable. Handler không còn hợp lệ bị dọn khi emit.
