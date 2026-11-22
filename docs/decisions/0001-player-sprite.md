@@ -25,7 +25,7 @@ Cho phép MỘT ngoại lệ hẹp: texture sprite của nhân vật Player, hi�
 
 ## Hệ quả
 
-- Repo đã có nhân vật 3D primitive `Player/VisualRoot` (`world/map/characters/player_visual.gd`).
+- Repo đã có nhân vật 3D primitive `Player/VisualRoot` (`presentation/player_visual/player_visual.gd`).
   Giữ nguyên làm dự phòng: khi có node `Visual` (sprite) thì `VisualRoot` bị ẩn và tắt xử lý,
   không bị xóa. `map_root.tscn` không còn gắn cứng sprite: `core/bootstrap/boot.gd`
   instantiate `player_sprite.tscn` và gắn `Visual` lúc chạy nếu file tồn tại.

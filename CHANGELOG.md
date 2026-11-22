@@ -53,6 +53,25 @@
   `world/map/virtual_joystick` ở `.gd`/`.tscn`.
 - Chưa kiểm tra: boot/game trên Godot Android.
 
+## Tách Player/Needs/HUD/Visual khỏi world/map — Bước 4: PlayerVisual
+
+- Di chuyển `world/map/characters/player_visual.gd` →
+  `presentation/player_visual/player_visual.gd` (giữ `class_name PlayerVisual`;
+  đồng nhất file `.uid`).
+- `world/map/scenes/map_root.tscn`: ext_resource của node `VisualRoot` gắn sang
+  `res://presentation/player_visual/player_visual.gd`.
+- Xóa `world/map/characters/README.md` và thư mục `world/map/characters`
+  (rỗng sau khi file đã được di chuyển).
+- Cập nhật tham chiếu: `docs/architecture/module_dependency_survey.md`,
+  `docs/decisions/0001-player-sprite.md`.
+- Thêm `presentation/player_visual/README.md`.
+
+### Kiểm tra (§11) — Mức 2
+- `gdparse presentation/player_visual/player_visual.gd`: không error.
+- `grep` không còn tham chiếu `world/map/characters/player_visual` ở `.gd`/`.tscn`.
+- `test ! -d world/map/characters` — thư mục đã xóa.
+- Chưa kiểm tra: boot/game trên Godot Android.
+
 ## Gỡ phụ thuộc chéo: JobEvents, Presentation, NPCDirector, Economy tùy chọn
 
 - `JobEvents` chuyển từ `modules/jobs/job_events.gd` sang
