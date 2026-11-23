@@ -1,22 +1,20 @@
-# Vietnam Street
+# Đảo Bến Cảng Nhiệt Đới (Tropical Harbor Island)
 
-Map 3D đầu tiên của game, được tải thông qua MapManager bằng ID:
+Map đảo bến cảng nhiệt đới quy mô ~50 × 50m, khởi tạo trong hệ thống với ID:
 
 `vietnam_street`
 
-## Hiện trạng
+## Bối cảnh và thiết kế
 
-- Mặt đất, đường nhựa và vạch kẻ đường.
-- Vỉa hè và bó vỉa.
-- Các khối nhà phố.
-- Cây xanh dạng mesh.
-- DirectionalLight3D và WorldEnvironment.
+- **Địa hình đảo nhiệt đới**: Vùng biển đại dương bao quanh đảo (nước trong xanh, đáy biển có va chạm).
+- **Vịnh tự nhiên & Cửa biển**: Núi đá và đồi cao bo quanh tạo vịnh kín gió, mở lối ra đại dương ở phía bắc.
+- **Bến cảng & Cầu tàu**: Cầu tàu gỗ vươn dài ra vịnh tạo bến đỗ thuyền chữ T cùng các thuyền gỗ neo đậu.
+- **Công trình bến cảng**: Nhà kho bến cảng (Fishery Warehouse), chòi mồi câu (Bait Hut), các chồng thùng gỗ hậu cần.
+- **Hệ thực vật nhiệt đới**: Hàng dừa và cây cối tán tròn phân bổ ven biển và triền đồi.
 
-## Quy chuẩn
+## Quy chuẩn kỹ thuật
 
-- Dựng hình bằng mesh và vật liệu màu.
-- Không sử dụng texture ảnh.
-- Scene độc lập, node gốc là Node3D.
-- Không tự tải hoặc quản lý map khác.
-
-Map hiện tại vẫn là blockout, chưa có nhân vật, giao thông hoặc tương tác.
+- Dựng hình hoàn toàn bằng Primitive Mesh (BoxMesh, PlaneMesh, CylinderMesh, SphereMesh, PrismMesh) và StandardMaterial3D màu.
+- Không sử dụng texture ảnh hay sampler2D.
+- Hệ thống StaticBody3D và CollisionShape3D đầy đủ trên mặt đất, bãi biển, cầu tàu, vách núi, cây cối, thuyền và công trình.
+- Giữ vững điểm spawn người chơi an toàn không rơi, tương thích 100% với Bootstrap `main.gd` và Player hiện tại.

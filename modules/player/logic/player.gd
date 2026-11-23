@@ -9,6 +9,8 @@ var move_direction: Vector2 = Vector2.ZERO
 var visual: MeshInstance3D
 var shader_material: ShaderMaterial
 var walk_phase: float = 0.0
+var current_facing: int = 0
+var current_flip: bool = false
 
 
 func set_move_direction(direction: Vector2) -> void:
@@ -75,18 +77,21 @@ func _update_animation(moving: bool) -> void:
     if shader_material == null:
         return
 
+    if moving:
+        if absf(move_direction.x) > absf(move_direction.y):
+            current_facing = 2
+            current_flip = move_direction.x > 0.0
+        elif move_direction.y > 0.0:
+            current_facing = 1
+            current_flip = false
+        else:
+            current_facing = 0
+            current_flip = false
+
     shader_material.set_shader_parameter("walk_phase", walk_phase)
     shader_material.set_shader_parameter("moving", 1.0 if moving else 0.0)
-
-    if absf(move_direction.x) > absf(move_direction.y):
-        shader_material.set_shader_parameter("facing", 2)
-        shader_material.set_shader_parameter("flip_horizontal", move_direction.x > 0.0)
-    elif move_direction.y > 0.0:
-        shader_material.set_shader_parameter("facing", 1)
-        shader_material.set_shader_parameter("flip_horizontal", false)
-    else:
-        shader_material.set_shader_parameter("facing", 0)
-        shader_material.set_shader_parameter("flip_horizontal", false)
+    shader_material.set_shader_parameter("facing", current_facing)
+    shader_material.set_shader_parameter("flip_horizontal", current_flip)
 
 
 func _update_billboard() -> void:

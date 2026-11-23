@@ -2,6 +2,11 @@
 
 ## Chưa phát hành
 
+- Cập nhật định hướng dự án sang game phiêu lưu khám phá và câu cá tại AGENTS.md và tạo decision 0001.
+- Chuyển map hiện tại thành đảo bến cảng nhiệt đới (~50x50m) có đại dương bao quanh, vịnh tự nhiên, cầu tàu gỗ, núi đá, công trình và rặng dừa.
+- Bổ sung collision đầy đủ cho địa hình, biển, cầu tàu, thuyền, núi đá và cây cối trên đảo.
+- Cập nhật README gốc và README của map phản ánh đúng bối cảnh đảo nhiệt đới.
+- Giữ nguyên hướng nhìn cuối cùng khi Player dừng lại (idle).
 - Thêm joystick cảm ứng độc lập, hỗ trợ cảm ứng và chuột.
 - Bootstrap tải joystick tùy chọn để không phụ thuộc cứng vào module presentation.
 - Bổ sung scene dev và tài liệu sử dụng joystick.

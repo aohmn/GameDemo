@@ -6,6 +6,7 @@ Nhân vật CharacterBody3D với hiển thị cartoon 2D từ shader SDF, khôn
 - `set_move_direction(Vector2)`: hướng điều khiển.
 - X âm: trái, X dương: phải.
 - Y dương: lên, Y âm: xuống.
+- Hướng nhìn: tự động cập nhật theo hướng di chuyển (down, up, left, lật phải) và giữ nguyên hướng nhìn cuối cùng khi dừng (idle).
 
 ## Cấu trúc
 - api/: thông tin API module

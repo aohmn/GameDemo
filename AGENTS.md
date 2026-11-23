@@ -3,7 +3,10 @@
 Luật cho AI. Xung đột: mục có số nhỏ thắng. Chi tiết đặt trong README module, không đặt ở đây.
 
 ## 1. Dự án
-- Game kiểu biến ý tưởng thành hiện thực. Phong cách 2D HD: MAP 3D, nhân vật và vật thể 2D.
+- Game phiêu lưu khám phá và câu cá: kết hợp trải nghiệm thư giãn, phiêu lưu và mô phỏng câu cá.
+- Người chơi khám phá các vùng biển, câu cá, sưu tập sinh vật biển, bán cá và nâng cấp thiết bị.
+- Mỗi bản đồ câu cá là một module độc lập, dùng chung dữ liệu người chơi.
+- Phong cách 2D HD: MAP 3D, nhân vật và vật thể 2D.
 - Godot 4.x, GDScript có kiểu. Android ưu tiên (màn ngang, Joystick, cảm ứng).
 - KHÔNG có kế hoạch cố định. Ý tưởng hình thành khi làm (mục 8). Chỉ làm đúng việc được giao.
 - Nguyên bản: không chép tài sản hay mã của game khác.
