@@ -1,3 +1,30 @@
+## NPC di chuyen theo toa nha building_id va lich JobEvents
+
+- NPCProfile: xoa `home_position`, `workplace_position`, `shop_position` (Vector3 cung co);
+  thay bang `home_building_id`, `workplace_building_id`, `shop_building_id` (String).
+- lan.tres: home=bld_nha_pho_1, workplace=bld_tap_hoa_1, shop=bld_tap_hoa_2.
+- minh.tres: home=bld_nha_tro, workplace=bld_tiem_sua_xe, shop=bld_tap_hoa_1.
+- LifeNPC (npc_agent.gd): them `set_building_doors(doors)` nhan Dictionary tu NPCDirector,
+  chuyen building_id -> toa do; `place_at_current_schedule(activity)` dat vi tri ban dau;
+  `apply_schedule(activity)` yeu cau tuyen duong moi theo JobEvents.SCHEDULE_CHANGED.
+- NPCDirector (npc_director.gd): lang nghe `WorldEvents.BUILDINGS_READY`,
+  cap nhat _building_doors va goi `set_building_doors` + `place_at_current_schedule`
+  cho moi NPC; NPC KHONG import code world (AGENTS phan 5), chi nhan Dictionary qua event.
+- MapArea (map_area.gd): phat `WorldEvents.BUILDINGS_READY` sau `build_content()`;
+  goi `WorldNavigation.set_graph(points, 7.0)` voi width=7.0 de AStar2D ket noi du waypoint.
+- WorldEvents (world_events.gd): them hang so `BUILDINGS_READY` va `BUILDING_DOOR_ENTERED`.
+- Chuyen map va quay lai: NPCDirector nhan lai BUILDINGS_READY tu map moi,
+  NPC duoc dat dung vi tri theo gio hien tai.
+
+### Kiem tra (muc 2, AGENTS.md phan 11)
+- Kiem tra cu phap, static typing, nap lan.tres va minh.tres sach se.
+- Script gia lap boot 200 frame: 2 NPC tim duoc door_point dung (home/work/shop).
+- NPC lan: HOME(-20,0.08,-31), WORK(-4.5,0.08,-15.5), SHOP(18,0.08,-1).
+- NPC minh: HOME(19,0.08,2.2), WORK(4.5,0.08,-15.5), SHOP(-4.5,0.08,-15.5).
+- Route size=3 khi SCHEDULE_CHANGED activity=work (dang di lam).
+- Chuyen map HubMap->FishingLakeMap->HubMap: NPC phuc hoi vi tri dung 2/2.
+- CHUA kiem tra: Muc 3 va muc 4 tren Godot Android (can mo app tren dien thoai).
+
 ## Hoàn thiện 6 mẫu tòa nhà có chức năng theo MapLayout
 
 - Triển khai 6 mẫu tòa nhà tham số hóa chuyên biệt (`nha_pho`, `nha_tro`, `tap_hoa`, `quan_an`, `quan_ca_phe`, `tiem_sua_xe`):

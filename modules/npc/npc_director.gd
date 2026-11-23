@@ -24,6 +24,9 @@ var _player_position := Vector3.ZERO
 var _has_player_position := false
 var _save_registered := false
 
+## Bộ nhớ đệm danh sách tòa nhà {id: door_point}
+var _building_doors: Dictionary = {}
+
 const SIMULATION_INTERVAL: float = 0.5
 const POSITION_BROADCAST_INTERVAL: float = 0.2
 const INTERACTION_RANGE: float = 3.2
@@ -37,6 +40,7 @@ func _ready() -> void:
 	_build_npcs()
 	_build_interaction_ui()
 
+	EventBus.subscribe(WorldEvents.BUILDINGS_READY, _on_buildings_ready)
 	EventBus.subscribe(JobEvents.SCHEDULE_CHANGED, _on_schedule_changed)
 	EventBus.subscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
 	_save_registered = SaveCoordinator.register_participant(save_id, self)
@@ -60,6 +64,7 @@ func _process(delta: float) -> void:
 
 func _exit_tree() -> void:
 	if EventBus != null:
+		EventBus.unsubscribe(WorldEvents.BUILDINGS_READY, _on_buildings_ready)
 		EventBus.unsubscribe(JobEvents.SCHEDULE_CHANGED, _on_schedule_changed)
 		EventBus.unsubscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
 	if _save_registered:
@@ -114,7 +119,6 @@ func _build_npcs() -> void:
 		var npc := NPC_AGENT_SCRIPT.new() as LifeNPC
 		npc.configure(npc_profile)
 		add_child(npc)
-		npc.global_position = npc_profile.home_position
 		_npcs.append(npc)
 
 
@@ -124,6 +128,22 @@ func _load_npc_profiles() -> Array[Resource]:
 		if profile != null:
 			profiles.append(profile)
 	return profiles
+
+
+func _on_buildings_ready(payload: Dictionary) -> void:
+	var buildings_val: Variant = payload.get("buildings")
+	if not (buildings_val is Dictionary):
+		return
+	_building_doors = (buildings_val as Dictionary).duplicate(true)
+
+	for npc: LifeNPC in _npcs:
+		if is_instance_valid(npc):
+			npc.set_building_doors(_building_doors)
+			# Đặt vị trí ban đầu theo hoạt động hiện tại nếu chưa di chuyển
+			var current_act: StringName = StringName(str(_last_schedule.get("activity", "home")))
+			npc.place_at_current_schedule(current_act)
+
+	_broadcast_positions()
 
 
 func _on_schedule_changed(payload: Dictionary) -> void:

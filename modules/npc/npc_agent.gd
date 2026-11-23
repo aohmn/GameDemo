@@ -13,9 +13,17 @@ var display_name: String = "NPC"
 var age: int = 25
 var occupation: String = "Người dân"
 var personality: String = "Thân thiện"
+
+## Building ID tham chiếu
+var home_building_id: String = ""
+var workplace_building_id: String = ""
+var shop_building_id: String = ""
+
+## Tọa độ tương ứng (được gán từ door_point khi MapArea phát WorldEvents.BUILDINGS_READY)
 var home_position: Vector3 = Vector3.ZERO
 var workplace_position: Vector3 = Vector3.ZERO
 var shop_position: Vector3 = Vector3.ZERO
+
 var cash_vnd: int = 50000
 var current_activity: String = "Ở nhà"
 
@@ -37,9 +45,9 @@ func configure(profile: NPCProfile) -> void:
 	age = profile.age
 	occupation = profile.occupation
 	personality = profile.personality
-	home_position = profile.home_position
-	workplace_position = profile.workplace_position
-	shop_position = profile.shop_position
+	home_building_id = profile.home_building_id
+	workplace_building_id = profile.workplace_building_id
+	shop_building_id = profile.shop_building_id
 	cash_vnd = maxi(0, profile.cash_vnd)
 	name = "NPC_%s" % npc_id
 
@@ -57,6 +65,37 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if EventBus != null:
 		EventBus.unsubscribe(WorldEvents.ROUTE_READY, _on_route_ready)
+
+
+## Nhận từ điển tòa nhà {id: door_point} để cập nhật tọa độ
+func set_building_doors(doors: Dictionary) -> void:
+	if doors.has(home_building_id):
+		home_position = doors[home_building_id]
+	if doors.has(workplace_building_id):
+		workplace_position = doors[workplace_building_id]
+	if doors.has(shop_building_id):
+		shop_position = doors[shop_building_id]
+
+
+## Đặt vị trí ban đầu theo hoạt động hiện tại
+func place_at_current_schedule(activity: StringName) -> void:
+	var schedule_key := String(activity)
+	_last_schedule_key = schedule_key
+	var target := home_position
+	var activity_label := "Ở nhà"
+	if schedule_key == "work" and workplace_position != Vector3.ZERO:
+		target = workplace_position
+		activity_label = "Đi làm: %s" % occupation
+	elif schedule_key == "shopping" and shop_position != Vector3.ZERO:
+		target = shop_position
+		activity_label = "Mua sắm"
+
+	if target != Vector3.ZERO:
+		global_position = target
+	current_activity = activity_label
+	_route.clear()
+	_route_index = 0
+	_pending_route_request = 0
 
 
 ## Áp dụng hoạt động do module Jobs phát qua JobEvents.SCHEDULE_CHANGED.
@@ -129,6 +168,8 @@ func deserialize_state(data: Dictionary) -> bool:
 
 
 func _set_destination(target: Vector3) -> void:
+	if target == Vector3.ZERO:
+		return
 	_destination = target
 	_route.clear()
 	_route_index = 0

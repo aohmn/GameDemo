@@ -16,8 +16,9 @@ var _transitioning := false
 func _ready() -> void:
 	add_to_group("MapArea")
 	EventBus.subscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
-	WorldNavigation.set_graph(get_road_points())
+	WorldNavigation.set_graph(get_road_points(), 7.0)
 	build_content()
+	_emit_buildings_ready()
 	_apply_spawn()
 
 
@@ -72,6 +73,18 @@ func _resolve_spawn_point() -> Vector3:
 		return points[spawn_id]
 	push_warning("[World] %s không có spawn point '%s'; dùng entry mặc định." % [name, spawn_id])
 	return get_entry_point()
+
+
+func _emit_buildings_ready() -> void:
+	var raw_buildings := get_buildings()
+	var door_map: Dictionary = {}
+	for id_str: String in raw_buildings:
+		var val: Variant = raw_buildings[id_str]
+		if val is Vector3:
+			door_map[id_str] = val
+		elif val is Dictionary:
+			door_map[id_str] = val.get("door_point", Vector3.ZERO)
+	EventBus.emit_event(WorldEvents.BUILDINGS_READY, {"buildings": door_map})
 
 
 func _apply_spawn() -> void:

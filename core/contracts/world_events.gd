@@ -32,3 +32,7 @@ const MAP_CHANGE_REQUESTED: StringName = &"world_map_change_requested"
 ## Khi Player đi vào cửa của một tòa nhà bất kỳ.
 ## Payload: { "building_id": String }
 const BUILDING_DOOR_ENTERED: StringName = &"world_building_door_entered"
+
+## Khi Map dựng xong toàn bộ các công trình.
+## Payload: { "buildings": Dictionary } với mỗi entry là id -> door_point (Vector3)
+const BUILDINGS_READY: StringName = &"world_buildings_ready"
