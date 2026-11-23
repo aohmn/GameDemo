@@ -3,7 +3,7 @@
 Luật cho AI. Xung đột: mục có số nhỏ thắng. Chi tiết đặt trong README module, không đặt ở đây.
 
 ## 1. Dự án
-- Game 2D HD nhìn từ trên xuống, mô phỏng đời sống, Việt Nam hiện đại, tiền VND.
+- Game mô phỏng đời sống, Việt Nam hiện đại, tiền VND. Phong cách 2D HD: MAP 3D, nhân vật và vật thể 2D.
 - Godot 4.x, GDScript có kiểu. Android ưu tiên (màn ngang, cảm ứng).
 - KHÔNG có kế hoạch cố định. Ý tưởng hình thành khi làm (mục 8). Chỉ làm đúng việc được giao.
 - Nguyên bản: không chép tài sản hay mã của game khác.
@@ -11,8 +11,8 @@ Luật cho AI. Xung đột: mục có số nhỏ thắng. Chi tiết đặt tron
 ## 2. Nghiệm thu (ưu tiên cao nhất)
 Mức: 0 chưa kiểm tra · 1 kiểm tra tĩnh (lệnh Termux) · 2 Godot import + boot không lỗi · 3 chạy thử thật trên Godot Android.
 - CẤM viết "xong/đã sửa/đạt" khi chưa đạt mức 2. Báo cáo luôn ghi: mức đạt, phần chưa kiểm tra.
-- Mức 2 = không có Parse Error / Failed to load / SCRIPT ERROR khi import và boot. Có Godot CLI thì chạy `--headless --import` rồi boot; không có thì mở Godot Android và đọc tab Errors. Không làm được thì ghi "CHƯA CHẠY GODOT".
-- Đổi scene/map/spawn: xác nhận nhân vật không rơi (y ổn định sau 2 giây) và chụp ảnh.
+- Mức 2 = không có Parse Error / Failed to load / SCRIPT ERROR / SHADER ERROR khi import và boot. Có Godot CLI: `--headless --import` rồi boot; không có: mở Godot Android đọc tab Errors. Không làm được thì ghi "CHƯA CHẠY GODOT".
+- Đổi scene/map/spawn/ánh sáng: xác nhận nhân vật không rơi (y ổn định sau 2 giây), màn hình không đen, và chụp ảnh.
 - Xong = mức ≥ 2 + không phá module khác (thử xóa module, mục 3) + README module + CHANGELOG 1-3 dòng đúng thực tế.
 - Không xóa file chưa được xác nhận. Không để .bak, file thử, ký tự lạ trong repo.
 - Việc điện thoại không làm được (export APK, profiling): nói thẳng, đừng giả vờ.
@@ -30,12 +30,14 @@ Mức: 0 chưa kiểm tra · 1 kiểm tra tĩnh (lệnh Termux) · 2 Godot impor
 - Autoload chỉ cho `core/`, mỗi cái một việc.
 - Presentation chỉ nghe event và gọi API, không chứa logic gameplay.
 
-## 4. Đồ họa 2D HD
-- Top-down 2D: Sprite2D/AnimatedSprite2D, TileMapLayer, Y-sort cho độ sâu, Light2D/CanvasModulate cho ngày đêm.
-- Chốt kích thước tile/sprite, filter, bảng màu MỘT lần trong `docs/art.md`. Đổi phải có quyết định.
-- Sprite: ô vuông đều, chân trùng một đường nền cố định, cùng tỷ lệ giữa mọi nhân vật. Tên animation: `idle_down|up|left`, `walk_down|up|left` (phải = lật trái).
-- Ảnh nằm trong `assets/` của module sở hữu. Không tải từ Internet, không chép ảnh trùng.
-- Android: tái dùng texture/atlas, ít node, ít ánh sáng động.
+## 4. Đồ họa: map 3D + 2D bằng shader, KHÔNG texture
+- MAP: 3D thật (MeshInstance3D, Primitive Mesh, ArrayMesh/SurfaceTool), vật liệu màu hoặc ShaderMaterial. Mọi map phải có đèn (DirectionalLight3D) và WorldEnvironment.
+- NHÂN VẬT / VẬT THỂ 2D: quad (QuadMesh) billboard đầy đủ (không FIXED_Y, tránh bị co chiều cao khi camera nghiêng), hình vẽ hoàn toàn bằng shader (SDF/toán học), chân đặt đúng gốc node, cao ~1.75 m.
+  - Một shader dùng chung cho mỗi loại thân; khác biệt (màu da/tóc/áo, kiểu dáng) là uniform lấy từ dữ liệu. Thêm nhân vật = thêm file dữ liệu, không thêm shader.
+  - Animation bằng uniform (thời gian, pha bước, hướng). Tên: `idle`, `walk`; hướng down|up|left, phải = lật trái.
+- CẤM texture: không ảnh PNG/JPG làm texture, không tải từ Internet, không sampler2D trong shader. Ngoại lệ CHỈ khi có `docs/decisions/NNNN-*.md` được chủ dự án duyệt, ghi rõ phạm vi (vd chỉ Player).
+- Chốt phong cách MỘT lần trong `docs/art.md`: bảng màu, độ dày viền, số bậc bóng, kích thước nhân vật. Đổi phải có quyết định.
+- Android: shader nhẹ (không ray-march, ít vòng lặp), tái dùng Mesh/Material, MultiMesh cho đồ lặp, đo trước khi thêm hiệu ứng nặng.
 
 ## 5. Dữ liệu
 - Tách dữ liệu khỏi logic (Resource/JSON). ID ổn định kiểu `loai_ten_001`, không dùng tên hiển thị làm ID.
