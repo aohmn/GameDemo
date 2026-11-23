@@ -3,15 +3,18 @@ extends Node3D
 const MAP_MANAGER_SCRIPT: Script = preload("res://scenes/boot/map_manager.gd")
 const PLAYER_SCENE_PATH: String = "res://modules/player/scenes/player.tscn"
 const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
+const SKY_DOME_SCENE_PATH: String = "res://modules/sky_dome/scenes/sky_dome.tscn"
 
 var _map_manager: Node3D
 var _camera: Camera3D
 var _player: CharacterBody3D
 var _joystick: Node
+var _sky_dome: Node3D
 
 
 func _ready() -> void:
     _create_camera()
+    _create_sky_dome()
     _create_map_manager()
     _create_player()
     _create_joystick()
@@ -33,6 +36,31 @@ func _create_camera() -> void:
     _camera.fov = 55.0
     add_child(_camera)
     _camera.current = true
+
+
+func _create_sky_dome() -> void:
+    if not ResourceLoader.exists(SKY_DOME_SCENE_PATH):
+        push_warning("Không tìm thấy SkyDome scene.")
+        return
+
+    var resource: Resource = load(SKY_DOME_SCENE_PATH)
+    var scene := resource as PackedScene
+    if scene == null:
+        push_error("SkyDome scene không hợp lệ.")
+        return
+
+    var dome_node: Node = scene.instantiate()
+    _sky_dome = dome_node as Node3D
+    if _sky_dome == null:
+        dome_node.free()
+        push_error("SkyDome phải có node gốc Node3D.")
+        return
+
+    _sky_dome.name = "SkyDome"
+    add_child(_sky_dome)
+
+    if _sky_dome.has_method("set_follow_target") and _camera != null:
+        _sky_dome.call("set_follow_target", _camera)
 
 
 func _create_map_manager() -> void:

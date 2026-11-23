@@ -25,6 +25,7 @@ Bootstrap khởi tạo Camera bám theo nhân vật, nạp MapManager để tả
 
 - `core/`: hệ thống nền, hợp đồng và sự kiện dùng chung.
 - `modules/player/`: nhân vật, chuyển động vật lý, animation shader SDF và hướng nhìn.
+- `modules/sky_dome/`: vòm trời procedural 3D nhiệt đới (gradient, mặt trời, mây procedural không texture).
 - `maps/harbor_island/`: map đảo bến cảng nhiệt đới (~50 × 50m) với bãi biển, cầu tàu, vịnh kín, núi đá và rặng dừa.
 - `presentation/joystick/`: điều khiển cảm ứng đa điểm độc lập.
 - `scenes/boot/`: Bootstrap và MapManager kết nối các thành phần.
@@ -32,6 +33,7 @@ Bootstrap khởi tạo Camera bám theo nhân vật, nạp MapManager để tả
 
 ## Kiểm tra
 
+- Sky Dome độc lập: `modules/sky_dome/scenes/dev.tscn`.
 - Player độc lập: `modules/player/scenes/dev.tscn`.
 - Joystick độc lập: `presentation/joystick/scenes/dev.tscn`.
 - Chạy toàn bộ game bằng Godot Android qua scene khởi động `scenes/boot/main.tscn`.

@@ -9,6 +9,11 @@ const WOOD_DARK: Color = Color(0.40, 0.26, 0.16)
 const ROOF_COLOR: Color = Color(0.82, 0.45, 0.28)
 const LEAF_COLOR: Color = Color(0.24, 0.58, 0.22)
 
+# Layer 1: Môi trường / Địa hình chung
+# Layer 2: Ranh giới chặn người chơi (Player Barrier) - không cản thuyền
+const LAYER_WORLD: int = 1
+const LAYER_BARRIER: int = 2
+
 
 func _ready() -> void:
     _make_environment()
@@ -57,43 +62,37 @@ func _make_ocean() -> void:
     water_node.material_override = water_mat
     add_child(water_node)
 
-    # Đáy biển sâu - không dùng collider ở đây để tránh làm sàn đi bộ ảo dưới nước
+    # Đáy biển sâu - không dùng collider để tránh làm sàn đi bộ ảo dưới nước
     var seabed_pos := Vector3(0.0, -4.0, 0.0)
     var seabed_size := Vector3(80.0, 1.0, 80.0)
     _box("Seabed", seabed_pos, seabed_size, Color(0.12, 0.35, 0.42))
 
 
 func _make_island_terrain() -> void:
-    # Bờ biển bãi cát bao quanh (mặt trên y = 0.0)
-    var beach_pos := Vector3(0.0, -0.25, 4.0)
-    var beach_size := Vector3(44.0, 0.5, 38.0)
+    var beach_pos := Vector3(0.0, -0.2, 4.0)
+    var beach_size := Vector3(44.0, 0.4, 38.0)
     _box("SandyBeach", beach_pos, beach_size, SAND_COLOR)
-    _add_box_collider("BeachCollision", beach_pos, beach_size)
+    _add_box_collider("BeachCollision", beach_pos, beach_size, LAYER_WORLD)
 
-    # Cao nguyên cỏ trung tâm (mặt trên y = 0.0, khớp vị trí spawn y=0.05 của Player)
     var plateaus: Array[Dictionary] = [
-        {"name": "PlateauCenter", "pos": Vector3(0.0, -0.2, 7.0), "size": Vector3(32.0, 0.4, 22.0)},
-        {"name": "PlateauNorth", "pos": Vector3(0.0, -0.1, -6.0), "size": Vector3(22.0, 0.6, 14.0)},
-        {"name": "PlateauWest", "pos": Vector3(-12.0, -0.15, 3.0), "size": Vector3(14.0, 0.5, 18.0)},
-        {"name": "PlateauEast", "pos": Vector3(12.0, -0.15, 3.0), "size": Vector3(14.0, 0.5, 18.0)},
+        {"name": "PlateauCenter", "pos": Vector3(0.0, 0.01, 7.0), "size": Vector3(32.0, 0.02, 22.0)},
+        {"name": "PlateauNorth", "pos": Vector3(0.0, 0.01, -6.0), "size": Vector3(22.0, 0.02, 14.0)},
+        {"name": "PlateauWest", "pos": Vector3(-12.0, 0.01, 3.0), "size": Vector3(14.0, 0.02, 18.0)},
+        {"name": "PlateauEast", "pos": Vector3(12.0, 0.01, 3.0), "size": Vector3(14.0, 0.02, 18.0)},
     ]
     for p in plateaus:
         _box(p["name"], p["pos"], p["size"], GRASS_COLOR)
-        _add_box_collider(p["name"] + "Col", p["pos"], p["size"])
 
 
 func _make_mountains() -> void:
-    # Dãy núi và vách đá bao quanh vịnh, chừa cửa biển rộng 12m ở chính Bắc (-6 <= X <= 6, Z < -15)
     var cliffs: Array[Dictionary] = [
-        # Dãy núi phía Tây
         {"pos": Vector3(-18.0, 3.0, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 6.0},
         {"pos": Vector3(-16.0, 4.5, -12.0), "r_top": 2.0, "r_bot": 7.0, "h": 9.0},
-        {"pos": Vector3(-12.0, 5.0, -18.0), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
+        {"pos": Vector3(-12.5, 5.0, -18.5), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
         {"pos": Vector3(-20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
-        # Dãy núi phía Đông
         {"pos": Vector3(18.0, 3.0, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 6.0},
         {"pos": Vector3(16.0, 4.5, -12.0), "r_top": 2.0, "r_bot": 7.0, "h": 9.0},
-        {"pos": Vector3(12.0, 5.0, -18.0), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
+        {"pos": Vector3(12.5, 5.0, -18.5), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
         {"pos": Vector3(20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
     ]
 
@@ -110,6 +109,7 @@ func _make_mountains() -> void:
         var body := StaticBody3D.new()
         body.name = name_str + "Col"
         body.position = c["pos"]
+        body.collision_layer = LAYER_WORLD
         var col := CollisionShape3D.new()
         var shape := CylinderShape3D.new()
         shape.radius = c["r_bot"] * 0.85
@@ -120,17 +120,20 @@ func _make_mountains() -> void:
 
 
 func _make_pier_and_harbor() -> void:
-    # Cầu tàu vươn từ bờ cát (z=10 đến z=23) tạo kết nối liền mạch với đất liền
-    var main_pier_pos := Vector3(-2.0, 0.05, 16.5)
-    var main_pier_size := Vector3(4.5, 0.3, 13.0)
+    var main_pier_pos := Vector3(-2.0, -0.05, 16.5)
+    var main_pier_size := Vector3(4.5, 0.2, 13.0)
     _box("MainPierPlanks", main_pier_pos, main_pier_size, WOOD_COLOR)
-    _add_box_collider("MainPierCol", main_pier_pos, main_pier_size)
+    _add_box_collider("MainPierCol", main_pier_pos, main_pier_size, LAYER_WORLD)
 
-    # Cầu tàu ngang chữ T bến đỗ thuyền
-    var t_pier_pos := Vector3(-6.5, 0.05, 22.0)
-    var t_pier_size := Vector3(8.0, 0.3, 3.5)
+    var ramp_pos := Vector3(-2.0, -0.02, 9.5)
+    var ramp_size := Vector3(4.5, 0.08, 1.2)
+    _box("PierRamp", ramp_pos, ramp_size, WOOD_COLOR)
+    _add_box_collider("PierRampCol", ramp_pos, ramp_size, LAYER_WORLD)
+
+    var t_pier_pos := Vector3(-6.5, -0.05, 22.0)
+    var t_pier_size := Vector3(8.0, 0.2, 3.5)
     _box("TPierPlanks", t_pier_pos, t_pier_size, WOOD_COLOR)
-    _add_box_collider("TPierCol", t_pier_pos, t_pier_size)
+    _add_box_collider("TPierCol", t_pier_pos, t_pier_size, LAYER_WORLD)
 
     # Cọc gỗ cầu tàu
     var post_positions: Array[Vector3] = [
@@ -146,9 +149,9 @@ func _make_pier_and_harbor() -> void:
         post.height = 1.4
         _mesh("PierPost", post, p, WOOD_DARK)
 
-    # Thuyền gỗ neo đậu
-    _boat("DockedBoat1", Vector3(-4.5, 0.05, 25.5), Vector3(2.4, 0.8, 4.5), 10.0)
-    _boat("DockedBoat2", Vector3(4.5, 0.05, 19.5), Vector3(2.2, 0.75, 4.2), -20.0)
+    # Thuyền gỗ neo đậu bên cạnh cầu tàu (cách cầu tàu khoảng cách an toàn, không chồng lấn collider)
+    _boat("DockedBoat1", Vector3(-6.5, 0.05, 25.5), Vector3(2.2, 0.8, 3.2), 0.0)
+    _boat("DockedBoat2", Vector3(3.5, 0.05, 17.5), Vector3(2.0, 0.75, 3.8), -15.0)
 
 
 func _boat(b_name: String, pos: Vector3, size: Vector3, rot_y: float) -> void:
@@ -166,6 +169,7 @@ func _boat(b_name: String, pos: Vector3, size: Vector3, rot_y: float) -> void:
     body.name = b_name + "Col"
     body.position = pos
     body.rotation_degrees.y = rot_y
+    body.collision_layer = LAYER_WORLD
     var col := CollisionShape3D.new()
     var shape := BoxShape3D.new()
     shape.size = size
@@ -182,22 +186,21 @@ func _make_harbor_structures() -> void:
         Vector3(2.5, 0.35, 10.5), Vector3(3.5, 0.35, 10.5),
         Vector3(3.0, 1.05, 10.5), Vector3(-5.0, 0.35, 9.5)
     ]
-    var c_idx := 0
+    var idx := 0
     for cr in crates:
-        c_idx += 1
+        idx += 1
         var sz := Vector3(0.7, 0.7, 0.7)
-        _box("Crate_" + str(c_idx), cr, sz, WOOD_COLOR)
-        _add_box_collider("CrateCol_" + str(c_idx), cr, sz)
+        _box("Crate_" + str(idx), cr, sz, WOOD_COLOR)
+        _add_box_collider("CrateCol_" + str(idx), cr, sz, LAYER_WORLD)
 
 
 func _building(b_name: String, pos: Vector3, size: Vector3, wall_color: Color, roof_color: Color) -> void:
     _box(b_name + "Wall", pos, size, wall_color)
-    _add_box_collider(b_name + "Col", pos, size)
+    _add_box_collider(b_name + "Col", pos, size, LAYER_WORLD)
 
     var roof := PrismMesh.new()
     roof.size = Vector3(size.x + 0.6, 1.3, size.z + 0.6)
-    var roof_pos := pos + Vector3(0.0, size.y * 0.5 + 0.65, 0.0)
-    _mesh(b_name + "Roof", roof, roof_pos, roof_color)
+    _mesh(b_name + "Roof", roof, pos + Vector3(0.0, size.y * 0.5 + 0.65, 0.0), roof_color)
 
 
 func _make_tropical_trees() -> void:
@@ -206,9 +209,9 @@ func _make_tropical_trees() -> void:
         Vector3(-11.0, 0.0, 15.0),
         Vector3(12.0, 0.0, 13.0),
         Vector3(15.0, 0.0, 7.0),
-        Vector3(7.5, 0.2, -2.0),
-        Vector3(-7.5, 0.2, -2.0),
-        Vector3(0.0, 0.2, -10.0),
+        Vector3(7.5, 0.0, -2.0),
+        Vector3(-7.5, 0.0, -2.0),
+        Vector3(0.0, 0.0, -10.0),
     ]
 
     var t_idx := 0
@@ -228,6 +231,7 @@ func _make_tropical_trees() -> void:
         var body := StaticBody3D.new()
         body.name = "TreeCol_" + str(t_idx)
         body.position = loc + Vector3(0.0, 1.2, 0.0)
+        body.collision_layer = LAYER_WORLD
         var col := CollisionShape3D.new()
         var shape := CylinderShape3D.new()
         shape.radius = 0.25
@@ -238,31 +242,28 @@ func _make_tropical_trees() -> void:
 
 
 func _make_island_boundaries() -> void:
-    # Ranh giới ngăn Player rơi khỏi mép đảo và cầu tàu
     var wall_h := 3.0
     var bounds: Array[Dictionary] = [
-        # Mép ngoài đại dương phía Tây và Đông
         {"name": "BoundWest", "pos": Vector3(-23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
         {"name": "BoundEast", "pos": Vector3(23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
-        # Mép bờ Nam (khu mặt nước bến cảng hai bên cầu tàu)
         {"name": "BoundSouthLeft", "pos": Vector3(-16.0, 1.5, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
         {"name": "BoundSouthRight", "pos": Vector3(11.0, 1.5, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
-        # Lan can vô hình giới hạn đầu cầu tàu và rìa cầu tàu T
         {"name": "BoundPierTNorth", "pos": Vector3(-6.5, 1.5, 20.0), "size": Vector3(5.0, wall_h, 0.5)},
         {"name": "BoundPierTSouth", "pos": Vector3(-6.5, 1.5, 24.0), "size": Vector3(8.5, wall_h, 0.5)},
         {"name": "BoundPierTWest", "pos": Vector3(-11.0, 1.5, 22.0), "size": Vector3(0.5, wall_h, 4.0)},
         {"name": "BoundPierTEast", "pos": Vector3(0.5, 1.5, 17.5), "size": Vector3(0.5, wall_h, 13.0)},
-        # Cửa biển phía Bắc: vách ranh giới ngăn rơi ra biển sâu
-        {"name": "BoundNorthChannel", "pos": Vector3(0.0, 1.5, -15.5), "size": Vector3(14.0, wall_h, 1.0)},
+        {"name": "BoundCoastNorthL", "pos": Vector3(-9.0, 1.5, -15.5), "size": Vector3(6.0, wall_h, 1.0)},
+        {"name": "BoundCoastNorthR", "pos": Vector3(9.0, 1.5, -15.5), "size": Vector3(6.0, wall_h, 1.0)},
     ]
     for b in bounds:
-        _add_box_collider(b["name"], b["pos"], b["size"])
+        _add_box_collider(b["name"], b["pos"], b["size"], LAYER_BARRIER)
 
 
-func _add_box_collider(node_name: String, pos: Vector3, size: Vector3) -> void:
+func _add_box_collider(node_name: String, pos: Vector3, size: Vector3, layer: int = LAYER_WORLD) -> void:
     var body := StaticBody3D.new()
     body.name = node_name
     body.position = pos
+    body.collision_layer = layer
 
     var collision := CollisionShape3D.new()
     var shape := BoxShape3D.new()
