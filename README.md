@@ -12,16 +12,24 @@ Dự án game 2D HD: môi trường map 3D, nhân vật và vật thể 2D.
 
 Scene chính: `scenes/boot/main.tscn`
 
-Bootstrap tạo camera và MapManager. Map đầu tiên được tải là `vietnam_street`.
+Bootstrap tạo camera, MapManager và tải joystick tùy chọn.
+Map đầu tiên được tải là `vietnam_street`.
 
 ## Cấu trúc hiện tại
 
 - `scenes/boot/`: khởi động và quản lý vòng đời map.
 - `maps/vietnam_street/`: map phố Việt Nam đầu tiên.
+- `presentation/joystick/`: joystick cảm ứng độc lập.
 
 ## Chuyển map
 
 MapManager nhận ID map qua hàm `load_map(map_id)`. Các map được đăng ký trong `MAP_SCENES`.
+
+## Joystick
+
+Joystick phát hướng qua signal `direction_changed` và API `get_direction()`.
+Scene kiểm tra riêng: `presentation/joystick/scenes/dev.tscn`.
+Joystick chưa được nối với Player.
 
 ## Phát triển
 

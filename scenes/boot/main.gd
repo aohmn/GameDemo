@@ -1,6 +1,7 @@
 extends Node3D
 
 const MAP_MANAGER_SCRIPT: Script = preload("res://scenes/boot/map_manager.gd")
+const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
 
 var _map_manager: Node3D
 
@@ -8,6 +9,7 @@ var _map_manager: Node3D
 func _ready() -> void:
 	_create_camera()
 	_create_map_manager()
+	_create_joystick()
 
 
 func _create_camera() -> void:
@@ -35,3 +37,26 @@ func _create_map_manager() -> void:
 
 	if not loaded:
 		push_error("Không thể tải map khởi đầu vietnam_street.")
+
+
+func _create_joystick() -> void:
+	if not ResourceLoader.exists(JOYSTICK_SCENE_PATH):
+		return
+
+	var joystick_resource: Resource = load(JOYSTICK_SCENE_PATH)
+	var joystick_scene: PackedScene = joystick_resource as PackedScene
+
+	if joystick_scene == null:
+		push_error("Không thể tải scene joystick.")
+		return
+
+	var joystick_node: Node = joystick_scene.instantiate()
+	if not joystick_node is Control:
+		joystick_node.free()
+		push_error("Scene joystick phải có node gốc Control.")
+		return
+
+	var hud := CanvasLayer.new()
+	hud.name = "HUD"
+	add_child(hud)
+	hud.add_child(joystick_node)
