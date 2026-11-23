@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3]
-
-[ext_resource type="Script" path="res://world/map/areas/fishing_lake_map_area.gd" id="1_area"]
-
-[node name="FishingLakeMap" type="Node3D"]
-script = ExtResource("1_area")
-metadata/npc_spawn_enabled = false
