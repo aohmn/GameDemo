@@ -23,7 +23,7 @@ float fill_shape(float d) {
 }
 
 void fragment() {
-    vec2 p = (UV - vec2(0.5)) * vec2(1.0, 1.75);
+    vec2 p = vec2(UV.x - 0.5, 0.5 - UV.y) * vec2(1.0, 1.75);
     if (flip_horizontal) {
         p.x = -p.x;
     }

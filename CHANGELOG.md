@@ -10,3 +10,4 @@
 - Bổ sung tài liệu cho Bootstrap và map vietnam_street.
 - Bootstrap tạo Player, nối signal joystick với API di chuyển của Player và camera bám nhân vật.
 - Map vietnam_street bổ sung collider cho mặt đất, vỉa hè, lề đường và công trình.
+- Sửa hướng trục UV Y của Player để đầu ở trên, chân ở dưới.
