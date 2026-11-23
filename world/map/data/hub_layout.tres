@@ -7,6 +7,63 @@
 [ext_resource type="Script" path="res://world/map/layout/map_layout.gd" id="5_s16wr"]
 
 [sub_resource type="Resource" id="Resource_l4f8y"]
+script = ExtResource("1_cu55m")
+id = "bld_grocery"
+type = "grocery"
+lot_id = "lot_grocery"
+floors = 2
+color = Color(0.88, 0.82, 0.68, 1)
+sign_text = "Tạp Hóa Cô Lan"
+door_point = Vector3(-4.5, 0.08, -15)
+
+[sub_resource type="Resource" id="Resource_idfxb"]
+script = ExtResource("1_cu55m")
+id = "bld_mechanic"
+type = "mechanic"
+lot_id = "lot_mechanic"
+color = Color(0.45, 0.48, 0.52, 1)
+sign_text = "Sửa Xe Chú Minh"
+door_point = Vector3(4.5, 0.08, -15)
+
+[sub_resource type="Resource" id="Resource_poh8i"]
+script = ExtResource("1_cu55m")
+id = "bld_res_lan"
+lot_id = "lot_res_lan"
+floors = 3
+color = Color(0.85, 0.8, 0.72, 1)
+sign_text = "Nhà Số 12"
+door_point = Vector3(-20, 0.08, -31)
+
+[sub_resource type="Resource" id="Resource_toe35"]
+script = ExtResource("1_cu55m")
+id = "bld_res_minh"
+lot_id = "lot_res_minh"
+floors = 2
+color = Color(0.78, 0.82, 0.76, 1)
+sign_text = "Nhà Số 27"
+door_point = Vector3(20, 0.08, 2.2)
+
+[sub_resource type="Resource" id="Resource_uj3re"]
+script = ExtResource("1_cu55m")
+id = "bld_cafe"
+type = "cafe"
+lot_id = "lot_cafe"
+floors = 2
+color = Color(0.65, 0.5, 0.38, 1)
+sign_text = "Cà Phê Phố"
+door_point = Vector3(-4.5, 0.08, 15)
+
+[sub_resource type="Resource" id="Resource_1177o"]
+script = ExtResource("1_cu55m")
+id = "bld_pharmacy"
+type = "pharmacy"
+lot_id = "lot_pharmacy"
+floors = 2
+color = Color(0.92, 0.94, 0.95, 1)
+sign_text = "Nhà Thuốc An Tâm"
+door_point = Vector3(4.5, 0.08, 15)
+
+[sub_resource type="Resource" id="Resource_7xsgp"]
 script = ExtResource("2_fdj64")
 id = "gate_to_lake"
 name = "ToLake"
@@ -16,36 +73,47 @@ sign_text = "Hồ câu"
 dest_scene = "res://world/map/scenes/fishing_lake_map.tscn"
 dest_spawn = "from_hub"
 
-[sub_resource type="Resource" id="Resource_idfxb"]
+[sub_resource type="Resource" id="Resource_m51vc"]
 script = ExtResource("3_udalt")
-id = "lot_main_w1"
-rect = Rect2(-15.5, -25, 10, 10)
+id = "lot_grocery"
+rect = Rect2(-14.5, -20, 9, 10)
 
-[sub_resource type="Resource" id="Resource_poh8i"]
+[sub_resource type="Resource" id="Resource_u8jv1"]
 script = ExtResource("3_udalt")
-id = "lot_main_e1"
-rect = Rect2(5.5, -25, 10, 10)
+id = "lot_mechanic"
+rect = Rect2(5.5, -20, 9, 10)
 facing = "west"
 
-[sub_resource type="Resource" id="Resource_toe35"]
+[sub_resource type="Resource" id="Resource_p50pe"]
 script = ExtResource("3_udalt")
-id = "lot_alley1_n1"
-rect = Rect2(-25.5, -40, 10, 8)
+id = "lot_res_lan"
+rect = Rect2(-25, -39.75, 10, 8)
 facing = "south"
 
-[sub_resource type="Resource" id="Resource_uj3re"]
+[sub_resource type="Resource" id="Resource_bckjl"]
 script = ExtResource("3_udalt")
-id = "lot_alley2_s1"
-rect = Rect2(15.5, 2, 10, 8)
+id = "lot_res_minh"
+rect = Rect2(15, 1.75, 10, 8)
 facing = "north"
 
-[sub_resource type="Resource" id="Resource_1177o"]
+[sub_resource type="Resource" id="Resource_y8hne"]
+script = ExtResource("3_udalt")
+id = "lot_cafe"
+rect = Rect2(-14.5, 10, 9, 10)
+
+[sub_resource type="Resource" id="Resource_bcnwe"]
+script = ExtResource("3_udalt")
+id = "lot_pharmacy"
+rect = Rect2(5.5, 10, 9, 10)
+facing = "west"
+
+[sub_resource type="Resource" id="Resource_ytuyn"]
 script = ExtResource("4_bi0l0")
 id = "road_main"
 start_point = Vector2(0, -50)
 end_point = Vector2(0, 50)
 
-[sub_resource type="Resource" id="Resource_7xsgp"]
+[sub_resource type="Resource" id="Resource_kqb2k"]
 script = ExtResource("4_bi0l0")
 id = "alley_west_1"
 kind = "alley"
@@ -53,14 +121,14 @@ start_point = Vector2(0, -30)
 end_point = Vector2(-28.5, -30)
 width = 3.5
 
-[sub_resource type="Resource" id="Resource_m51vc"]
+[sub_resource type="Resource" id="Resource_7k2ml"]
 script = ExtResource("4_bi0l0")
 id = "alley_east_2"
 kind = "alley"
 end_point = Vector2(28.5, 0)
 width = 3.5
 
-[sub_resource type="Resource" id="Resource_u8jv1"]
+[sub_resource type="Resource" id="Resource_rfw7n"]
 script = ExtResource("4_bi0l0")
 id = "alley_west_3"
 kind = "alley"
@@ -68,7 +136,7 @@ start_point = Vector2(0, 30)
 end_point = Vector2(-28.5, 30)
 width = 3.5
 
-[sub_resource type="Resource" id="Resource_p50pe"]
+[sub_resource type="Resource" id="Resource_mista"]
 script = ExtResource("4_bi0l0")
 id = "plaza_north"
 kind = "plaza"
@@ -78,6 +146,7 @@ width = 24.0
 
 [resource]
 script = ExtResource("5_s16wr")
-roads = Array[ExtResource("4_bi0l0")]([SubResource("Resource_1177o"), SubResource("Resource_7xsgp"), SubResource("Resource_m51vc"), SubResource("Resource_u8jv1"), SubResource("Resource_p50pe")])
-lots = Array[ExtResource("3_udalt")]([SubResource("Resource_idfxb"), SubResource("Resource_poh8i"), SubResource("Resource_toe35"), SubResource("Resource_uj3re")])
-gates = Array[ExtResource("2_fdj64")]([SubResource("Resource_l4f8y")])
+roads = Array[ExtResource("4_bi0l0")]([SubResource("Resource_ytuyn"), SubResource("Resource_kqb2k"), SubResource("Resource_7k2ml"), SubResource("Resource_rfw7n"), SubResource("Resource_mista")])
+lots = Array[ExtResource("3_udalt")]([SubResource("Resource_m51vc"), SubResource("Resource_u8jv1"), SubResource("Resource_p50pe"), SubResource("Resource_bckjl"), SubResource("Resource_y8hne"), SubResource("Resource_bcnwe")])
+buildings = Array[ExtResource("1_cu55m")]([SubResource("Resource_l4f8y"), SubResource("Resource_idfxb"), SubResource("Resource_poh8i"), SubResource("Resource_toe35"), SubResource("Resource_uj3re"), SubResource("Resource_1177o")])
+gates = Array[ExtResource("2_fdj64")]([SubResource("Resource_7xsgp")])

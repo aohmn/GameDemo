@@ -1,3 +1,24 @@
+## 6 mẫu tòa nhà có chức năng theo MapLayout
+
+- Thêm 6 mẫu tòa nhà và lô đất tương ứng vào `world/map/data/hub_layout.tres`:
+  1. `bld_grocery` (Tạp Hóa Cô Lan): 2 tầng, vàng kem, cửa kính, điểm cửa `(-4.5, 0.08, -15.0)` trên vỉa hè phố chính phía Tây.
+  2. `bld_mechanic` (Sửa Xe Chú Minh): 1 tầng, xám công nghiệp, cửa cuốn, điểm cửa `(4.5, 0.08, -15.0)` trên vỉa hè phố chính phía Đông.
+  3. `bld_res_lan` (Nhà Số 12 - Dân cư A): 3 tầng, be nhạt, điểm cửa `(-20.0, 0.08, -31.0)` trên vỉa hè Hẻm 1 phía Bắc.
+  4. `bld_res_minh` (Nhà Số 27 - Dân cư B): 2 tầng, xanh ngọc nhạt, điểm cửa `(20.0, 0.08, 2.2)` trên vỉa hè Hẻm 2 phía Nam.
+  5. `bld_cafe` (Cà Phê Phố): 2 tầng, nâu gỗ cà phê, điểm cửa `(-4.5, 0.08, 15.0)` trên vỉa hè phố chính phía Tây.
+  6. `bld_pharmacy` (Nhà Thuốc An Tâm): 2 tầng, trắng y tế / xanh thanh lịch, điểm cửa `(4.5, 0.08, 15.0)` trên vỉa hè phố chính phía Đông.
+- Nâng cấp `BuildingBuilder`:
+  * Hàm `build_from_layout(layout: MapLayout, parent: Node3D)` đọc thông số từ `BuildingSpec` và `LotSpec` để tự động dựng khối hình học theo hướng mặt tiền (east, west, north, south).
+  * Chi tiết kiến trúc hoàn toàn không dùng texture: khối nhà phân tầng, mái bằng có gờ chắn (parapet), cửa chính, cửa sổ các tầng, bậc tam cấp kết nối vỉa hè và bảng hiệu `Label3D`.
+  * Khối va chạm `StaticBody3D` + `BoxShape3D` phủ kín trọn vẹn khối nhà.
+- Cập nhật `HubMapArea`: tích hợp gọi `BuildingBuilder.build_from_layout()` và cung cấp đầy đủ danh sách `get_buildings()` (id -> door_point).
+
+### Kiểm tra (mức 2, AGENTS.md phần 11)
+- Kiểm tra cú pháp, static typing, nạp resource thành công.
+- Boot 200 frame: Dựng đầy đủ 6/6 tòa nhà và bảng hiệu, Player không rơi, Y luôn ổn định.
+- Player di chuyển tuần tra qua toàn bộ 6 vị trí `door_point` trên vỉa hè an toàn, không bị kẹt hay rơi khỏi map.
+- CHƯA kiểm tra: Mức 3 và mức 4 trên ứng dụng Godot Android (chưa mở và quan sát trực tiếp bằng tay trên điện thoại).
+
 ## MapLayout + Dựng hub khu dân cư (Phố chính + Hẻm cụt)
 
 - Tạo Resource có kiểu (static typing) trong `world/map/layout/`: `MapLayout`, `RoadSpec`, `LotSpec`, `BuildingSpec`, `GateSpec`.

@@ -82,7 +82,10 @@ func build_content() -> void:
 	# 1. Dựng nền, lòng đường, vỉa hè, gờ lề và vạch kẻ từ MapLayout
 	RoadBuilder.build_from_layout(layout, self)
 
-	# 2. Dựng cổng chuyển map từ layout.gates
+	# 2. Dựng các tòa nhà kiến trúc chức năng từ MapLayout
+	BuildingBuilder.build_from_layout(layout, self)
+
+	# 3. Dựng cổng chuyển map từ layout.gates
 	for gate: GateSpec in layout.gates:
 		TransitionBuilder.build([
 			{
