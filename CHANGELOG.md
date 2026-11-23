@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Sửa và chuẩn hóa ranh giới va chạm đảo bến cảng (harbor_island): Player va chạm vững chắc với ranh giới, không xuyên tường, thông suốt lối đi cầu tàu và chừa cửa biển phía Bắc.
+- Hoàn thiện module Sky Dome procedural cho Godot 4.7 GL Compatibility và tích hợp qua Bootstrap.
 - Tạo module Sky Dome (`modules/sky_dome/`) với shader spatial procedural nhiệt đới: gradient, mặt trời và mây nhẹ trên mobile, hỗ trợ bám camera.
 - Tích hợp Sky Dome vào Bootstrap (`main.gd`) với cơ chế nạp tùy chọn độc lập.
 - Tinh chỉnh cửa biển thông thoáng ra đại dương tại đảo bến cảng và phân tách collision layer ranh giới barrier.
