@@ -67,9 +67,9 @@ void fragment() {
 
     // 3. Mặt trời procedural
     vec3 sun_dir_norm = normalize(sun_direction);
-    float sun_dot = max(dot(dir, sun_dir_norm), 0.0);
-    float sun_disc = 1.0 - smoothstep(1.0 - sun_size, 1.0 - sun_size + sun_blur, 1.0 - sun_dot);
-    float sun_halo = pow(sun_dot, 32.0) * 0.45;
+    float sun_angle = acos(clamp(dot(dir, sun_dir_norm), -1.0, 1.0));
+    float sun_disc = 1.0 - smoothstep(sun_size, sun_size + sun_blur, sun_angle);
+    float sun_halo = pow(max(dot(dir, sun_dir_norm), 0.0), 128.0) * 0.4;
     vec3 final_color = sky + sun_color.rgb * (sun_disc + sun_halo);
 
     // 4. Mây procedural trên vòm trời (chỉ sinh khi dir.y > 0.08)

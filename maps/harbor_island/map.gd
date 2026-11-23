@@ -238,24 +238,18 @@ func _make_tropical_trees() -> void:
 
 
 func _make_island_boundaries() -> void:
-    # Ranh giới ngăn Player rơi khỏi mép đảo và mép nước.
-    # Player có collision_mask mặc định = 1, va chạm vững chắc với tất cả collider này.
     var wall_h := 3.0
     var bounds: Array[Dictionary] = [
-        # Mép ngoài phía Tây và Đông
         {"name": "BoundWest", "pos": Vector3(-23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
         {"name": "BoundEast", "pos": Vector3(23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
-        # Mép bờ Nam (khu mặt nước hai bên cầu tàu)
         {"name": "BoundSouthLeft", "pos": Vector3(-16.0, 1.5, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
+        {"name": "BoundSouthMidLeft", "pos": Vector3(-6.75, 1.5, 10.5), "size": Vector3(4.5, wall_h, 1.0)},
         {"name": "BoundSouthRight", "pos": Vector3(11.0, 1.5, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
-        # Lan can bảo vệ hai bên lối đi cầu tàu chính (chừa lối đi thông thoáng ở giữa: -4.25 < x < 0.25)
         {"name": "BoundMainPierWest", "pos": Vector3(-4.35, 1.5, 16.5), "size": Vector3(0.2, wall_h, 11.0)},
         {"name": "BoundMainPierEast", "pos": Vector3(0.35, 1.5, 16.5), "size": Vector3(0.2, wall_h, 13.0)},
-        # Lan can bảo vệ cầu tàu T (không chắn lối giao cắt từ cầu tàu chính rẽ sang)
         {"name": "BoundPierTNorth", "pos": Vector3(-7.5, 1.5, 20.15), "size": Vector3(6.0, wall_h, 0.3)},
         {"name": "BoundPierTSouth", "pos": Vector3(-6.5, 1.5, 23.85), "size": Vector3(8.0, wall_h, 0.3)},
         {"name": "BoundPierTWest", "pos": Vector3(-10.6, 1.5, 22.0), "size": Vector3(0.3, wall_h, 3.6)},
-        # Mép bờ cát phía Bắc hai bên cửa biển (chừa cửa biển -6.5 <= X <= 6.5 hoàn toàn thông thoáng)
         {"name": "BoundCoastNorthL", "pos": Vector3(-9.75, 1.5, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
         {"name": "BoundCoastNorthR", "pos": Vector3(9.75, 1.5, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
     ]
