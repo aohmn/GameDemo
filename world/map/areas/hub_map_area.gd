@@ -1,61 +1,96 @@
-## HubMapArea — bản đồ trung tâm (khu dân cư), 40×40m.
-## Chỉ: nền + đường chính + đường dọc (RoadSpine) + lối chuyển sang Hồ câu.
-## Không có nhà, cây hay công trình khác.
+## HubMapArea — bản đồ trung tâm (khu dân cư), kích thước ~110m (x) x 120m (z).
+## Bố cục kiểu PHỐ CHÍNH + HẺM CỤT, dựng hoàn toàn dựa trên dữ liệu MapLayout.
+## Cung cấp: map_bounds, get_road_points(), get_buildings() (id -> door_point).
 extends MapArea
 class_name HubMapArea
 
+const HUB_LAYOUT_PATH: String = "res://world/map/data/hub_layout.tres"
+
+var _layout_res: MapLayout = null
+
+
+func _get_layout() -> MapLayout:
+	if _layout_res == null:
+		var res: Resource = load(HUB_LAYOUT_PATH)
+		if res is MapLayout:
+			_layout_res = res
+	return _layout_res
+
+
+func _init() -> void:
+	var layout := _get_layout()
+	if layout != null:
+		map_bounds = layout.bounds
+	else:
+		map_bounds = Rect2(-55.0, -60.0, 110.0, 120.0)
+
 
 func get_entry_point() -> Vector3:
-	return Vector3(0.0, 0.05, -8.0)
+	return Vector3(0.0, 0.08, -8.0)
 
 
 func get_spawn_points() -> Dictionary:
 	return {
-		"hub_entry": Vector3(0.0, 0.05, -8.0),
-		"from_lake": Vector3(0.0, 0.05, 8.5),
+		"hub_entry": Vector3(0.0, 0.08, -8.0),
+		"from_lake": Vector3(0.0, 0.08, 41.0),
 	}
 
 
 func get_road_points() -> Array[Vector2]:
+	# Đồ thị waypoints dẫn đường theo phố chính và 3 nhánh hẻm
 	return [
-		Vector2(0.0, -10.25), Vector2(0.0, -7.75),
-		Vector2(0.0, -8.0), Vector2(0.0, 2.0),
-		Vector2(0.0, 12.0), Vector2(0.0, 18.0),
+		# Phố chính (z từ -45 đến 45)
+		Vector2(0.0, -45.0),
+		Vector2(0.0, -30.0),
+		Vector2(0.0, -15.0),
+		Vector2(0.0, 0.0),
+		Vector2(0.0, 15.0),
+		Vector2(0.0, 30.0),
+		Vector2(0.0, 45.0),
+		# Hẻm 1 (z = -30, rẽ tây x < 0)
+		Vector2(-10.0, -30.0),
+		Vector2(-20.0, -30.0),
+		Vector2(-27.0, -30.0),
+		# Hẻm 2 (z = 0, rẽ đông x > 0)
+		Vector2(10.0, 0.0),
+		Vector2(20.0, 0.0),
+		Vector2(27.0, 0.0),
+		# Hẻm 3 (z = 30, rẽ tây x < 0)
+		Vector2(-10.0, 30.0),
+		Vector2(-20.0, 30.0),
+		Vector2(-27.0, 30.0),
 	]
 
 
+func get_buildings() -> Dictionary:
+	var result: Dictionary = {}
+	var layout := _get_layout()
+	if layout != null:
+		for building: BuildingSpec in layout.buildings:
+			result[building.id] = building.door_point
+	return result
+
+
 func build_content() -> void:
-	GroundBuilder.build([
-		{
-			"name": "HubGround",
-			"size": Vector3(40.0, 0.5, 40.0),
-			"position": Vector3(0.0, -0.25, 0.0),
-			"color": Color(0.36, 0.50, 0.30),
-		}
-	], self)
+	var layout := _get_layout()
+	if layout == null:
+		push_error("[HubMapArea] Thiếu dữ liệu hub_layout.tres!")
+		return
 
-	RoadBuilder.build([
-		{
-			"name": "RoadMain",
-			"size": Vector3(36.0, 0.10, 2.5),
-			"position": Vector3(0.0, 0.0, -9.0),
-			"color": Color(0.2, 0.19, 0.18),
-		},
-		{
-			"name": "RoadSpine",
-			"size": Vector3(2.5, 0.10, 26.0),
-			"position": Vector3(0.0, 0.0, 5.0),
-			"color": Color(0.2, 0.19, 0.18),
-		},
-	], self)
+	map_bounds = layout.bounds
 
-	TransitionBuilder.build([
-		{
-			"name": "ToLake",
-			"position": Vector3(0.0, 1.0, 4.0),
-			"size": Vector3(5.0, 3.0, 5.0),
-			"sign_text": "Hồ câu",
-			"dest_scene": "res://world/map/scenes/fishing_lake_map.tscn",
-			"dest_spawn": "from_hub",
-		},
-	], self, Callable(self, "_on_transition_entered"))
+	# 1. Dựng nền, lòng đường, vỉa hè, gờ lề và vạch kẻ từ MapLayout
+	RoadBuilder.build_from_layout(layout, self)
+
+	# 2. Dựng cổng chuyển map từ layout.gates
+	for gate: GateSpec in layout.gates:
+		TransitionBuilder.build([
+			{
+				"name": gate.name,
+				"position": gate.position,
+				"size": gate.size,
+				"sign_text": gate.sign_text,
+				"dest_scene": gate.dest_scene,
+				"dest_spawn": gate.dest_spawn,
+			}
+		], self, Callable(self, "_on_transition_entered"))

@@ -1,6 +1,7 @@
 ## MapArea: base class cho mọi map/khu vực.
 ## Quyền: data spawn của Player (get_entry_point, get_spawn_points), road points
 ## cho WorldNavigation, transition points, recovery Player khi rơi.
+## Cung cấp: map_bounds, get_road_points(), get_buildings() (id -> door_point).
 ## Nội dung khu vực do subclass dựng qua content builders.
 extends Node3D
 class_name MapArea
@@ -13,6 +14,7 @@ var _transitioning := false
 
 
 func _ready() -> void:
+	add_to_group("MapArea")
 	EventBus.subscribe(WorldEvents.PLAYER_RECOVERY_REQUESTED, _on_player_recovery_requested)
 	WorldNavigation.set_graph(get_road_points())
 	build_content()
@@ -42,6 +44,11 @@ func get_spawn_points() -> Dictionary:
 ## Waypoints đường đi cho WorldNavigation (AStar2D), x,z theo thế giới.
 func get_road_points() -> Array[Vector2]:
 	return []
+
+
+## Danh sách công trình trong khu vực: Dictionary có khóa là id (String), giá trị là door_point (Vector3).
+func get_buildings() -> Dictionary:
+	return {}
 
 
 func _on_player_recovery_requested(payload: Dictionary) -> void:

@@ -1,0 +1,83 @@
+[gd_resource type="Resource" script_class="MapLayout" format=3]
+
+[ext_resource type="Script" path="res://world/map/layout/building_spec.gd" id="1_cu55m"]
+[ext_resource type="Script" path="res://world/map/layout/gate_spec.gd" id="2_fdj64"]
+[ext_resource type="Script" path="res://world/map/layout/lot_spec.gd" id="3_udalt"]
+[ext_resource type="Script" path="res://world/map/layout/road_spec.gd" id="4_bi0l0"]
+[ext_resource type="Script" path="res://world/map/layout/map_layout.gd" id="5_s16wr"]
+
+[sub_resource type="Resource" id="Resource_l4f8y"]
+script = ExtResource("2_fdj64")
+id = "gate_to_lake"
+name = "ToLake"
+position = Vector3(0, 1, 46.5)
+size = Vector3(7, 3, 3)
+sign_text = "Hồ câu"
+dest_scene = "res://world/map/scenes/fishing_lake_map.tscn"
+dest_spawn = "from_hub"
+
+[sub_resource type="Resource" id="Resource_idfxb"]
+script = ExtResource("3_udalt")
+id = "lot_main_w1"
+rect = Rect2(-15.5, -25, 10, 10)
+
+[sub_resource type="Resource" id="Resource_poh8i"]
+script = ExtResource("3_udalt")
+id = "lot_main_e1"
+rect = Rect2(5.5, -25, 10, 10)
+facing = "west"
+
+[sub_resource type="Resource" id="Resource_toe35"]
+script = ExtResource("3_udalt")
+id = "lot_alley1_n1"
+rect = Rect2(-25.5, -40, 10, 8)
+facing = "south"
+
+[sub_resource type="Resource" id="Resource_uj3re"]
+script = ExtResource("3_udalt")
+id = "lot_alley2_s1"
+rect = Rect2(15.5, 2, 10, 8)
+facing = "north"
+
+[sub_resource type="Resource" id="Resource_1177o"]
+script = ExtResource("4_bi0l0")
+id = "road_main"
+start_point = Vector2(0, -50)
+end_point = Vector2(0, 50)
+
+[sub_resource type="Resource" id="Resource_7xsgp"]
+script = ExtResource("4_bi0l0")
+id = "alley_west_1"
+kind = "alley"
+start_point = Vector2(0, -30)
+end_point = Vector2(-28.5, -30)
+width = 3.5
+
+[sub_resource type="Resource" id="Resource_m51vc"]
+script = ExtResource("4_bi0l0")
+id = "alley_east_2"
+kind = "alley"
+end_point = Vector2(28.5, 0)
+width = 3.5
+
+[sub_resource type="Resource" id="Resource_u8jv1"]
+script = ExtResource("4_bi0l0")
+id = "alley_west_3"
+kind = "alley"
+start_point = Vector2(0, 30)
+end_point = Vector2(-28.5, 30)
+width = 3.5
+
+[sub_resource type="Resource" id="Resource_p50pe"]
+script = ExtResource("4_bi0l0")
+id = "plaza_north"
+kind = "plaza"
+start_point = Vector2(0, -48)
+end_point = Vector2(0, -38)
+width = 24.0
+
+[resource]
+script = ExtResource("5_s16wr")
+roads = Array[ExtResource("4_bi0l0")]([SubResource("Resource_1177o"), SubResource("Resource_7xsgp"), SubResource("Resource_m51vc"), SubResource("Resource_u8jv1"), SubResource("Resource_p50pe")])
+lots = Array[ExtResource("3_udalt")]([SubResource("Resource_idfxb"), SubResource("Resource_poh8i"), SubResource("Resource_toe35"), SubResource("Resource_uj3re")])
+gates = Array[ExtResource("2_fdj64")]([SubResource("Resource_l4f8y")])

@@ -1,3 +1,26 @@
+## MapLayout + Dựng hub khu dân cư (Phố chính + Hẻm cụt)
+
+- Tạo Resource có kiểu (static typing) trong `world/map/layout/`: `MapLayout`, `RoadSpec`, `LotSpec`, `BuildingSpec`, `GateSpec`.
+- Dữ liệu bố cục hub lưu tại `world/map/data/hub_layout.tres` (~110x120m, bounds `Rect2(-55, -60, 110, 120)`):
+  * Phố chính dọc trục z từ -50 đến +50 (lòng đường 7m, vỉa hè 2m mỗi bên, vạch kẻ đứt đoạn).
+  * 3 hẻm cụt rộng 3.5m xen kẽ hai bên (z = -30, 0, +30 dài ~25–28.5m).
+  * Quảng trường phía bắc (z từ -50 đến -38, lòng đường rộng 24m).
+  * Cổng chuyển map `ToLake` ở đầu phía nam sang Hồ câu.
+- Cập nhật `RoadBuilder`: đọc `MapLayout` để dựng nền, lòng đường, vỉa hè, gờ lề và vạch kẻ.
+  * Chuẩn bảng độ cao mặt trên (m): Nền đất 0.00, Gờ lề 0.04, Lòng đường 0.05, Vạch sơn 0.062, Vỉa hè 0.08.
+  * Đảm bảo không có hai khối khác màu cùng độ cao. Mọi mặt đi được đều có StaticBody3D collision.
+- Cập nhật `MapArea` và `HubMapArea`:
+  * Cung cấp API chuẩn: `map_bounds`, `get_road_points()`, `get_buildings()` (id -> door_point).
+  * Đăng ký vào group `MapArea` để Minimap tự động nhận `map_bounds` chính xác (`Rect2(-55, -60, 110, 120)`).
+  * Xóa mọi tọa độ chép cứng, dữ liệu nguồn duy nhất từ `MapLayout`.
+
+### Kiểm tra (mức 2, AGENTS.md phần 11)
+- Kiểm tra cú pháp, static typing, đường dẫn file sạch sẽ.
+- Kiểm tra chuyển map qua lại hai chiều (Hub <-> Hồ câu) an toàn, không bị bật ngược.
+- Kiểm tra tuần tra di chuyển toàn bộ phố chính và 3 nhánh hẻm: Player.y luôn ổn định ở ~0.05m, không rơi xuyên sàn.
+- Kiểm tra Minimap và Bản đồ lớn nhận đúng `map_bounds` từ MapArea.
+- CHƯA kiểm tra: Mức 3 và mức 4 trên ứng dụng Godot Android (chưa mở ứng dụng trực tiếp bằng tay trên điện thoại để chụp ảnh màn hình do môi trường Termux / proot headless không có display server X11/Wayland và render buffer của headless dummy không trả viewport texture).
+
 ## Ban do lon: ty le deu, hien thi toan bo map_bounds
 
 - Ban do lon dung `_map_bounds` tu MapArea thay vi `MINI_RADIUS` de hien thi
