@@ -3,14 +3,15 @@
 Luật cho AI. Xung đột: mục có số nhỏ thắng. Chi tiết đặt trong README module, không đặt ở đây.
 
 ## 1. Dự án
-- Game mô phỏng đời sống, Việt Nam hiện đại, tiền VND. Phong cách 2D HD: MAP 3D, nhân vật và vật thể 2D.
-- Godot 4.x, GDScript có kiểu. Android ưu tiên (màn ngang, cảm ứng).
+- Game kiểu biến ý tưởng thành hiện thực. Phong cách 2D HD: MAP 3D, nhân vật và vật thể 2D.
+- Godot 4.x, GDScript có kiểu. Android ưu tiên (màn ngang, Joystick, cảm ứng).
 - KHÔNG có kế hoạch cố định. Ý tưởng hình thành khi làm (mục 8). Chỉ làm đúng việc được giao.
 - Nguyên bản: không chép tài sản hay mã của game khác.
 
 ## 2. Nghiệm thu (ưu tiên cao nhất)
-Mức: 0 chưa kiểm tra · 1 kiểm tra tĩnh (lệnh Termux) · 2 Godot import + boot không lỗi · 3 chạy thử thật trên Godot Android.
+Mức: 0 chưa kiểm tra · 1 kiểm tra tĩnh (lệnh Termux) · 2 Godot import + boot không lỗi · 3 Ông chủ sẽ chạy thử thật trên Godot Android.
 - CẤM viết "xong/đã sửa/đạt" khi chưa đạt mức 2. Báo cáo luôn ghi: mức đạt, phần chưa kiểm tra.
+- CẤM file code có > 300 dòng. Dùng .tres không dùng json
 - Mức 2 = không có Parse Error / Failed to load / SCRIPT ERROR / SHADER ERROR khi import và boot. Có Godot CLI: `--headless --import` rồi boot; không có: mở Godot Android đọc tab Errors. Không làm được thì ghi "CHƯA CHẠY GODOT".
 - Đổi scene/map/spawn/ánh sáng: xác nhận nhân vật không rơi (y ổn định sau 2 giây), màn hình không đen, và chụp ảnh.
 - Xong = mức ≥ 2 + không phá module khác (thử xóa module, mục 3) + README module + CHANGELOG 1-3 dòng đúng thực tế.
@@ -31,7 +32,7 @@ Mức: 0 chưa kiểm tra · 1 kiểm tra tĩnh (lệnh Termux) · 2 Godot impor
 - Presentation chỉ nghe event và gọi API, không chứa logic gameplay.
 
 ## 4. Đồ họa: map 3D + 2D bằng shader, KHÔNG texture
-- MAP: 3D thật (MeshInstance3D, Primitive Mesh, ArrayMesh/SurfaceTool), vật liệu màu hoặc ShaderMaterial. Mọi map phải có đèn (DirectionalLight3D) và WorldEnvironment.
+- MAP: mỗi map có shader riêng đầy đủ 3D thật (MeshInstance3D, Primitive Mesh, ArrayMesh/SurfaceTool), vật liệu màu hoặc ShaderMaterial. Mọi map phải có đèn (DirectionalLight3D) và WorldEnvironment.
 - NHÂN VẬT / VẬT THỂ 2D: quad (QuadMesh) billboard đầy đủ (không FIXED_Y, tránh bị co chiều cao khi camera nghiêng), hình vẽ hoàn toàn bằng shader (SDF/toán học), chân đặt đúng gốc node, cao ~1.75 m.
   - Một shader dùng chung cho mỗi loại thân; khác biệt (màu da/tóc/áo, kiểu dáng) là uniform lấy từ dữ liệu. Thêm nhân vật = thêm file dữ liệu, không thêm shader.
   - Animation bằng uniform (thời gian, pha bước, hướng). Tên: `idle`, `walk`; hướng down|up|left, phải = lật trái.
