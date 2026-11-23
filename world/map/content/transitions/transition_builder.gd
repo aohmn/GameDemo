@@ -3,6 +3,7 @@
 ## de TravelPanel UI hien bang chon diem den.
 extends RefCounted
 class_name TransitionBuilder
+const DestinationEvents = preload("res://core/contracts/destination_events.gd")
 
 ## Mau cau truc cong (nen cong + tru)
 const GATE_COLOR := Color(0.25, 0.55, 0.85, 1.0)

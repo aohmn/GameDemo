@@ -3,6 +3,7 @@
 ## KHONG chua logic chuyen map (Bootstrap xu ly).
 extends Control
 class_name TravelPanel
+const DestinationEvents = preload("res://core/contracts/destination_events.gd")
 
 ## Mau nen bang
 const BG_COLOR := Color(0.08, 0.10, 0.14, 0.92)

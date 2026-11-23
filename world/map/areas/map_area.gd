@@ -5,6 +5,7 @@
 ## Nội dung khu vực do subclass dựng qua content builders.
 extends Node3D
 class_name MapArea
+const DestinationEvents = preload("res://core/contracts/destination_events.gd")
 
 const SPAWN_META: StringName = &"spawn_id"
 

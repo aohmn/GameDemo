@@ -1,4 +1,5 @@
 extends Control
+const DestinationEvents = preload("res://core/contracts/destination_events.gd")
 
 var _direction := Vector2.ZERO
 var _touch_index := -1

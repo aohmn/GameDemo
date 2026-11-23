@@ -1,4 +1,5 @@
 extends Control
+const DestinationEvents = preload("res://core/contracts/destination_events.gd")
 ## Bootstrap: composition root của game.
 ## - Tạo và giữ SharedMap scene (Player, HUD, Joystick — hệ thống chung độc lập với map).
 ## - Nối NPCDirector vào shared scene.

@@ -1,5 +1,6 @@
 extends Control
 class_name WorldMinimap
+const DestinationEvents = preload("res://core/contracts/destination_events.gd")
 
 ## Bán kính thế giới hiển thị trên minimap nhỏ (mét).
 const MINI_RADIUS := 30.0
