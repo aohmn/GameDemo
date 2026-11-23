@@ -10,6 +10,8 @@ const SPAWN_META: StringName = &"spawn_id"
 
 var map_bounds: Rect2 = Rect2(Vector2(-50, -50), Vector2(100, 100))
 
+## _transitioning giu lai de tuong thich nguoc voi subclass cu; TransitionBuilder
+## moi khong dung direct callback nay nua.
 var _transitioning := false
 
 
@@ -98,7 +100,8 @@ func _apply_spawn() -> void:
 	print("[World] Spawn: ", name, " at ", spawn_position)
 
 
-## Player Player đi vào transition area -> gửi yêu cầu chuyển map.
+## _on_transition_entered: giu lai de subclass cu co the override neu can.
+## TransitionBuilder moi phat DestinationEvents.GATE_ENTERED thay vi goi truc tiep.
 func _on_transition_entered(body: Node3D, dest_scene: String, dest_spawn: String = "") -> void:
 	var player := get_tree().get_first_node_in_group("player") as CharacterBody3D
 	if not is_instance_valid(player) or body != player or _transitioning:

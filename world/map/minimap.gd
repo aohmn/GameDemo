@@ -44,6 +44,8 @@ var _mini_offsets := Vector4.ZERO
 ## Map bounds từ MapArea (thay thế WORLD_HALF_SIZE cũ).
 var _map_bounds: Rect2
 var _map_bounds_dirty := true
+## Danh sach cong: Array[Dictionary] voi key: gate_id, sign_text, position, size
+var _gate_data: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -54,6 +56,7 @@ func _ready() -> void:
 	EventBus.subscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
 	EventBus.subscribe(WorldEvents.NPC_POSITIONS_CHANGED, _on_npc_positions_changed)
 	EventBus.subscribe(WorldEvents.ROUTE_READY, _on_route_ready)
+	EventBus.subscribe(DestinationEvents.GATE_ENTERED, _on_gate_entered_minimap)
 
 	# Lưu layout minimap để khôi phục sau khi đóng bản đồ lớn.
 	_mini_anchors = Vector4(
@@ -95,6 +98,7 @@ func _exit_tree() -> void:
 		EventBus.unsubscribe(WorldEvents.PLAYER_POSITION_CHANGED, _on_player_position_changed)
 		EventBus.unsubscribe(WorldEvents.NPC_POSITIONS_CHANGED, _on_npc_positions_changed)
 		EventBus.unsubscribe(WorldEvents.ROUTE_READY, _on_route_ready)
+		EventBus.unsubscribe(DestinationEvents.GATE_ENTERED, _on_gate_entered_minimap)
 
 
 func _set_world_map_open(is_open: bool) -> void:
@@ -546,6 +550,17 @@ func _draw_minimap() -> void:
 			draw_rect(bld_rect, bld_color, true)
 			draw_rect(bld_rect, Color(0.1, 0.1, 0.1, 0.8), false, 1.0)
 
+	# Ve cong chuyen map tren minimap
+	for gate_info: Dictionary in _gate_data:
+		var g_pos_v: Variant = gate_info.get("position")
+		if not (g_pos_v is Vector3):
+			continue
+		var g_pos: Vector3 = g_pos_v as Vector3
+		var g_pt := _world_to_minimap(g_pos.x, g_pos.z)
+		if minimap_rect.has_point(g_pt):
+			draw_circle(g_pt, 7.0, Color(0.95, 0.80, 0.10, 0.9))
+			draw_circle(g_pt, 4.0, Color(0.15, 0.10, 0.02, 0.9))
+
 	if _has_player_position:
 		draw_circle(center, 5.0, Color.WHITE)
 		draw_circle(center, 3.2, Color(1.0, 0.35, 0.08))
@@ -596,6 +611,26 @@ static func get_building_color(building_type: String) -> Color:
 			return Color(0.80, 0.65, 0.85, 0.85) # Tím nhạt
 		_:
 			return Color(0.70, 0.70, 0.70, 0.85)
+
+
+func _on_gate_entered_minimap(payload: Dictionary) -> void:
+	var gate_id: String = str(payload.get("gate_id", ""))
+	# Them cong neu chua co trong danh sach
+	for existing: Dictionary in _gate_data:
+		if str(existing.get("gate_id", "")) == gate_id:
+			return
+	# Lay vi tri tu cong trong group MapArea
+	var map_area_node: Node = get_tree().get_first_node_in_group("MapArea")
+	if is_instance_valid(map_area_node):
+		var gate_node: Node = map_area_node.find_child(gate_id, true, false)
+		if is_instance_valid(gate_node) and gate_node is Node3D:
+			var g3d: Node3D = gate_node as Node3D
+			_gate_data.append({
+				"gate_id": gate_id,
+				"position": g3d.global_position,
+				"sign_text": str(payload.get("gate_id", "")),
+			})
+			queue_redraw()
 
 
 func _get_active_buildings() -> Dictionary:

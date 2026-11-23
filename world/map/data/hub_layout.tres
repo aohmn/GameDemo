@@ -90,7 +90,8 @@ id = "gate_to_lake"
 name = "ToLake"
 position = Vector3(0, 1, 46.5)
 size = Vector3(7, 3, 3)
-sign_text = "Hồ câu"
+sign_text = "Ho Cau"
+destination_ids = ["dest_ho_cau"]
 dest_scene = "res://world/map/scenes/fishing_lake_map.tscn"
 dest_spawn = "from_hub"
 

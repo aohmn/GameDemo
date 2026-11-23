@@ -100,15 +100,45 @@ func build_content() -> void:
 	# 2. Dựng các tòa nhà kiến trúc chức năng từ MapLayout
 	BuildingBuilder.build_from_layout(layout, self)
 
-	# 3. Dựng cổng chuyển map từ layout.gates
+	# 3. Dung cong chuyen map tu layout.gates
 	for gate: GateSpec in layout.gates:
-		TransitionBuilder.build([
-			{
-				"name": gate.name,
-				"position": gate.position,
-				"size": gate.size,
-				"sign_text": gate.sign_text,
-				"dest_scene": gate.dest_scene,
-				"dest_spawn": gate.dest_spawn,
-			}
-		], self, Callable(self, "_on_transition_entered"))
+		var gate_spec: Array[Dictionary] = [_gate_to_spec(gate)]
+		TransitionBuilder.build(gate_spec, self)
+
+
+## Chuyen GateSpec thanh spec Dictionary cho TransitionBuilder.
+## Tai DestinationData tu file .tres tuong ung voi moi destination_id.
+func _gate_to_spec(gate: GateSpec) -> Dictionary:
+	var destinations: Array[Dictionary] = []
+	for dest_id: String in gate.destination_ids:
+		var path: String = "res://world/map/data/" + dest_id + ".tres"
+		if ResourceLoader.exists(path, "Resource"):
+			var res: Resource = load(path)
+			if res is DestinationData:
+				var d: DestinationData = res as DestinationData
+				destinations.append({
+					"id": d.id,
+					"display_name": d.display_name,
+					"scene_path": d.scene_path,
+					"spawn_id": d.spawn_id,
+					"unlocked": d.unlocked,
+				})
+		else:
+			push_warning("[HubMapArea] Khong tim thay destination: " + path)
+	# Fallback: neu chua co destination_ids, dung dest_scene/dest_spawn cu
+	if destinations.is_empty() and not gate.dest_scene.is_empty():
+		destinations.append({
+			"id": gate.id + "_default",
+			"display_name": gate.sign_text,
+			"scene_path": gate.dest_scene,
+			"spawn_id": gate.dest_spawn,
+			"unlocked": true,
+		})
+	return {
+		"gate_id": gate.id,
+		"name": gate.name,
+		"position": gate.position,
+		"size": gate.size,
+		"sign_text": gate.sign_text,
+		"destinations": destinations,
+	}

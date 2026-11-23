@@ -11,8 +11,12 @@ const MAP_SCENE: PackedScene = preload("res://world/map/scenes/hub_map.tscn")
 ## Presentation là tùy chọn: thiếu sprite thì VisualRoot (3D) vẫn hiển thị.
 const SPRITE_SCENE_PATH: String = "res://presentation/player_sprite/player_sprite.tscn"
 
-## NPC là module tùy chọn: thiếu module thì thế giới vẫn chạy, chỉ không có NPC.
+## NPC la module tuy chon: thieu module thi the gioi van chay, chi khong co NPC.
 const NPC_DIRECTOR_SCRIPT_PATH: String = "res://modules/npc/npc_director.gd"
+
+## TravelPanel la presentation tuy chon: xoa file thi game van chay,
+## cong khong phan hoi nhung khong Parse Error.
+const TRAVEL_PANEL_SCRIPT_PATH: String = "res://presentation/travel_panel/travel_panel.gd"
 
 ## Scene world khai báo bằng metadata để Bootstrap biết có tạo NPC hay không.
 const NPC_SPAWN_META: StringName = &"npc_spawn_enabled"
@@ -20,6 +24,7 @@ const NPC_SPAWN_META: StringName = &"npc_spawn_enabled"
 var _active_map: Node
 var _shared: Node3D
 var _player: CharacterBody3D
+var _travel_panel: Control
 
 
 func _ready() -> void:
@@ -33,8 +38,10 @@ func _ready() -> void:
 
 	# World chỉ phát yêu cầu đổi map; Bootstrap sở hữu vòng đời map.
 	EventBus.subscribe(WorldEvents.MAP_CHANGE_REQUESTED, _on_map_change_requested)
+	EventBus.subscribe(DestinationEvents.DESTINATION_CHOSEN, _on_destination_chosen)
 
 	_add_shared_systems()
+	_attach_travel_panel()
 	_show_map(MAP_SCENE)
 	# Fresh boot: load_game (deferred) sẽ chuyển sang "load_save" nếu có save.
 	_player.spawn_context = "initial"
@@ -56,6 +63,7 @@ func _add_shared_systems() -> void:
 func _exit_tree() -> void:
 	if EventBus != null:
 		EventBus.unsubscribe(WorldEvents.MAP_CHANGE_REQUESTED, _on_map_change_requested)
+		EventBus.unsubscribe(DestinationEvents.DESTINATION_CHOSEN, _on_destination_chosen)
 
 
 ## EconomyService là module tùy chọn. Không tham chiếu class/autoload theo tên
@@ -74,6 +82,17 @@ func _register_economy_participant() -> void:
 		push_warning("[Boot] EconomyService thiếu SAVE_ID; bỏ qua đăng ký save.")
 		return
 	SaveCoordinator.register_participant(save_id, economy)
+
+
+## Bootstrap nhan DESTINATION_CHOSEN tu TravelPanel UI,
+## chuyen thanh MAP_CHANGE_REQUESTED de _change_map xu ly.
+func _on_destination_chosen(payload: Dictionary) -> void:
+	var scene_path: String = str(payload.get("scene_path", ""))
+	var spawn_id: String = str(payload.get("spawn_id", ""))
+	if scene_path.is_empty():
+		push_error("[Boot] DESTINATION_CHOSEN thieu scene_path.")
+		return
+	call_deferred("_change_map", scene_path, spawn_id)
 
 
 func _on_map_change_requested(payload: Dictionary) -> void:
@@ -116,6 +135,28 @@ func _show_map(map_scene: PackedScene, spawn_id: String = "") -> void:
 
 	add_child(map_instance)
 	move_child(map_instance, 0)
+
+
+## TravelPanel la overlay toan man hinh; gan vao Boot (khong phu thuoc map).
+func _attach_travel_panel() -> void:
+	if not ResourceLoader.exists(TRAVEL_PANEL_SCRIPT_PATH, "Script"):
+		return
+	var script := load(TRAVEL_PANEL_SCRIPT_PATH) as Script
+	if script == null:
+		push_warning("[Boot] Khong tai duoc TravelPanel; bo qua.")
+		return
+	var panel := script.new() as Control
+	if panel == null:
+		push_warning("[Boot] Khong tao duoc TravelPanel; bo qua.")
+		return
+	panel.name = "TravelPanel"
+	# Layer cao de hien tren HUD va map
+	var canvas := CanvasLayer.new()
+	canvas.name = "TravelPanelLayer"
+	canvas.layer = 10
+	canvas.add_child(panel)
+	add_child(canvas)
+	_travel_panel = panel
 
 
 func _attach_player_visual(shared_node: Node) -> void:

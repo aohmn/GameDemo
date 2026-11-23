@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="DestinationData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://world/map/data/destination_data.gd" id="1_destdata"]
+
+[resource]
+script = ExtResource("1_destdata")
+id = "dest_ho_cau"
+display_name = "Ho Cau Vuon Dao"
+scene_path = "res://world/map/scenes/fishing_lake_map.tscn"
+spawn_id = "from_hub"
+unlocked = true
+travel_cost_vnd = 0
+travel_minutes = 0

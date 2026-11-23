@@ -1,9 +1,8 @@
-## FishingLakeMapArea — Hồ câu: nội dung hồ cá, bến câu, cây quanh hồ,
-## lối chuyển về bản đồ trung tâm. Hồ câu không có đường vỉa hè.
+## FishingLakeMapArea — Ho cau: noi dung ho ca, ben cau, cay quanh ho,
+## loi chuyen ve ban do trung tam. Ho cau khong co duong via he.
 extends MapArea
 class_name FishingLakeMapArea
 
-## Nền hồ câu — tái sử dụng từ map_controller (cũ).
 const LAKE_GROUND_SPECS: Array[Dictionary] = [
 	{
 		"name": "GroundNorth",
@@ -48,11 +47,19 @@ func build_content() -> void:
 	ObjectBuilder.build_fishing_lake(self)
 	TransitionBuilder.build([
 		{
+			"gate_id": "gate_to_hub",
 			"name": "ToHub",
 			"position": Vector3(0.0, 1.0, 43.0),
 			"size": Vector3(5.0, 3.0, 5.0),
-			"sign_text": "Khu dân cư",
-			"dest_scene": "res://world/map/scenes/hub_map.tscn",
-			"dest_spawn": "from_lake",
+			"sign_text": "Khu Dan Cu",
+			"destinations": [
+				{
+					"id": "dest_khu_dan_cu",
+					"display_name": "Khu Dan Cu",
+					"scene_path": "res://world/map/scenes/hub_map.tscn",
+					"spawn_id": "from_lake",
+					"unlocked": true,
+				}
+			],
 		},
-	], self, Callable(self, "_on_transition_entered"))
+	], self)

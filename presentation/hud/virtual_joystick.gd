@@ -3,11 +3,25 @@ extends Control
 var _direction := Vector2.ZERO
 var _touch_index := -1
 var _last_emitted_direction := Vector2.ZERO
+var _locked := false
 
 
 func _ready() -> void:
 	set_process_input(true)
 	queue_redraw()
+	EventBus.subscribe(DestinationEvents.INPUT_LOCK_REQUESTED, _on_input_lock_requested)
+
+func _exit_tree() -> void:
+	if EventBus != null:
+		EventBus.unsubscribe(DestinationEvents.INPUT_LOCK_REQUESTED, _on_input_lock_requested)
+
+func _on_input_lock_requested(payload: Dictionary) -> void:
+	_locked = bool(payload.get("locked", false))
+	if _locked:
+		_touch_index = -1
+		_direction = Vector2.ZERO
+		_emit_direction()
+		queue_redraw()
 
 
 func get_direction() -> Vector2:
@@ -24,6 +38,8 @@ func _screen_to_local(screen_position: Vector2) -> Vector2:
 
 
 func _input(event: InputEvent) -> void:
+	if _locked:
+		return
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 

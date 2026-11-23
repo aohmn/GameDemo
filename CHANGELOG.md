@@ -1,3 +1,44 @@
+## Nhiem vu 4: Bang chon diem den o cong chuyen map
+
+- Them `DestinationData` (Resource, static typing): id, display_name, scene_path,
+  spawn_id, unlocked, travel_cost_vnd, travel_minutes. File .tres o world/map/data/.
+  Them diem den = them file .tres, khong sua script.
+- Them `DestinationEvents` (core/contracts/): GATE_ENTERED, GATE_EXITED,
+  DESTINATION_CHOSEN, INPUT_LOCK_REQUESTED.
+- Cap nhat `GateSpec`: them `destination_ids: Array[String]` ho tro N diem den;
+  giu `dest_scene`/`dest_spawn` de tuong thich nguoc.
+- Viet lai `TransitionBuilder.build()`: dung cong co hinh khoi that
+  (StaticBody3D 2 tru + dam ngang), bien hieu Label3D mau vang noi bat.
+  Cong KHONG tu chuyen map; phat GATE_ENTERED/GATE_EXITED qua EventBus.
+  Khong con nhan Callable truc tiep.
+- Tao `TravelPanel` (presentation/travel_panel/travel_panel.gd):
+  lang nghe GATE_ENTERED -> hien bang chon diem den (nut >= 56px),
+  lang nghe GATE_EXITED -> dong bang. Phat DESTINATION_CHOSEN khi chon,
+  phat INPUT_LOCK_REQUESTED de khoa joystick. KHONG logic chuyen map.
+  Xoa file -> game van chay, cong khong phan hoi, khong Parse Error.
+- Cap nhat `boot.gd`: them TRAVEL_PANEL_SCRIPT_PATH (tuy chon),
+  gắn TravelPanel vao CanvasLayer layer=10, lang nghe DESTINATION_CHOSEN
+  -> _change_map (thay vi MAP_CHANGE_REQUESTED truc tiep).
+- Cap nhat `virtual_joystick.gd`: them bien _locked + lang nghe
+  INPUT_LOCK_REQUESTED; khi locked, bo qua moi input cam ung.
+- Cap nhat `minimap.gd`: lang nghe GATE_ENTERED, hien cong tren minimap
+  bang diem tron vang, lay vi tri tu gate_id trong group MapArea.
+- Cap nhat `HubMapArea.build_content()`: tung gate lay DestinationData
+  tu dest_<id>.tres; fallback sang dest_scene/dest_spawn neu chua co .tres.
+- Viet lai `FishingLakeMapArea`: dung API moi TransitionBuilder.build() (khong Callable).
+- Tao dest_ho_cau.tres (ho cau -> hub) va dest_khu_dan_cu.tres (hub -> ho cau).
+- Cap nhat hub_layout.tres: gate_to_lake co destination_ids=["dest_ho_cau"].
+
+### Kiem tra (muc 2, AGENTS.md phan 11)
+- Kiem tra cu phap: 7/7 file moi load OK trong headless (DestinationData,
+  DestinationEvents, GateSpec, TransitionBuilder, TravelPanel, boot, joystick).
+- DestinationData: 7 truong dung kieu, instantiate ok.
+- DestinationEvents: 4 hang so GATE_ENTERED/EXITED/DESTINATION_CHOSEN/INPUT_LOCK_REQUESTED.
+- GateSpec: destination_ids Array[String] + dest_scene fallback.
+- dest_ho_cau.tres va dest_khu_dan_cu.tres load ok, dung id va scene_path.
+- boot.gd: TRAVEL_PANEL_SCRIPT_PATH khai bao va detect duoc.
+- CHUA kiem tra: Muc 3/4 tren Godot Android (can mo app tren dien thoai).
+
 ## NPC di chuyen theo toa nha building_id va lich JobEvents
 
 - NPCProfile: xoa `home_position`, `workplace_position`, `shop_position` (Vector3 cung co);
