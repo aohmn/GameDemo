@@ -1,6 +1,6 @@
 extends Node3D
 
-const WATER_COLOR: Color = Color(0.18, 0.62, 0.78, 0.85)
+const WATER_SHADER: Shader = preload("res://maps/harbor_island/water.gdshader")
 const SAND_COLOR: Color = Color(0.92, 0.84, 0.62)
 const GRASS_COLOR: Color = Color(0.38, 0.72, 0.32)
 const CLIFF_COLOR: Color = Color(0.48, 0.44, 0.40)
@@ -43,12 +43,11 @@ func _make_environment() -> void:
 func _make_ocean() -> void:
     var water_mesh := PlaneMesh.new()
     water_mesh.size = Vector2(80.0, 80.0)
+    water_mesh.subdivide_width = 32
+    water_mesh.subdivide_depth = 32
 
-    var water_mat := StandardMaterial3D.new()
-    water_mat.albedo_color = WATER_COLOR
-    water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-    water_mat.roughness = 0.15
-    water_mat.metallic = 0.1
+    var water_mat := ShaderMaterial.new()
+    water_mat.shader = WATER_SHADER
 
     var water_node := MeshInstance3D.new()
     water_node.name = "OceanSurface"

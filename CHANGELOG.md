@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Tạo water shader procedural cho đại dương đảo harbor_island: chuyển màu nước nông xanh ngọc sang nước sâu xanh lam, sóng nhẹ, phản chiếu và viền bọt trắng tinh tế gần bờ cát.
 - Đóng khe hở ranh giới phía Nam tại x=-9 đến -1 ven bãi cát mà không chặn lối lên cầu tàu.
 - Sửa công thức tính sun_disc theo góc (acos/angle) để mặt trời procedural có kích thước nhỏ, sắc nét và tự nhiên.
 - Đồng bộ collision_layer = 1 mặc định cho toàn bộ ranh giới, địa hình, vách núi và cầu tàu để Player cản chạm vững chắc, không bị xuyên tường rơi xuống biển.

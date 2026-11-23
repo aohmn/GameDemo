@@ -14,7 +14,8 @@ Map đảo bến cảng nhiệt đới quy mô ~50 × 50 m, khởi tạo trong h
 
 ## Quy chuẩn kỹ thuật
 
-- Dựng hình hoàn toàn bằng Primitive Mesh (BoxMesh, PlaneMesh, CylinderMesh, SphereMesh, PrismMesh) và StandardMaterial3D màu.
+- Mặt nước đại dương sử dụng `water.gdshader` procedural: phân biệt nước nông (xanh ngọc sáng trong) và nước sâu (xanh lam đậm), có sóng lăn tăn, viền bọt trắng ven bờ cát và phản chiếu ánh sáng tự nhiên.
+- Dựng hình hoàn toàn bằng Primitive Mesh (BoxMesh, PlaneMesh, CylinderMesh, SphereMesh, PrismMesh) và StandardMaterial3D/ShaderMaterial.
 - Không sử dụng texture ảnh hay sampler2D.
 - Hệ thống StaticBody3D và CollisionShape3D đầy đủ trên mặt đất, bãi biển, cầu tàu, vách núi, cây cối, thuyền và công trình.
 - Ranh giới đảo vô hình ngăn người chơi rơi khỏi rìa đảo và cầu tàu xuống biển.
