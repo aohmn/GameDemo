@@ -7,6 +7,8 @@ GameClock, JobService, NavigationService hay ShopService.
 
 ## Thành phần
 - `npc_profile.gd`: Resource class `NPCProfile`, định nghĩa dữ liệu nhân vật.
+  Trường vị trí: `home_building_id`, `workplace_building_id`, `shop_building_id` (String).
+  Không dùng Vector3 cứng — tọa độ được tra từ Dictionary của `WorldEvents.BUILDINGS_READY`.
 - `data/lan.tres`, `data/minh.tres`: hai hồ sơ NPC mẫu dạng Godot Resource.
 - `npc_director.gd`: nạp Resource, tạo NPC, nhận lịch qua event, tìm NPC gần
   Player (theo vị trí Player phát qua event) và dựng UI tương tác.
@@ -14,7 +16,8 @@ GameClock, JobService, NavigationService hay ShopService.
 
 ## Thêm NPC mới
 Tạo một Resource `.tres` mới dùng script `npc_profile.gd`, điền ID ổn định,
-tên, tuổi, nghề, tính cách, vị trí và tiền mặt; sau đó thêm resource vào mảng
+tên, tuổi, nghề, tính cách, `home_building_id`, `workplace_building_id`,
+`shop_building_id` và tiền mặt; sau đó thêm resource vào mảng
 `NPC_PROFILES` trong `npc_director.gd`. Không cần tạo script NPC riêng.
 
 ## API
@@ -22,6 +25,9 @@ tên, tuổi, nghề, tính cách, vị trí và tiền mặt; sau đó thêm re
 - `NPCDirector.get_npcs() -> Array[LifeNPC]`: trả về danh sách NPC còn hợp lệ.
 - `NPCDirector.serialize_state()` / `deserialize_state()`
 - `LifeNPC.configure(profile: NPCProfile)`
+- `LifeNPC.set_building_doors(doors: Dictionary)` — nhan {id: Vector3} tu NPCDirector,
+  chuyen building_id -> toa do (home/workplace/shop_position).
+- `LifeNPC.place_at_current_schedule(activity: StringName)` — dat vi tri ban dau.
 - `LifeNPC.apply_schedule(activity: StringName)`
 - `LifeNPC.get_dialogue()`
 
@@ -34,6 +40,11 @@ node/dịch vụ của module khác.
   (`{ "hour", "activity", "shift_start", "shift_end" }`). `NPCDirector` gọi
   `LifeNPC.apply_schedule(activity)`.
 - `WorldEvents.PLAYER_POSITION_CHANGED` — vị trí Player để tìm NPC gần nhất.
+- `WorldEvents.BUILDINGS_READY` — khi MapArea dung xong toan bo cong trinh;
+  payload `{ "buildings": {id: Vector3} }`. NPCDirector cap nhat `_building_doors`
+  va goi `set_building_doors` + `place_at_current_schedule` cho tung NPC.
+  Flow: `MapArea._emit_buildings_ready()` → `NPCDirector._on_buildings_ready()`
+  → `LifeNPC.set_building_doors()` → `LifeNPC.place_at_current_schedule()`.
 - `WorldEvents.ROUTE_READY` — tuyến đường do `WorldNavigation` trả về, ghép
   theo `request_id` của từng NPC.
 

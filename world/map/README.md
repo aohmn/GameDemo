@@ -49,6 +49,26 @@ Hub sở hữu bố cục kiểu Phố chính + Hẻm cụt:
 - Lối chuyển sang Hồ câu ở đầu nam: `ToLake` tại `(0, 1, 46.5)` dẫn sang Hồ câu (`dest_spawn: "from_hub"`).
 - Spawn: `hub_entry` = `(0, 0.08, -8)`, `from_lake` = `(0, 0.08, 41)`.
 
+## 4. MapArea — API cong khai
+
+`map_area.gd` la base class; moi map ke thua:
+- `map_bounds: Rect2` — gioi han toa do (x, z).
+- `get_road_points() -> Array[Vector3]` — cac diem waypoint duong bo.
+- `get_buildings() -> Dictionary` — {id: {door_point, type, sign_text, position, size}}.
+- `_emit_buildings_ready()` — phat `WorldEvents.BUILDINGS_READY` sau `build_content()`.
+
+**Flow BUILDINGS_READY**:
+```
+HubMapArea._ready()
+  └─ build_content()          # Dung duong, via he, toa nha
+      └─ _emit_buildings_ready()
+          └─ EventBus.emit(BUILDINGS_READY, {buildings: {id: Vector3}})
+              └─ NPCDirector._on_buildings_ready()
+                  └─ LifeNPC.set_building_doors()
+                      └─ LifeNPC.place_at_current_schedule()
+```
+Minimap, NPC va WorldNavigation doc tu day; khong hardcode toa do.
+
 ## 4. Hồ câu
 
 - `fishing_lake_map.tscn` (map root chỉ metadata `npc_spawn_enabled = false`).
