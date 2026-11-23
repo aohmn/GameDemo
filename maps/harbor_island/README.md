@@ -14,7 +14,13 @@ Map đảo bến cảng nhiệt đới quy mô ~50 × 50 m, khởi tạo trong h
 
 ## Quy chuẩn kỹ thuật
 
-- Mặt nước đại dương sử dụng `water.gdshader` procedural: phân biệt nước nông (xanh ngọc sáng trong) và nước sâu (xanh lam đậm), có sóng lăn tăn, viền bọt trắng ven bờ cát và phản chiếu ánh sáng tự nhiên.
+- Mặt nước đại dương sử dụng `water.gdshader` procedural cao cấp:
+  - Độ sâu và màu nước tính toán dựa trên khoảng cách hình học bờ biển thực tế (bãi cát, vách đá, cầu tàu).
+  - Hệ sóng đa tầng domain-warped noise kết hợp vi mô, loại bỏ triệt để khuôn lặp hay vân sọc song song.
+  - Phản chiếu quang học Fresnel, highlight mặt trời Blinn-Phong và tán xạ xanh ngọc tự nhiên.
+  - Bọt biển hữu cơ bám theo mép bờ cát thực tế.
+- PlaneMesh mặt nước được chia lưới `64 × 64` đỉnh cho độ nhấp nhô mượt mà.
+- Scene kiểm thử trực quan độc lập: `maps/harbor_island/dev.tscn` (camera quỹ đạo xoay quanh bến cảng).
 - Dựng hình hoàn toàn bằng Primitive Mesh (BoxMesh, PlaneMesh, CylinderMesh, SphereMesh, PrismMesh) và StandardMaterial3D/ShaderMaterial.
 - Không sử dụng texture ảnh hay sampler2D.
 - Hệ thống StaticBody3D và CollisionShape3D đầy đủ trên mặt đất, bãi biển, cầu tàu, vách núi, cây cối, thuyền và công trình.

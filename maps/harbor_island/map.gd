@@ -43,8 +43,8 @@ func _make_environment() -> void:
 func _make_ocean() -> void:
     var water_mesh := PlaneMesh.new()
     water_mesh.size = Vector2(80.0, 80.0)
-    water_mesh.subdivide_width = 32
-    water_mesh.subdivide_depth = 32
+    water_mesh.subdivide_width = 64
+    water_mesh.subdivide_depth = 64
 
     var water_mat := ShaderMaterial.new()
     water_mat.shader = WATER_SHADER
