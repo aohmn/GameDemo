@@ -44,9 +44,9 @@ func _create_map_manager() -> void:
     _map_manager.name = "MapManager"
     add_child(_map_manager)
 
-    var loaded := bool(_map_manager.call("load_map", "vietnam_street"))
+    var loaded := bool(_map_manager.call("load_map", "harbor_island"))
     if not loaded:
-        push_error("Không thể tải map vietnam_street.")
+        push_error("Không thể tải map harbor_island.")
 
 
 func _create_player() -> void:

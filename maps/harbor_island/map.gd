@@ -18,6 +18,7 @@ func _ready() -> void:
     _make_pier_and_harbor()
     _make_harbor_structures()
     _make_tropical_trees()
+    _make_island_boundaries()
 
 
 func _make_environment() -> void:
@@ -56,25 +57,25 @@ func _make_ocean() -> void:
     water_node.material_override = water_mat
     add_child(water_node)
 
-    var seabed_pos := Vector3(0.0, -3.0, 0.0)
+    # Đáy biển sâu - không dùng collider ở đây để tránh làm sàn đi bộ ảo dưới nước
+    var seabed_pos := Vector3(0.0, -4.0, 0.0)
     var seabed_size := Vector3(80.0, 1.0, 80.0)
     _box("Seabed", seabed_pos, seabed_size, Color(0.12, 0.35, 0.42))
-    _add_box_collider("SeabedCollision", seabed_pos, seabed_size)
 
 
 func _make_island_terrain() -> void:
-    # Bờ biển bãi cát bao quanh
-    var beach_pos := Vector3(0.0, -0.05, 5.0)
-    var beach_size := Vector3(44.0, 0.5, 36.0)
+    # Bờ biển bãi cát bao quanh (mặt trên y = 0.0)
+    var beach_pos := Vector3(0.0, -0.25, 4.0)
+    var beach_size := Vector3(44.0, 0.5, 38.0)
     _box("SandyBeach", beach_pos, beach_size, SAND_COLOR)
     _add_box_collider("BeachCollision", beach_pos, beach_size)
 
-    # Cao nguyên cỏ chính trung tâm đảo (người chơi spawn tại z=10.0, y=0.05)
+    # Cao nguyên cỏ trung tâm (mặt trên y = 0.0, khớp vị trí spawn y=0.05 của Player)
     var plateaus: Array[Dictionary] = [
-        {"name": "PlateauCenter", "pos": Vector3(0.0, 0.25, 7.0), "size": Vector3(32.0, 0.6, 22.0)},
-        {"name": "PlateauNorth", "pos": Vector3(0.0, 0.45, -6.0), "size": Vector3(22.0, 0.8, 14.0)},
-        {"name": "PlateauWest", "pos": Vector3(-12.0, 0.35, 3.0), "size": Vector3(14.0, 0.7, 18.0)},
-        {"name": "PlateauEast", "pos": Vector3(12.0, 0.35, 3.0), "size": Vector3(14.0, 0.7, 18.0)},
+        {"name": "PlateauCenter", "pos": Vector3(0.0, -0.2, 7.0), "size": Vector3(32.0, 0.4, 22.0)},
+        {"name": "PlateauNorth", "pos": Vector3(0.0, -0.1, -6.0), "size": Vector3(22.0, 0.6, 14.0)},
+        {"name": "PlateauWest", "pos": Vector3(-12.0, -0.15, 3.0), "size": Vector3(14.0, 0.5, 18.0)},
+        {"name": "PlateauEast", "pos": Vector3(12.0, -0.15, 3.0), "size": Vector3(14.0, 0.5, 18.0)},
     ]
     for p in plateaus:
         _box(p["name"], p["pos"], p["size"], GRASS_COLOR)
@@ -82,16 +83,17 @@ func _make_island_terrain() -> void:
 
 
 func _make_mountains() -> void:
-    # Núi và bờ đá ôm cánh cung tạo vịnh tự nhiên, chừa cửa biển ở phía Bắc (Z < -15)
+    # Dãy núi và vách đá bao quanh vịnh, chừa cửa biển rộng 12m ở chính Bắc (-6 <= X <= 6, Z < -15)
     var cliffs: Array[Dictionary] = [
+        # Dãy núi phía Tây
         {"pos": Vector3(-18.0, 3.0, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 6.0},
         {"pos": Vector3(-16.0, 4.5, -12.0), "r_top": 2.0, "r_bot": 7.0, "h": 9.0},
-        {"pos": Vector3(-10.0, 5.0, -18.0), "r_top": 1.5, "r_bot": 6.0, "h": 10.0},
+        {"pos": Vector3(-12.0, 5.0, -18.0), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
+        {"pos": Vector3(-20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
+        # Dãy núi phía Đông
         {"pos": Vector3(18.0, 3.0, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 6.0},
         {"pos": Vector3(16.0, 4.5, -12.0), "r_top": 2.0, "r_bot": 7.0, "h": 9.0},
-        {"pos": Vector3(10.0, 5.0, -18.0), "r_top": 1.5, "r_bot": 6.0, "h": 10.0},
-        # Đồi chắn gió phía Tây và Đông
-        {"pos": Vector3(-20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
+        {"pos": Vector3(12.0, 5.0, -18.0), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
         {"pos": Vector3(20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
     ]
 
@@ -118,22 +120,22 @@ func _make_mountains() -> void:
 
 
 func _make_pier_and_harbor() -> void:
-    # Cầu tàu chính bằng gỗ vươn dài ra vịnh nước phía trước (từ bến cảng ra phía Nam/Tây)
-    var main_pier_pos := Vector3(-2.0, 0.15, 17.5)
-    var main_pier_size := Vector3(4.5, 0.35, 11.0)
+    # Cầu tàu vươn từ bờ cát (z=10 đến z=23) tạo kết nối liền mạch với đất liền
+    var main_pier_pos := Vector3(-2.0, 0.05, 16.5)
+    var main_pier_size := Vector3(4.5, 0.3, 13.0)
     _box("MainPierPlanks", main_pier_pos, main_pier_size, WOOD_COLOR)
     _add_box_collider("MainPierCol", main_pier_pos, main_pier_size)
 
-    # Cầu tàu nhánh chữ T tạo khu neo đậu thuyền (docking bay)
-    var t_pier_pos := Vector3(-7.0, 0.15, 22.0)
-    var t_pier_size := Vector3(8.0, 0.35, 3.5)
+    # Cầu tàu ngang chữ T bến đỗ thuyền
+    var t_pier_pos := Vector3(-6.5, 0.05, 22.0)
+    var t_pier_size := Vector3(8.0, 0.3, 3.5)
     _box("TPierPlanks", t_pier_pos, t_pier_size, WOOD_COLOR)
     _add_box_collider("TPierCol", t_pier_pos, t_pier_size)
 
-    # Cọc gỗ cầu tàu cắm xuống nước
+    # Cọc gỗ cầu tàu
     var post_positions: Array[Vector3] = [
-        Vector3(-4.0, -0.4, 13.0), Vector3(0.0, -0.4, 13.0),
-        Vector3(-4.0, -0.4, 17.5), Vector3(0.0, -0.4, 17.5),
+        Vector3(-4.0, -0.4, 11.0), Vector3(0.0, -0.4, 11.0),
+        Vector3(-4.0, -0.4, 16.5), Vector3(0.0, -0.4, 16.5),
         Vector3(-4.0, -0.4, 22.0), Vector3(0.0, -0.4, 22.0),
         Vector3(-8.0, -0.4, 22.0), Vector3(-10.5, -0.4, 22.0),
     ]
@@ -144,9 +146,9 @@ func _make_pier_and_harbor() -> void:
         post.height = 1.4
         _mesh("PierPost", post, p, WOOD_DARK)
 
-    # Thuyền gỗ neo đậu mẫu tại vịnh
-    _boat("DockedBoat1", Vector3(-5.0, 0.05, 25.0), Vector3(2.2, 0.8, 4.5), 15.0)
-    _boat("DockedBoat2", Vector3(4.0, 0.05, 20.0), Vector3(2.0, 0.75, 4.0), -25.0)
+    # Thuyền gỗ neo đậu
+    _boat("DockedBoat1", Vector3(-4.5, 0.05, 25.5), Vector3(2.4, 0.8, 4.5), 10.0)
+    _boat("DockedBoat2", Vector3(4.5, 0.05, 19.5), Vector3(2.2, 0.75, 4.2), -20.0)
 
 
 func _boat(b_name: String, pos: Vector3, size: Vector3, rot_y: float) -> void:
@@ -173,14 +175,12 @@ func _boat(b_name: String, pos: Vector3, size: Vector3, rot_y: float) -> void:
 
 
 func _make_harbor_structures() -> void:
-    # Nhà kho bến cảng (Harbor Warehouse) và chòi điều hành
-    _building("FisheryWarehouse", Vector3(6.5, 1.8, 9.5), Vector3(6.0, 2.8, 5.0), WOOD_DARK, ROOF_COLOR)
-    _building("BaitHut", Vector3(-9.0, 1.5, 8.0), Vector3(4.0, 2.2, 4.0), WOOD_COLOR, Color(0.28, 0.55, 0.65))
+    _building("FisheryWarehouse", Vector3(6.5, 1.4, 8.5), Vector3(6.0, 2.8, 5.0), WOOD_DARK, ROOF_COLOR)
+    _building("BaitHut", Vector3(-9.0, 1.1, 7.0), Vector3(4.0, 2.2, 4.0), WOOD_COLOR, Color(0.28, 0.55, 0.65))
 
-    # Thùng gỗ chứa đồ và thùng phi ven cảng
     var crates: Array[Vector3] = [
-        Vector3(2.5, 0.75, 11.5), Vector3(3.5, 0.75, 11.5),
-        Vector3(3.0, 1.45, 11.5), Vector3(-5.0, 0.75, 11.0)
+        Vector3(2.5, 0.35, 10.5), Vector3(3.5, 0.35, 10.5),
+        Vector3(3.0, 1.05, 10.5), Vector3(-5.0, 0.35, 9.5)
     ]
     var c_idx := 0
     for cr in crates:
@@ -191,11 +191,9 @@ func _make_harbor_structures() -> void:
 
 
 func _building(b_name: String, pos: Vector3, size: Vector3, wall_color: Color, roof_color: Color) -> void:
-    # Thân nhà
     _box(b_name + "Wall", pos, size, wall_color)
     _add_box_collider(b_name + "Col", pos, size)
 
-    # Mái nhà dốc
     var roof := PrismMesh.new()
     roof.size = Vector3(size.x + 0.6, 1.3, size.z + 0.6)
     var roof_pos := pos + Vector3(0.0, size.y * 0.5 + 0.65, 0.0)
@@ -203,15 +201,14 @@ func _building(b_name: String, pos: Vector3, size: Vector3, wall_color: Color, r
 
 
 func _make_tropical_trees() -> void:
-    # Hàng dừa và cây nhiệt đới ven bờ biển và sườn đồi
     var tree_locs: Array[Vector3] = [
-        Vector3(-14.0, 0.6, 12.0),
-        Vector3(-11.0, 0.6, 16.0),
-        Vector3(12.0, 0.6, 14.0),
-        Vector3(15.0, 0.6, 8.0),
-        Vector3(8.0, 0.8, -2.0),
-        Vector3(-8.0, 0.8, -2.0),
-        Vector3(0.0, 0.9, -11.0),
+        Vector3(-14.0, 0.0, 12.0),
+        Vector3(-11.0, 0.0, 15.0),
+        Vector3(12.0, 0.0, 13.0),
+        Vector3(15.0, 0.0, 7.0),
+        Vector3(7.5, 0.2, -2.0),
+        Vector3(-7.5, 0.2, -2.0),
+        Vector3(0.0, 0.2, -10.0),
     ]
 
     var t_idx := 0
@@ -228,7 +225,6 @@ func _make_tropical_trees() -> void:
         crown.height = 1.3
         _mesh("PalmCrown_" + str(t_idx), crown, loc + Vector3(0.0, 2.5, 0.0), LEAF_COLOR)
 
-        # Collider thân cây
         var body := StaticBody3D.new()
         body.name = "TreeCol_" + str(t_idx)
         body.position = loc + Vector3(0.0, 1.2, 0.0)
@@ -239,6 +235,28 @@ func _make_tropical_trees() -> void:
         col.shape = shape
         body.add_child(col)
         add_child(body)
+
+
+func _make_island_boundaries() -> void:
+    # Ranh giới ngăn Player rơi khỏi mép đảo và cầu tàu
+    var wall_h := 3.0
+    var bounds: Array[Dictionary] = [
+        # Mép ngoài đại dương phía Tây và Đông
+        {"name": "BoundWest", "pos": Vector3(-23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
+        {"name": "BoundEast", "pos": Vector3(23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
+        # Mép bờ Nam (khu mặt nước bến cảng hai bên cầu tàu)
+        {"name": "BoundSouthLeft", "pos": Vector3(-16.0, 1.5, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
+        {"name": "BoundSouthRight", "pos": Vector3(11.0, 1.5, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
+        # Lan can vô hình giới hạn đầu cầu tàu và rìa cầu tàu T
+        {"name": "BoundPierTNorth", "pos": Vector3(-6.5, 1.5, 20.0), "size": Vector3(5.0, wall_h, 0.5)},
+        {"name": "BoundPierTSouth", "pos": Vector3(-6.5, 1.5, 24.0), "size": Vector3(8.5, wall_h, 0.5)},
+        {"name": "BoundPierTWest", "pos": Vector3(-11.0, 1.5, 22.0), "size": Vector3(0.5, wall_h, 4.0)},
+        {"name": "BoundPierTEast", "pos": Vector3(0.5, 1.5, 17.5), "size": Vector3(0.5, wall_h, 13.0)},
+        # Cửa biển phía Bắc: vách ranh giới ngăn rơi ra biển sâu
+        {"name": "BoundNorthChannel", "pos": Vector3(0.0, 1.5, -15.5), "size": Vector3(14.0, wall_h, 1.0)},
+    ]
+    for b in bounds:
+        _add_box_collider(b["name"], b["pos"], b["size"])
 
 
 func _add_box_collider(node_name: String, pos: Vector3, size: Vector3) -> void:

@@ -25,7 +25,7 @@ Bootstrap khởi tạo Camera bám theo nhân vật, nạp MapManager để tả
 
 - `core/`: hệ thống nền, hợp đồng và sự kiện dùng chung.
 - `modules/player/`: nhân vật, chuyển động vật lý, animation shader SDF và hướng nhìn.
-- `maps/vietnam_street/`: map đảo bến cảng nhiệt đới (~50 × 50m) với bãi biển, cầu tàu, vịnh kín, núi đá và rặng dừa.
+- `maps/harbor_island/`: map đảo bến cảng nhiệt đới (~50 × 50m) với bãi biển, cầu tàu, vịnh kín, núi đá và rặng dừa.
 - `presentation/joystick/`: điều khiển cảm ứng đa điểm độc lập.
 - `scenes/boot/`: Bootstrap và MapManager kết nối các thành phần.
 - `docs/`: tài liệu phong cách đồ họa và quyết định kiến trúc (`docs/decisions/`).

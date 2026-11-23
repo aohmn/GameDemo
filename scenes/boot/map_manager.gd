@@ -1,7 +1,7 @@
 extends Node3D
 
 const MAP_SCENES: Dictionary = {
-	"vietnam_street": preload("res://maps/vietnam_street/map.tscn"),
+	"harbor_island": preload("res://maps/harbor_island/map.tscn"),
 }
 
 var current_map_id: String = ""
