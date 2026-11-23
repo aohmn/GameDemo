@@ -66,8 +66,23 @@ func get_buildings() -> Dictionary:
 	var result: Dictionary = {}
 	var layout := _get_layout()
 	if layout != null:
+		var lots_dict: Dictionary = {}
+		for lot: LotSpec in layout.lots:
+			lots_dict[lot.id] = lot
 		for building: BuildingSpec in layout.buildings:
-			result[building.id] = building.door_point
+			var lot: LotSpec = lots_dict.get(building.lot_id, null)
+			var bld_pos := building.door_point
+			var bld_size := Vector2(8.0, 8.0)
+			if lot != null:
+				bld_pos = Vector3(lot.rect.position.x + lot.rect.size.x * 0.5, 0.12, lot.rect.position.y + lot.rect.size.y * 0.5)
+				bld_size = lot.rect.size
+			result[building.id] = {
+				"door_point": building.door_point,
+				"type": building.type,
+				"sign_text": building.sign_text,
+				"position": bld_pos,
+				"size": bld_size,
+			}
 	return result
 
 

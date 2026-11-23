@@ -1,10 +1,11 @@
 shader_type spatial;
-render_mode diffuse_burley, specular_schlick_ggx;
+render_mode diffuse_burley, specular_schlick_ggx, depth_draw_opaque;
 
 uniform vec4 base_color : source_color = vec4(0.42, 0.45, 0.40, 1.0);
 uniform float roughness_value : hint_range(0.0, 1.0) = 0.82;
 uniform float surface_detail : hint_range(0.0, 0.12) = 0.025;
 uniform float fresnel_strength : hint_range(0.0, 0.15) = 0.035;
+uniform float transparency_alpha : hint_range(0.0, 1.0) = 1.0;
 
 varying vec3 world_position;
 
@@ -28,6 +29,7 @@ void fragment() {
     float rim = pow(1.0 - max(dot(normal_view, VIEW), 0.0), 3.0);
 
     ALBEDO = max(base_color.rgb * (1.0 + variation), vec3(0.0));
+    ALPHA = transparency_alpha;
     ROUGHNESS = roughness_value;
     METALLIC = 0.0;
     SPECULAR = 0.28;

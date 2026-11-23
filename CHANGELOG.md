@@ -1,3 +1,30 @@
+## Hoàn thiện 6 mẫu tòa nhà có chức năng theo MapLayout
+
+- Triển khai 6 mẫu tòa nhà tham số hóa chuyên biệt (`nha_pho`, `nha_tro`, `tap_hoa`, `quan_an`, `quan_ca_phe`, `tiem_sua_xe`):
+  * Dựng từ Primitive Mesh, tái sử dụng ShaderMaterial procedural_surface (AGENTS §4: hoàn toàn không texture).
+  * Chiều cao tối đa 2 tầng (~6.5m) đảm bảo góc nhìn thông thoáng cho camera và Player.
+  * Tích hợp thành phần `BuildingOcclusionFader` điều khiển độ trong suốt (`transparency_alpha`) làm mờ khối nhà khi nằm chắn giữa Camera và Player; có biến `enable_occlusion_fade` để bật/tắt toàn cục.
+  * Biển hiệu tiếng Việt bằng `Label3D` kích thước lớn (font_size 42, outline 8) hiển thị rõ ràng từ camera chơi.
+  * Khối va chạm `StaticBody3D` theo thân nhà; bậc tam cấp kết nối từ vỉa hè lên cốt sàn.
+  * Cửa là điểm tương tác `Area3D` phát sự kiện `WorldEvents.BUILDING_DOOR_ENTERED` (`world_building_door_entered`) kèm `building_id`.
+- Đặt 8 tòa nhà vào bố cục hub (`hub_layout.tres`):
+  * 2 tạp hóa: `bld_tap_hoa_1` (Tạp Hóa Cô Lan), `bld_tap_hoa_2` (Tạp Hóa Bình Dân).
+  * 1 quán ăn: `bld_quan_an` (Quán Ăn Ba Miền).
+  * 1 quán cà phê: `bld_quan_ca_phe` (Cà Phê Phố Xưa).
+  * 1 tiệm sửa xe: `bld_tiem_sua_xe` (Sửa Xe Chú Minh).
+  * 2 nhà phố: `bld_nha_pho_1` (Nhà Số 08), `bld_nha_pho_2` (Nhà Số 15).
+  * 1 nhà trọ: `bld_nha_tro` (Nhà Trọ Thanh Xuân).
+- Cập nhật Minimap & Bản đồ lớn (`world/map/minimap.gd`):
+  * Đọc danh sách tòa nhà từ `MapArea.get_buildings()`.
+  * Phân biệt trực quan từng loại công trình bằng các dải màu riêng biệt (vàng: tạp hóa, đỏ cam: quán ăn, nâu: cà phê, xanh cơ khí: sửa xe, xanh lá nhạt: nhà phố, tím nhạt: nhà trọ).
+
+### Kiểm tra (mức 2, AGENTS.md phần 11)
+- Kiểm tra cú pháp, static typing, nạp và lưu `hub_layout.tres` sạch sẽ.
+- Boot 200 frame: Dựng đầy đủ 8 tòa nhà thuộc 6 mẫu tham số, kiểm tra phân loại số lượng chính xác.
+- Player bước vào cửa: Area3D kích hoạt và phát `WorldEvents.BUILDING_DOOR_ENTERED` qua EventBus chính xác.
+- Minimap và bản đồ lớn hiển thị đầy đủ các khối tòa nhà theo đúng màu sắc phân loại.
+- CHƯA kiểm tra: Mức 3 và mức 4 trên ứng dụng Godot Android (chưa mở và quan sát trực tiếp bằng tay trên điện thoại).
+
 ## 6 mẫu tòa nhà có chức năng theo MapLayout
 
 - Thêm 6 mẫu tòa nhà và lô đất tương ứng vào `world/map/data/hub_layout.tres`:

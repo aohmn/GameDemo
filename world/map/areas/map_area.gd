@@ -46,7 +46,9 @@ func get_road_points() -> Array[Vector2]:
 	return []
 
 
-## Danh sách công trình trong khu vực: Dictionary có khóa là id (String), giá trị là door_point (Vector3).
+## Danh sách công trình trong khu vực: Dictionary có khóa là id (String),
+## giá trị là Dictionary { "door_point": Vector3, "type": String, "sign_text": String, "position": Vector3 }
+## hoặc Vector3 door_point (hỗ trợ cả hai).
 func get_buildings() -> Dictionary:
 	return {}
 

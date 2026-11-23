@@ -523,6 +523,29 @@ func _draw_minimap() -> void:
 			scale_factor
 		)
 
+	# Vẽ các tòa nhà trên Minimap nhỏ theo màu loại công trình
+	var buildings_dict := _get_active_buildings()
+	for bld_id: String in buildings_dict:
+		var bld_info: Variant = buildings_dict[bld_id]
+		var bld_type: String = ""
+		var bld_pos: Vector3 = Vector3.ZERO
+		var bld_size: Vector2 = Vector2(8.0, 8.0)
+		if bld_info is Dictionary:
+			var d: Dictionary = bld_info as Dictionary
+			bld_type = str(d.get("type", ""))
+			bld_pos = d.get("position", Vector3.ZERO) as Vector3
+			bld_size = d.get("size", Vector2(8.0, 8.0)) as Vector2
+		elif bld_info is Vector3:
+			bld_pos = bld_info as Vector3
+
+		var bld_center_2d := _world_to_minimap(bld_pos.x, bld_pos.z)
+		var half_px := (bld_size * scale_factor) * 0.5
+		var bld_rect := Rect2(bld_center_2d - half_px, bld_size * scale_factor)
+		if minimap_rect.intersects(bld_rect):
+			var bld_color := get_building_color(bld_type)
+			draw_rect(bld_rect, bld_color, true)
+			draw_rect(bld_rect, Color(0.1, 0.1, 0.1, 0.8), false, 1.0)
+
 	if _has_player_position:
 		draw_circle(center, 5.0, Color.WHITE)
 		draw_circle(center, 3.2, Color(1.0, 0.35, 0.08))
@@ -553,6 +576,33 @@ func _draw_minimap() -> void:
 		10,
 		Color.WHITE
 	)
+
+
+
+## Màu sắc đại diện cho từng loại tòa nhà trên Minimap
+static func get_building_color(building_type: String) -> Color:
+	match building_type:
+		"tap_hoa":
+			return Color(0.95, 0.80, 0.20, 0.90) # Vàng rực
+		"quan_an":
+			return Color(0.92, 0.35, 0.25, 0.90) # Đỏ cam
+		"quan_ca_phe":
+			return Color(0.55, 0.38, 0.25, 0.90) # Nâu cà phê
+		"tiem_sua_xe":
+			return Color(0.40, 0.70, 0.85, 0.90) # Xanh cơ khí
+		"nha_pho":
+			return Color(0.60, 0.75, 0.65, 0.85) # Xanh lá nhạt
+		"nha_tro":
+			return Color(0.80, 0.65, 0.85, 0.85) # Tím nhạt
+		_:
+			return Color(0.70, 0.70, 0.70, 0.85)
+
+
+func _get_active_buildings() -> Dictionary:
+	var map_area: Node = get_tree().get_first_node_in_group("MapArea")
+	if is_instance_valid(map_area) and map_area.has_method("get_buildings"):
+		return map_area.call("get_buildings")
+	return {}
 
 
 func _draw_minimap_world_line_clipped(
@@ -732,6 +782,29 @@ func _draw_full_map() -> void:
 			Color(0.25, 0.26, 0.26),
 			maxf(2.0, uniform_scale * 3.0)
 		)
+
+	# Vẽ các tòa nhà trên bản đồ lớn theo màu loại công trình
+	var full_buildings_dict := _get_active_buildings()
+	for bld_id: String in full_buildings_dict:
+		var bld_info: Variant = full_buildings_dict[bld_id]
+		var bld_type: String = ""
+		var bld_pos: Vector3 = Vector3.ZERO
+		var bld_size: Vector2 = Vector2(8.0, 8.0)
+		if bld_info is Dictionary:
+			var d: Dictionary = bld_info as Dictionary
+			bld_type = str(d.get("type", ""))
+			bld_pos = d.get("position", Vector3.ZERO) as Vector3
+			bld_size = d.get("size", Vector2(8.0, 8.0)) as Vector2
+		elif bld_info is Vector3:
+			bld_pos = bld_info as Vector3
+
+		var bld_center_2d := _world_to_full_map_uniform(map_rect, sao, bld_pos.x, bld_pos.z)
+		var half_px := (bld_size * uniform_scale * _map_zoom) * 0.5
+		var bld_rect := Rect2(bld_center_2d - half_px, bld_size * uniform_scale * _map_zoom)
+		if map_rect.intersects(bld_rect):
+			var bld_color := get_building_color(bld_type)
+			draw_rect(bld_rect, bld_color, true)
+			draw_rect(bld_rect, Color(0.1, 0.1, 0.1, 0.9), false, 1.0)
 
 	# Vẽ tuyến đường (route).
 	if _route.size() >= 2:

@@ -28,3 +28,7 @@ const PLAYER_RECOVERY_REQUESTED: StringName = &"world_player_recovery_requested"
 ## map và chịu trách nhiệm gắn lại Presentation/NPC cho map mới.
 ## Payload: { "scene_path": String }
 const MAP_CHANGE_REQUESTED: StringName = &"world_map_change_requested"
+
+## Khi Player đi vào cửa của một tòa nhà bất kỳ.
+## Payload: { "building_id": String }
+const BUILDING_DOOR_ENTERED: StringName = &"world_building_door_entered"
