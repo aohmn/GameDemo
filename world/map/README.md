@@ -58,6 +58,16 @@ Hub sở hữu:
 - Hồ câu: không đường → route trả về rỗng.
 - Minimap vẽ đường từ `WorldNavigation.get_road_points()`.
 
+## 6b. Minimap / Bản đồ lớn
+
+- **Minimap nhỏ**: bán kính ~30 m quanh Player (hằng số `MINI_RADIUS`), không chiếu toàn map.
+- **Bản đồ lớn**: hiển thị TOÀN BỘ `map_bounds` của MapArea hiện tại.
+  - Tỷ lệ đều: `scale = min(pixel_w / bounds_w, pixel_h / bounds_h)`, căn giữa trong vùng vẽ.
+  - Zoom (1x–4x) và pan nhân trên `scale` đó.
+  - Nút -, +, ĐÓNG: hàm `_button_rects()` trả 3 `Rect2` không chồng nhau (khoảng cách ≥ 10 px); dùng chung cho vẽ và bắt chạm.
+  - Waypoint: chạm trên map đặt điểm đích, yêu cầu route từ `WorldNavigation`.
+- Ngưỡng kéo > 12 px để ngón rung không mất tap.
+
 ## 7. Save/Load
 
 - Player participant: vị trí + máu — nhận khi vào map bất kỳ.

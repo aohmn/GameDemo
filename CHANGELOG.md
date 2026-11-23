@@ -1,3 +1,21 @@
+## Ban do lon: ty le deu, hien thi toan bo map_bounds
+
+- Ban do lon dung `_map_bounds` tu MapArea thay vi `MINI_RADIUS` de hien thi
+  toan bo khu vuc (hub 40x40, ho theo kich thuoc ho).
+- Ty le deu: `scale = min(pixel_w / bounds_w, pixel_h / bounds_h)`, can giua
+  trong vung ve. Zoom va pan nhan tren scale do.
+- Nut -, +, DONG: mot ham `_button_rects()` tra 3 `Rect2` khong chong nhau
+  (khoang cach toi thieu 10 px); dung chung cho ve va bat cham.
+- Minimap nho giu nguyen (ban kinh ~30 m quanh Player).
+- Don comment da ngon ngu: chi dung tieng Viet.
+- Sua `world/map/minimap.gd`, `world/map/README.md`.
+
+### Kiem tra (muc 2, AGENTS.md phan 11)
+- `gdparse world/map/minimap.gd`: khong loi cu phap.
+- Kiem tra can doi ngoac, cau truc file.
+- CHUA kiem tra: Godot Android (import, boot, chup anh ban do lon).
+  Ly do: moi truong hien tai khong co Godot binary.
+
 ## Fix: spawn theo cổng chuyển map
 
 - Cổng chuyển map khai báo `dest_spawn`; Bootstrap truyền `spawn_id` qua event MAP_CHANGE_REQUESTED và metadata map.
@@ -8,7 +26,7 @@
 
 ## Minimap: sửa cho map mới + lỗi cảm ứng
 
-- Bỏ WORLD_HALF_SIZE = 150, dùng map_bounds Rect2 từ MapArea代替.
+- Bỏ WORLD_HALF_SIZE = 150, dùng map_bounds Rect2 từ MapArea.
 - Minimap nhỏ hiển thị bán kính ~30 m quanh Player, KHÔNG chiếu cả map toàn cảnh.
 - Vạch đường lấy từ WorldNavigation.get_road_points() như hiện tại, không có tọa độ cứng.
 - Cắt nét vẽ trong ô bản đồ (clip), vạch không tràn ra ngoài.

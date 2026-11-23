@@ -1,10 +1,19 @@
 extends Control
 class_name WorldMinimap
 
+## Bán kính thế giới hiển thị trên minimap nhỏ (mét).
 const MINI_RADIUS := 30.0
+## Kích thước pixel minimap nhỏ.
 const MINI_SIZE := 144.0
+## Giới hạn zoom bản đồ lớn.
 const MAP_ZOOM_MIN := 1.0
 const MAP_ZOOM_MAX := 4.0
+## Kích thước nút (pixel, tối thiểu 48 cho cảm ứng).
+const BUTTON_SIZE := Vector2(48.0, 48.0)
+## Khoảng cách tối thiểu giữa các nút (pixel).
+const BUTTON_GAP := 10.0
+## Ngưỡng pixel để phân biệt chạm (tap) và kéo (drag).
+const DRAG_THRESHOLD := 12.0
 
 var _world_map_open := false
 var _waypoint := Vector3.ZERO
@@ -32,7 +41,7 @@ var _redraw_accumulator: float = 0.0
 var _mini_anchors := Vector4.ZERO
 var _mini_offsets := Vector4.ZERO
 
-# Map bounds from MapArea (replaces WORLD_HALF_SIZE)
+## Map bounds từ MapArea (thay thế WORLD_HALF_SIZE cũ).
 var _map_bounds: Rect2
 var _map_bounds_dirty := true
 
@@ -46,7 +55,7 @@ func _ready() -> void:
 	EventBus.subscribe(WorldEvents.NPC_POSITIONS_CHANGED, _on_npc_positions_changed)
 	EventBus.subscribe(WorldEvents.ROUTE_READY, _on_route_ready)
 
-	# Save layout minimap để khôi phục sau khi đóng bản đồ lớn.
+	# Lưu layout minimap để khôi phục sau khi đóng bản đồ lớn.
 	_mini_anchors = Vector4(
 		anchor_left,
 		anchor_top,
@@ -60,12 +69,10 @@ func _ready() -> void:
 		offset_bottom
 	)
 
-	# Request map bounds from MapArea
 	_request_map_bounds()
 
 
 func _request_map_bounds() -> void:
-	# Try to get map bounds from the MapArea instance in the world
 	var map_area: Node = get_tree().get_first_node_in_group("MapArea")
 	if is_instance_valid(map_area) and map_area is MapArea:
 		var ma: MapArea = map_area as MapArea
@@ -73,7 +80,7 @@ func _request_map_bounds() -> void:
 			_map_bounds = ma.map_bounds
 		_map_bounds_dirty = false
 	else:
-		# Fallback: use default bounds based on MINI_RADIUS
+		# Dự phòng: dùng bounds dựa trên MINI_RADIUS.
 		_map_bounds = Rect2(-MINI_RADIUS, -MINI_RADIUS, MINI_RADIUS * 2.0, MINI_RADIUS * 2.0)
 		_map_bounds_dirty = false
 
@@ -101,11 +108,11 @@ func _set_world_map_open(is_open: bool) -> void:
 		_map_pan = Vector2.ZERO
 		_route.clear()
 		_pending_route_request = 0
-		# Cập nhật map bounds khi mở bản đồ
+		# Cập nhật map bounds khi mở bản đồ.
 		_request_map_bounds()
 
 	if is_open:
-		# Mở rộng Control phủ toàn thể viewport.
+		# Mở rộng Control phủ toàn viewport.
 		anchor_left = 0.0
 		anchor_top = 0.0
 		anchor_right = 1.0
@@ -132,14 +139,17 @@ func _set_world_map_open(is_open: bool) -> void:
 
 func _process(delta: float) -> void:
 	_redraw_accumulator += delta
-	# Chỉ queue_redraw tối đa 10 lần/giây (mỗi 0.1s)
+	# Chỉ queue_redraw tối đa 10 lần/giây (mỗi 0.1s).
 	if _redraw_accumulator >= 0.1:
 		_redraw_accumulator = 0.0
 		queue_redraw()
 
 
+# --- Xử lý đầu vào ---
+
+
 func _gui_input(event: InputEvent) -> void:
-	# Yêu cầu B1: Bỏ qua InputEventMouse có device == InputEvent.DEVICE_ID_EMULATION
+	# Bỏ qua chuột giả lập từ touch trên Android.
 	if event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION:
 		return
 
@@ -205,7 +215,7 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 	var previous_position: Vector2 = _touch_positions[event.index]
 
 	if _touch_positions.size() >= 2:
-		# Multi-touch zoom (giữ nguyên như hiện tại)
+		# Zoom bằng hai ngón (pinch).
 		var touch_ids: Array = _touch_positions.keys()
 		var other_id: int = touch_ids[0]
 
@@ -227,11 +237,11 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 		_touch_positions[event.index] = local_position
 		_gesture_moved = true
 	else:
-		# Yêu cầu B2: Ngưỡng kéo > 12 px (hiện tại 1 px nên ngón rung mất cú chạm)
+		# Kéo một ngón: ngưỡng > DRAG_THRESHOLD để không mất tap khi rung tay.
 		_touch_positions[event.index] = local_position
 		var movement := local_position - previous_position
 
-		if movement.length() > 12.0:
+		if movement.length() > DRAG_THRESHOLD:
 			_map_pan += movement
 			_clamp_map_pan()
 			_gesture_moved = true
@@ -243,7 +253,7 @@ func _handle_screen_drag(event: InputEventScreenDrag) -> void:
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
 	var local_position: Vector2 = _screen_to_local(event.position)
 
-	# Yêu cầu B1: Bỏ qua InputEventMouse có device == InputEvent.DEVICE_ID_EMULATION
+	# Bỏ qua chuột giả lập.
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return
 
@@ -289,7 +299,7 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 
 
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
-	# Yêu cầu B1: Bỏ qua InputEventMouse có device == InputEvent.DEVICE_ID_EMULATION
+	# Bỏ qua chuột giả lập.
 	if event.device == InputEvent.DEVICE_ID_EMULATION:
 		return
 
@@ -300,8 +310,8 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	var movement := local_position - _mouse_last_position
 	_mouse_last_position = local_position
 
-	# Yêu cầu B2: Ngưỡng kéo > 12 px
-	if movement.length() > 12.0:
+	# Ngưỡng kéo > DRAG_THRESHOLD.
+	if movement.length() > DRAG_THRESHOLD:
 		_map_pan += movement
 		_clamp_map_pan()
 		_mouse_moved = true
@@ -310,45 +320,47 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	queue_redraw()
 
 
-func _handle_full_map_tap(position: Vector2) -> void:
-	# Yêu cầu B3: Nút -, +, ĐÓNG có vùng chạm tối thiểu 48x48
-	# Sử dụng chung một Rect2 cho vẽ và bắt chạm
-	var button_size := Vector2(48.0, 48.0)
+# --- Xử lý chạm trên bản đồ lớn (nút / waypoint) ---
 
-	# Close button - area: size.x - 66 wide, 48 high from top-right
+
+## Trả về 3 Rect2 cho nút: [zoom_out, zoom_in, close]. Không chồng nhau,
+## khoảng cách tối thiểu BUTTON_GAP pixel. Dùng chung cho vẽ và bắt chạm.
+func _button_rects() -> Array[Rect2]:
+	# Bố trí từ phải sang trái: ĐÓNG | (gap) | + | (gap) | -
 	var close_rect := Rect2(
-		size.x - 66.0,
-		0.0,
-		button_size.x,
-		button_size.y
+		Vector2(size.x - BUTTON_SIZE.x - 10.0, 3.0),
+		BUTTON_SIZE
 	)
-	if close_rect.has_point(position):
+	var zoom_in_rect := Rect2(
+		Vector2(close_rect.position.x - BUTTON_GAP - BUTTON_SIZE.x, 3.0),
+		BUTTON_SIZE
+	)
+	var zoom_out_rect := Rect2(
+		Vector2(zoom_in_rect.position.x - BUTTON_GAP - BUTTON_SIZE.x, 3.0),
+		BUTTON_SIZE
+	)
+	return [zoom_out_rect, zoom_in_rect, close_rect]
+
+
+func _handle_full_map_tap(position: Vector2) -> void:
+	var rects: Array[Rect2] = _button_rects()
+
+	# Nút ĐÓNG
+	if rects[2].has_point(position):
 		_set_world_map_open(false)
 		return
 
-	# Zoom out (-) button
-	var zoom_out_rect := Rect2(
-		size.x - 155.0,
-		0.0,
-		button_size.x,
-		button_size.y
-	)
-	if zoom_out_rect.has_point(position) and _world_map_open:
+	# Nút thu nhỏ (-)
+	if rects[0].has_point(position) and _world_map_open:
 		_zoom_at(0.8, _full_map_rect().get_center())
 		return
 
-	# Zoom in (+) button
-	var zoom_in_rect := Rect2(
-		size.x - 112.0,
-		0.0,
-		button_size.x,
-		button_size.y
-	)
-	if zoom_in_rect.has_point(position) and _world_map_open:
+	# Nút phóng to (+)
+	if rects[1].has_point(position) and _world_map_open:
 		_zoom_at(1.25, _full_map_rect().get_center())
 		return
 
-	# Tap trên bản đồ để đặt waypoint
+	# Chạm trên bản đồ => đặt waypoint.
 	var map_rect := _full_map_rect()
 
 	if not map_rect.has_point(position):
@@ -372,12 +384,14 @@ func _handle_full_map_tap(position: Vector2) -> void:
 	queue_redraw()
 
 
+# --- Sự kiện từ EventBus ---
+
+
 func _on_player_position_changed(payload: Dictionary) -> void:
 	var position_value: Variant = payload.get("position")
 	if position_value is Vector3:
 		_player_position = position_value
 		_has_player_position = true
-		# Yêu cầu cập nhật map bounds khi player di chuyển > 0.5 m
 		_request_map_bounds()
 
 
@@ -396,7 +410,6 @@ func _on_npc_positions_changed(payload: Dictionary) -> void:
 				"position": position_value
 			})
 	_npc_positions = entries
-	# Chỉ redraw nếu NPC thay đổi vị trí > 0.5 m
 	var total_move := 0.0
 	for entry: Dictionary in entries:
 		var pos: Vector3 = entry.get("position") as Vector3
@@ -426,6 +439,9 @@ func _on_route_ready(payload: Dictionary) -> void:
 	queue_redraw()
 
 
+# --- Zoom / Pan ---
+
+
 func _zoom_at(factor: float, focal_point: Vector2) -> void:
 	var map_center := _full_map_rect().get_center()
 	var world_offset := (focal_point - map_center - _map_pan) / _map_zoom
@@ -449,11 +465,15 @@ func _clamp_map_pan() -> void:
 	_map_pan.y = clampf(_map_pan.y, -max_pan.y, max_pan.y)
 
 
+## Vùng pixel dành cho bản đồ lớn (bên trong viền, dưới thanh tiêu đề).
 func _full_map_rect() -> Rect2:
 	return Rect2(
 		Vector2(16.0, 54.0),
 		Vector2(maxf(1.0, size.x - 32.0), maxf(1.0, size.y - 76.0))
 	)
+
+
+# --- Vẽ ---
 
 
 func _draw() -> void:
@@ -463,13 +483,16 @@ func _draw() -> void:
 		_draw_minimap()
 
 
+# --- Minimap nhỏ: bán kính ~30 m quanh Player ---
+
+
 func _draw_minimap() -> void:
 	var minimap_rect := Rect2(
 		Vector2(size.x * 0.5 - MINI_SIZE * 0.5, size.y * 0.57 - MINI_SIZE * 0.5),
 		Vector2(MINI_SIZE, MINI_SIZE)
 	)
 
-	# Vẽ nền bản đồ minimap (đã clip theo rect)
+	# Nền minimap.
 	draw_rect(minimap_rect, Color(0.025, 0.04, 0.055, 0.90), true)
 	draw_rect(minimap_rect, Color(0.72, 0.78, 0.78, 0.95), false, 1.5)
 
@@ -483,13 +506,12 @@ func _draw_minimap() -> void:
 		Color(0.95, 0.95, 0.88)
 	)
 
-	# Vẽ khu vực hiển thị ~30 m quanh Player
-	# Scale: 30m radius → full minimap diameter (MINI_SIZE)
+	# Tỷ lệ: 30m bán kính → nửa đường kính minimap.
 	var scale_factor := MINI_SIZE / (2.0 * MINI_RADIUS)
 
 	var center := Vector2(size.x * 0.5, size.y * 0.57)
 
-	# Vẽ đường theo tọa độ thế giới tương đối với Player
+	# Vẽ đường theo tọa độ thế giới tương đối với Player.
 	var world_points: Array[Vector2] = WorldNavigation.get_road_points()
 	for i in range(world_points.size() - 1):
 		_draw_minimap_world_line_clipped(
@@ -541,35 +563,30 @@ func _draw_minimap_world_line_clipped(
 	clip_rect: Rect2,
 	scale_factor: float
 ) -> void:
-	# Chuyển đổi world points to minimap points
 	var start_point := _world_to_minimap(start_world.x, start_world.y)
 	var end_point := _world_to_minimap(end_world.x, end_world.y)
 
-	# Kiểm tra xem cả hai điểm có nằm trong clip_rect không
 	var start_in := clip_rect.has_point(start_point)
 	var end_in := clip_rect.has_point(end_point)
 
 	if start_in and end_in:
-		# Cả Ambos trong rect -> vẽ luôn
 		draw_line(start_point, end_point, color, line_width, true)
 	elif start_in or end_in:
-		# Một bên trong, một bên ngoài -> cắt line tại biên rect
 		var intersect: Variant = _clip_line_to_rect_2d(start_point, end_point, clip_rect)
 		if intersect != null:
 			var clipped: Dictionary = intersect as Dictionary
 			draw_line(clipped["start"] as Vector2, clipped["end"] as Vector2, color, line_width, true)
-	# (cho minimap: các road point gần Player nên thường trong rect)
 
 
+## Cắt đoạn thẳng vào trong hình chữ nhật (Cohen-Sutherland đơn giản).
 func _clip_line_to_rect_2d(p1: Vector2, p2: Vector2, rect: Rect2) -> Variant:
-	# Thuật toán đơn giản: tìm điểm giao của đoạn line với 4 bên rect
 	var dx := p2.x - p1.x
 	var dy := p2.y - p1.y
 
 	var t_enter := 0.0
 	var t_exit := 1.0
 
-	# X direção
+	# Trục X
 	if abs(dx) > 0.001:
 		var t1 := (rect.position.x - p1.x) / dx
 		var t2 := (rect.position.x + rect.size.x - p1.x) / dx
@@ -581,7 +598,7 @@ func _clip_line_to_rect_2d(p1: Vector2, p2: Vector2, rect: Rect2) -> Variant:
 		t_exit = min(t_exit, t2)
 		if t_enter > t_exit: return null
 
-	# Y dirección
+	# Trục Y
 	if abs(dy) > 0.001:
 		var t3 := (rect.position.y - p1.y) / dy
 		var t4 := (rect.position.y + rect.size.y - p1.y) / dy
@@ -593,13 +610,12 @@ func _clip_line_to_rect_2d(p1: Vector2, p2: Vector2, rect: Rect2) -> Variant:
 		t_exit = min(t_exit, t4)
 		if t_enter > t_exit: return null
 
-	# Kiểm tra xem có giao intersection không
 	if t_enter < 0 and t_exit < 0: return null
 	if t_enter > 1 and t_exit > 1: return null
 
-	var t_use := max(0.0, min(1.0, t_enter))
+	var t_use: float = maxf(0.0, minf(1.0, t_enter))
 	var intersect_start := Vector2(p1.x + dx * t_use, p1.y + dy * t_use)
-	t_use = min(1.0, max(0.0, t_exit))
+	t_use = minf(1.0, maxf(0.0, t_exit))
 	var intersect_end := Vector2(p1.x + dx * t_use, p1.y + dy * t_use)
 
 	return {"start": intersect_start, "end": intersect_end}
@@ -615,11 +631,31 @@ func _world_to_minimap(world_x: float, world_z: float) -> Vector2:
 		world_z - _player_position.z
 	)
 
-	# Show ~30m radius around Player
-	# Scale: 30m maps to MINI_SIZE/2 (radius in pixels)
+	# 30m ánh xạ tới MINI_SIZE/2 (bán kính pixel).
 	var scale_factor := MINI_SIZE / (2.0 * MINI_RADIUS)
 
 	return center + relative * scale_factor
+
+
+# --- Bản đồ lớn: hiển thị TOÀN BỘ map_bounds ---
+
+
+## Tỷ lệ đều cho bản đồ lớn: min(pixel_w / bounds_w, pixel_h / bounds_h).
+## Trả về [scale, offset_x, offset_y] để căn giữa trong map_rect.
+func _full_map_scale_and_offset(map_rect: Rect2) -> Array:
+	var bounds := _map_bounds
+	if bounds.size.x <= 0.0 or bounds.size.y <= 0.0:
+		bounds = Rect2(-MINI_RADIUS, -MINI_RADIUS, MINI_RADIUS * 2.0, MINI_RADIUS * 2.0)
+
+	var sx := map_rect.size.x / bounds.size.x
+	var sy := map_rect.size.y / bounds.size.y
+	var s := minf(sx, sy)
+
+	# Offset để căn giữa phần dư (trục có tỷ lệ lớn hơn).
+	var offset_x := (map_rect.size.x - bounds.size.x * s) * 0.5
+	var offset_y := (map_rect.size.y - bounds.size.y * s) * 0.5
+
+	return [s, offset_x, offset_y]
 
 
 func _draw_full_map() -> void:
@@ -639,57 +675,26 @@ func _draw_full_map() -> void:
 		Color(0.96, 0.94, 0.84)
 	)
 
-	# Yêu cầu B3: Nút -, +, ĐÓNG có vùng chạm tối thiểu 48x48
-	# Sử dụng chung một Rect2 cho vẽ và bắt chạm
-	var button_size := Vector2(48.0, 48.0)
+	# Vẽ nút -, +, ĐÓNG (cùng hàm _button_rects cho vẽ và bắt chạm).
+	var rects: Array[Rect2] = _button_rects()
 
-	# Close button
-	var close_rect := Rect2(
-		size.x - 66.0,
-		0.0,
-		button_size.x,
-		button_size.y
-	)
-	draw_rect(close_rect, Color(0.8, 0.2, 0.2, 0.9), true)
+	# Nút thu nhỏ (-)
+	draw_rect(rects[0], Color(0.6, 0.6, 0.6, 0.9), true)
 	draw_string(
 		ThemeDB.fallback_font,
-		Vector2(size.x - 60.0, 36.0),
-		"ĐÓNG",
-		HORIZONTAL_ALIGNMENT_LEFT,
-		-1.0,
-		14,
-		Color.WHITE
-	)
-
-	# Zoom out (-) button
-	var zoom_out_rect := Rect2(
-		size.x - 155.0,
-		0.0,
-		button_size.x,
-		button_size.y
-	)
-	draw_rect(zoom_out_rect, Color(0.6, 0.6, 0.6, 0.9), true)
-	draw_string(
-		ThemeDB.fallback_font,
-		Vector2(size.x - 150.0, 36.0),
-		"−",
+		Vector2(rects[0].position.x + 14.0, rects[0].position.y + 33.0),
+		"\u2212",
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
 		24,
 		Color.WHITE
 	)
 
-	# Zoom in (+) button
-	var zoom_in_rect := Rect2(
-		size.x - 112.0,
-		0.0,
-		button_size.x,
-		button_size.y
-	)
-	draw_rect(zoom_in_rect, Color(0.6, 0.6, 0.6, 0.9), true)
+	# Nút phóng to (+)
+	draw_rect(rects[1], Color(0.6, 0.6, 0.6, 0.9), true)
 	draw_string(
 		ThemeDB.fallback_font,
-		Vector2(size.x - 106.0, 36.0),
+		Vector2(rects[1].position.x + 14.0, rects[1].position.y + 33.0),
 		"+",
 		HORIZONTAL_ALIGNMENT_LEFT,
 		-1.0,
@@ -697,51 +702,71 @@ func _draw_full_map() -> void:
 		Color.WHITE
 	)
 
+	# Nút ĐÓNG
+	draw_rect(rects[2], Color(0.8, 0.2, 0.2, 0.9), true)
+	draw_string(
+		ThemeDB.fallback_font,
+		Vector2(rects[2].position.x + 6.0, rects[2].position.y + 33.0),
+		"ĐÓNG",
+		HORIZONTAL_ALIGNMENT_LEFT,
+		-1.0,
+		14,
+		Color.WHITE
+	)
+
 	var map_rect := _full_map_rect()
 	draw_rect(map_rect, Color(0.20, 0.35, 0.22), true)
 
-	# Sử dụng MINI_RADIUS thay vì WORLD_HALF_SIZE
-	var scale_x := map_rect.size.x / (MINI_RADIUS * 2.0)
-	var scale_y := map_rect.size.y / (MINI_RADIUS * 2.0)
+	# Dùng map_bounds: tỷ lệ đều, căn giữa.
+	var sao: Array = _full_map_scale_and_offset(map_rect)
+	var uniform_scale: float = sao[0]
 
+	# Vẽ đường.
 	var world_points: Array[Vector2] = WorldNavigation.get_road_points()
 	for i in range(world_points.size() - 1):
-		_draw_map_line(
+		_draw_map_line_uniform(
 			map_rect,
-			scale_x,
-			scale_y,
+			sao,
 			world_points[i],
 			world_points[i + 1],
 			Color(0.25, 0.26, 0.26),
-			maxf(2.0, scale_x * 3.0)
+			maxf(2.0, uniform_scale * 3.0)
 		)
 
+	# Vẽ tuyến đường (route).
 	if _route.size() >= 2:
 		for route_index in range(_route.size() - 1):
 			var route_start: Vector3 = _route[route_index]
 			var route_end: Vector3 = _route[route_index + 1]
-			_draw_map_line(map_rect, scale_x, scale_y, Vector2(route_start.x, route_start.z), Vector2(route_end.x, route_end.z), Color(1.0, 0.78, 0.20), maxf(2.5, scale_x * 2.5))
+			_draw_map_line_uniform(
+				map_rect,
+				sao,
+				Vector2(route_start.x, route_start.z),
+				Vector2(route_end.x, route_end.z),
+				Color(1.0, 0.78, 0.20),
+				maxf(2.5, uniform_scale * 2.5)
+			)
 
+	# Vẽ Player.
 	if _has_player_position:
-		var player_point := _world_to_full_map(
+		var player_point := _world_to_full_map_uniform(
 			map_rect,
-			scale_x,
-			scale_y,
+			sao,
 			_player_position.x,
 			_player_position.z
 		)
 		draw_circle(player_point, 7.0, Color.WHITE)
 		draw_circle(player_point, 4.5, Color(1.0, 0.35, 0.08))
 
+	# Vẽ NPC.
 	for npc_entry: Dictionary in _npc_positions:
 		var npc_position_value: Variant = npc_entry.get("position")
 		if not (npc_position_value is Vector3):
 			continue
 		var npc_position: Vector3 = npc_position_value as Vector3
-		var npc_point := _world_to_full_map(
+		var npc_point := _world_to_full_map_uniform(
 			map_rect,
-			scale_x,
-			scale_y,
+			sao,
 			npc_position.x,
 			npc_position.z
 		)
@@ -753,11 +778,11 @@ func _draw_full_map() -> void:
 			)
 			draw_circle(npc_point, 2.0, Color(0.02, 0.12, 0.2))
 
+	# Vẽ waypoint.
 	if _has_waypoint:
-		var target := _world_to_full_map(
+		var target := _world_to_full_map_uniform(
 			map_rect,
-			scale_x,
-			scale_y,
+			sao,
 			_waypoint.x,
 			_waypoint.z
 		)
@@ -777,20 +802,23 @@ func _draw_full_map() -> void:
 	)
 
 
-func _draw_map_line(
+# --- Hàm chuyển đổi tọa độ bản đồ lớn (tỷ lệ đều) ---
+
+
+## Vẽ đoạn thẳng trên bản đồ lớn với tỷ lệ đều.
+func _draw_map_line_uniform(
 	map_rect: Rect2,
-	scale_x: float,
-	scale_y: float,
+	sao: Array,
 	start_world: Vector2,
 	end_world: Vector2,
 	color: Color,
 	width: float
 ) -> void:
-	var start_point := _world_to_full_map(
-		map_rect, scale_x, scale_y, start_world.x, start_world.y
+	var start_point := _world_to_full_map_uniform(
+		map_rect, sao, start_world.x, start_world.y
 	)
-	var end_point := _world_to_full_map(
-		map_rect, scale_x, scale_y, end_world.x, end_world.y
+	var end_point := _world_to_full_map_uniform(
+		map_rect, sao, end_world.x, end_world.y
 	)
 
 	draw_line(
@@ -802,16 +830,22 @@ func _draw_map_line(
 	)
 
 
-func _world_to_full_map(
+## Chuyển tọa độ thế giới (x,z) thành pixel trên bản đồ lớn.
+## Dùng tỷ lệ đều + offset căn giữa + zoom + pan.
+func _world_to_full_map_uniform(
 	map_rect: Rect2,
-	scale_x: float,
-	scale_y: float,
+	sao: Array,
 	world_x: float,
 	world_z: float
 ) -> Vector2:
+	var uniform_scale: float = sao[0]
+	var off_x: float = sao[1]
+	var off_y: float = sao[2]
+	var bounds := _map_bounds
+
 	var base_point := Vector2(
-		map_rect.position.x + (world_x + MINI_RADIUS) * scale_x,
-		map_rect.position.y + (world_z + MINI_RADIUS) * scale_y
+		map_rect.position.x + off_x + (world_x - bounds.position.x) * uniform_scale,
+		map_rect.position.y + off_y + (world_z - bounds.position.y) * uniform_scale
 	)
 
 	return (
@@ -821,19 +855,23 @@ func _world_to_full_map(
 	)
 
 
+## Chuyển pixel trên bản đồ lớn thành tọa độ thế giới (x,z).
 func _map_to_world(position: Vector2) -> Vector2:
 	var map_rect := _full_map_rect()
+	var sao: Array = _full_map_scale_and_offset(map_rect)
+	var uniform_scale: float = sao[0]
+	var off_x: float = sao[1]
+	var off_y: float = sao[2]
+	var bounds := _map_bounds
+
 	var base_position := (
 		map_rect.get_center()
 		+ (position - map_rect.get_center() - _map_pan) / _map_zoom
 	)
 
-	var scale_x := map_rect.size.x / (MINI_RADIUS * 2.0)
-	var scale_y := map_rect.size.y / (MINI_RADIUS * 2.0)
-
 	return Vector2(
-		(base_position.x - map_rect.position.x) / scale_x - MINI_RADIUS,
-		(base_position.y - map_rect.position.y) / scale_y - MINI_RADIUS
+		(base_position.x - map_rect.position.x - off_x) / uniform_scale + bounds.position.x,
+		(base_position.y - map_rect.position.y - off_y) / uniform_scale + bounds.position.y
 	)
 
 
