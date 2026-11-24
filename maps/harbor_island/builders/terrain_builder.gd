@@ -35,9 +35,9 @@ static func _make_environment(root_node: Node3D) -> void:
 
 static func _make_ocean(root_node: Node3D) -> void:
 	var water_mesh := PlaneMesh.new()
-	water_mesh.size = Vector2(80.0, 80.0)
-	water_mesh.subdivide_width = 64
-	water_mesh.subdivide_depth = 64
+	water_mesh.size = Vector2(600.0, 600.0)
+	water_mesh.subdivide_width = 0
+	water_mesh.subdivide_depth = 0
 
 	var water_mat := ShaderMaterial.new()
 	water_mat.shader = WATER_SHADER

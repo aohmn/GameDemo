@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Viết lại water shader cartoon nhẹ cho Android (2 lần noise mỗi điểm ảnh thay vì ~80), mặt nước 600 m mờ dần về màu chân trời, không còn lộ mép. Mức 2 (Godot Linux, không SHADER ERROR); chưa kiểm tra mức 3 trên Godot Android.
 - Xác nhận và làm rõ hình học tấm ván nâu bên phải cầu tàu (DockedBoat2) trong hệ thống builder (Mức 2).
 
 - Tách `maps/harbor_island/map.gd` thành các builder nhỏ (terrain_builder, pier_builder, prop_builder) đều dưới 200 dòng, giữ nguyên 100% hình học bản đồ (Mức 2).

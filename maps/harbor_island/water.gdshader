@@ -1,173 +1,101 @@
 shader_type spatial;
-render_mode cull_back, depth_draw_always, diffuse_burley, specular_schlick_ggx;
+render_mode unshaded, cull_back, depth_draw_opaque;
 
-// 1. Bảng màu đại dương nhiệt đới chân thực
-uniform vec4 water_shallow : source_color = vec4(0.24, 0.82, 0.80, 0.72);
-uniform vec4 water_mid : source_color = vec4(0.10, 0.48, 0.68, 0.88);
-uniform vec4 water_deep : source_color = vec4(0.03, 0.16, 0.38, 0.98);
-uniform vec4 foam_color : source_color = vec4(0.96, 0.98, 1.0, 0.90);
-uniform vec4 sun_specular_color : source_color = vec4(1.0, 0.96, 0.88, 1.0);
+// Nước cartoon nhẹ cho Android: không texture, không domain warping, 2 lần noise mỗi điểm ảnh.
+// Dải màu theo khoảng cách bờ, bọt sát bờ, vòng bọt chạy vào bờ, lấp lánh mặt trời,
+// và mờ dần về màu chân trời để không lộ mép mặt phẳng nước.
 
-// Hướng ánh sáng mặt trời khớp với TropicalSun trong map (rotation -50, -35)
-uniform vec3 sun_dir = vec3(0.46, 0.77, 0.44);
+uniform vec4 water_shallow : source_color = vec4(0.36, 0.86, 0.82, 1.0);
+uniform vec4 water_mid : source_color = vec4(0.14, 0.58, 0.76, 1.0);
+uniform vec4 water_deep : source_color = vec4(0.05, 0.30, 0.55, 1.0);
+uniform vec4 foam_color : source_color = vec4(0.97, 0.99, 1.0, 1.0);
+// Gần màu SkyDome ngay dưới đường chân trời (mix horizon/ground khoảng 30%).
+uniform vec4 far_color : source_color = vec4(0.44, 0.70, 0.84, 1.0);
+// Hướng TỚI mặt trời; mặc định khớp sun_direction của SkyDome.
+uniform vec3 sun_dir = vec3(-0.55, 0.72, -0.42);
+uniform float wave_speed = 0.5;
+uniform float fade_start = 70.0;
+uniform float fade_end = 240.0;
 
-// 2. Tham số thời gian và sóng
-uniform float wave_speed = 0.55;
+// Hình học bờ biển: PHẢI khớp TerrainBuilder (bãi cát, hai khối núi, cầu tàu).
+uniform vec2 beach_center = vec2(0.0, 4.0);
+uniform vec2 beach_half = vec2(16.5, 13.5);
+uniform float beach_round = 5.5;
+uniform vec2 cliff_west = vec2(-17.0, -5.0);
+uniform vec2 cliff_east = vec2(17.0, -5.0);
+uniform float cliff_radius = 6.5;
+uniform vec2 pier_center = vec2(-2.0, 16.5);
+uniform vec2 pier_half = vec2(2.5, 6.5);
 
-varying vec3 v_world_pos;
-varying vec3 v_normal;
+varying vec3 v_world;
 
-// Các hàm Noise procedural không texture: Hash, Gradient Noise và Domain Warping
 vec2 hash2(vec2 p) {
-    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-    return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+    // Hash không dùng sin(): ổn định trên GPU di động.
+    vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.xx + p3.yz) * p3.zy) * 2.0 - 1.0;
 }
 
 float gnoise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
     vec2 u = f * f * (3.0 - 2.0 * f);
-
     return mix(
-        mix(dot(hash2(i + vec2(0.0, 0.0)), f - vec2(0.0, 0.0)),
-            dot(hash2(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0)), u.x),
-        mix(dot(hash2(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0)),
-            dot(hash2(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0)), u.x),
-        u.y
-    );
+        mix(dot(hash2(i), f), dot(hash2(i + vec2(1.0, 0.0)), f - vec2(1.0, 0.0)), u.x),
+        mix(dot(hash2(i + vec2(0.0, 1.0)), f - vec2(0.0, 1.0)), dot(hash2(i + vec2(1.0, 1.0)), f - vec2(1.0, 1.0)), u.x),
+        u.y);
 }
 
-// FBM 4 bát độ (octaves) cho mặt sóng biến thiên tự nhiên
-float fbm4(vec2 p) {
-    float v = 0.0;
-    float a = 0.5;
-    mat2 rot = mat2(vec2(0.80, 0.60), vec2(-0.60, 0.80));
-    for (int i = 0; i < 4; i++) {
-        v += a * gnoise(p);
-        p = rot * p * 2.02;
-        a *= 0.5;
-    }
-    return v;
-}
-
-// Domain-warped Noise phá vỡ mọi pattern tuần hoàn
-float warped_noise(vec2 p, float time_val) {
-    vec2 q = vec2(
-        fbm4(p + vec2(0.0, 0.0) + vec2(time_val * 0.15, time_val * 0.08)),
-        fbm4(p + vec2(5.2, 1.3) + vec2(-time_val * 0.11, time_val * 0.13))
-    );
-
-    vec2 r = vec2(
-        fbm4(p + 3.8 * q + vec2(1.7, 9.2) + vec2(time_val * 0.06, -time_val * 0.09)),
-        fbm4(p + 3.8 * q + vec2(8.3, 2.8) + vec2(-time_val * 0.07, time_val * 0.05))
-    );
-
-    return fbm4(p + 3.5 * r);
-}
-
-// Hàm tính SDF hình học bờ biển thực tế của map:
-// - Bãi cát đảo: Hình hộp bo góc (round box) tâm (0, 4), nửa kích thước (22, 19), bo góc R=5.5
-// - Núi đá che chắn vịnh hai bên: 2 khối trụ tâm (-18, -4) và (18, -4)
-// - Cầu tàu bến cảng: hộp (x: -2, z: 16.5)
 float sd_box(vec2 p, vec2 b) {
     vec2 d = abs(p) - b;
     return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0);
 }
 
-float get_coastline_dist(vec2 p) {
-    // 1. Khoảng cách tới bãi cát đảo chính (bo tròn tự nhiên)
-    float d_beach = sd_box(p - vec2(0.0, 4.0), vec2(16.5, 13.5)) - 5.5;
-
-    // 2. Núi đá phía Tây và phía Đông tạo sườn bờ đá
-    float d_cliff_w = length(p - vec2(-17.0, -5.0)) - 6.5;
-    float d_cliff_e = length(p - vec2(17.0, -5.0)) - 6.5;
-
-    // 3. Cầu tàu gỗ vươn ra biển
-    float d_pier = sd_box(p - vec2(-2.0, 16.5), vec2(2.5, 6.5));
-
-    float d_coast = min(d_beach, min(d_cliff_w, d_cliff_e));
-    d_coast = min(d_coast, d_pier);
-
-    return d_coast;
+float coast_dist(vec2 p) {
+    float d = sd_box(p - beach_center, beach_half) - beach_round;
+    d = min(d, length(p - cliff_west) - cliff_radius);
+    d = min(d, length(p - cliff_east) - cliff_radius);
+    return min(d, sd_box(p - pier_center, pier_half));
 }
 
-// Đỉnh vertex: sóng nhấp nhô đa hướng, triệt tiêu sọc thẳng
 void vertex() {
-    v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-    vec2 p = v_world_pos.xz;
-    float t = TIME * wave_speed;
-
-    // Sóng cơ sở nhấp nhô mềm
-    float s1 = sin(p.x * 0.22 + p.y * 0.16 + t * 0.85);
-    float s2 = cos(-p.x * 0.18 + p.y * 0.27 + t * 0.63);
-    float s3 = sin(p.x * 0.35 - p.y * 0.21 + t * 1.12);
-
-    float wave_height = (s1 * 0.022 + s2 * 0.017 + s3 * 0.011);
-
-    VERTEX.y += wave_height;
-    v_normal = NORMAL;
+    v_world = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
 void fragment() {
-    vec2 p = v_world_pos.xz;
+    vec2 p = v_world.xz;
     float t = TIME * wave_speed;
+    float coast = coast_dist(p);
 
-    // 1. Độ sâu biển dựa trên hình học bờ biển thực tế
-    float coast_dist = get_coastline_dist(p);
+    float n1 = gnoise(p * 0.35 + vec2(t * 0.20, -t * 0.12));
+    float n2 = gnoise(p * 0.90 + vec2(-t * 0.30, t * 0.22) + 7.3);
 
-    // Chuyển màu nước 3 tầng: Nông sát bờ -> Vùng chuyển tiếp -> Biển sâu
-    float depth_trans = clamp(coast_dist / 14.0, 0.0, 1.0);
-    vec4 water_color;
-    if (depth_trans < 0.35) {
-        float f = depth_trans / 0.35;
-        water_color = mix(water_shallow, water_mid, smoothstep(0.0, 1.0, f));
-    } else {
-        float f = (depth_trans - 0.35) / 0.65;
-        water_color = mix(water_mid, water_deep, smoothstep(0.0, 1.0, f));
-    }
+    // Dải màu độ sâu: nông, vừa, sâu (viền mềm, hơi lượn theo nhiễu).
+    float d = coast / 20.0 + n1 * 0.05;
+    vec3 col = water_shallow.rgb;
+    col = mix(col, water_mid.rgb, smoothstep(0.10, 0.16, d));
+    col = mix(col, water_deep.rgb, smoothstep(0.42, 0.50, d));
 
-    // 2. Hệ pháp tuyến sóng đa thang (Multi-scale Normal) bằng Domain-Warped Noise
-    float e = 0.15;
-    float h_c = warped_noise(p * 0.48, t * 1.1);
-    float h_x = warped_noise((p + vec2(e, 0.0)) * 0.48, t * 1.1);
-    float h_z = warped_noise((p + vec2(0.0, e)) * 0.48, t * 1.1);
+    // Bọt sát bờ và các vòng bọt chạy vào bờ.
+    float edge_foam = 1.0 - smoothstep(0.35, 1.0 + n2 * 0.5, coast);
+    float ring = smoothstep(0.88, 0.96, 0.5 + 0.5 * sin((coast * 0.30 - t * 0.35) * 6.28318));
+    ring *= (1.0 - smoothstep(4.0, 11.0, coast)) * smoothstep(1.2, 2.0, coast);
+    ring *= smoothstep(-0.2, 0.25, n1 + n2 * 0.5);
+    float foam = clamp(edge_foam + ring, 0.0, 1.0);
+    col = mix(col, foam_color.rgb, foam);
 
-    vec3 n_fbm = vec3((h_c - h_x) / e, 1.0, (h_c - h_z) / e);
+    // Lấp lánh mặt trời (cel): pháp tuyến giả từ vài sóng sin.
+    float a = p.x * 0.9 + p.y * 0.6 + t * 1.3;
+    float b = p.x * 1.7 - p.y * 1.1 - t * 1.9;
+    vec3 n = normalize(vec3(cos(a) * 0.07 + cos(b) * 0.04, 1.0, cos(a * 0.8 + 1.0) * 0.06 + cos(b * 1.2) * 0.04));
+    vec3 view = normalize(CAMERA_POSITION_WORLD - v_world);
+    vec3 h = normalize(view + normalize(sun_dir));
+    float spec = pow(max(dot(n, h), 0.0), 90.0);
+    col += vec3(1.0, 0.96, 0.85) * smoothstep(0.35, 0.5, spec) * (1.0 - foam) * 0.7;
 
-    // Gợn sóng lăn tăn vi mô (capillary ripples) tần số cao
-    float micro1 = sin(p.x * 1.8 + p.y * 1.2 + t * 2.2);
-    float micro2 = cos(-p.x * 1.4 + p.y * 2.1 - t * 1.8);
-    vec3 n_micro = vec3(micro1 * 0.04, 1.0, micro2 * 0.04);
+    // Mờ dần về màu chân trời để không thấy mép mặt phẳng nước.
+    float dist = length(v_world.xz - CAMERA_POSITION_WORLD.xz);
+    col = mix(col, far_color.rgb, smoothstep(fade_start, fade_end, dist));
 
-    vec3 surf_normal = normalize(n_fbm * 0.5 + n_micro * 0.5);
-    NORMAL = surf_normal;
-
-    // 3. Bọt biển hữu cơ bám theo đường bờ thực tế
-    float foam_band = 1.0 - smoothstep(0.0, 1.6, abs(coast_dist - 0.4));
-    float foam_noise = warped_noise(p * 0.85 + vec2(t * 0.25, -t * 0.18), t * 0.5);
-    float foam_mask = foam_band * smoothstep(0.12, 0.45, foam_noise);
-
-    // 4. Quang học bề mặt: Fresnel, phản chiếu mặt trời và bầu trời
-    vec3 view_dir = normalize(VIEW);
-    float fresnel = pow(1.0 - max(dot(view_dir, NORMAL), 0.0), 4.5);
-
-    // Specular mặt trời thực tế (Blinn-Phong)
-    vec3 light_dir = normalize(sun_dir);
-    vec3 half_v = normalize(view_dir + light_dir);
-    float n_dot_h = max(dot(NORMAL, half_v), 0.0);
-    float sun_spec = pow(n_dot_h, 128.0) * 1.2;
-    float sun_glint = pow(n_dot_h, 512.0) * 2.5;
-
-    // Hòa trộn màu bề mặt và bọt biển mềm
-    vec3 albedo_base = mix(water_color.rgb, foam_color.rgb, foam_mask * 0.65);
-    // Tán xạ ánh sáng xanh ngọc ở sườn sóng
-    albedo_base += water_shallow.rgb * (fresnel * 0.22);
-    // Điểm nhấn lấp lánh phản chiếu mặt trời
-    albedo_base += sun_specular_color.rgb * (sun_spec + sun_glint);
-
-    ALBEDO = albedo_base;
-    ROUGHNESS = mix(0.06, 0.35, foam_mask);
-    METALLIC = 0.02;
-    SPECULAR = 0.85;
-    ALPHA = mix(water_color.a, foam_color.a, foam_mask);
+    ALBEDO = col;
 }
