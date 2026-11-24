@@ -65,7 +65,7 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 		push_warning("Không có cần câu khả dụng.")
 		return false
 
-	var success: bool = _controller.cast(spot, rod)
+	var success: bool = _controller.cast(spot, rod, null)
 	if success:
 		_emit_event(FishingEventsContract.CAST_STARTED, {
 			"spot_id": spot_id,

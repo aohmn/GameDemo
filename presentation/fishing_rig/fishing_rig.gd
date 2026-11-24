@@ -184,7 +184,7 @@ func _update_line() -> void:
 
 
 func _update_marker() -> void:
-	var idle_like: bool = _state == "IDLE" or _state == "RESULT"
+	var idle_like: bool = _state == "IDLE" or _state == "RESULT" or _state == "CAUGHT" or _state == "ESCAPED" or _state == "FAILED"
 	_marker.visible = _aim_valid and not _line_out and idle_like
 	if _marker.visible:
 		var pulse: float = 1.0 + 0.12 * sin(_clock * 4.0)
@@ -282,7 +282,7 @@ func _on_state_changed(payload: Dictionary) -> void:
 	_state = str(payload.get("to_state", "IDLE"))
 	if _state != "FIGHT":
 		_tension_target = 0.0
-	var finished: bool = _state == "RESULT" or _state == "IDLE"
+	var finished: bool = _state == "RESULT" or _state == "IDLE" or _state == "CAUGHT" or _state == "ESCAPED" or _state == "FAILED"
 	if finished and _line_out and not _retracting:
 		_retracting = true
 		_retract_t = 0.0

@@ -14,7 +14,7 @@ var slack_time: float = 0.0 # Thời gian dây bị chùng liên tục
 var max_slack_tolerated: float = 3.5 # Quá 3.5s chùng dây thì cá sẽ tuột lưỡi trốn thoát
 
 
-func setup(rod_spec: Resource) -> void:
+func setup(rod_spec: Resource, line_bonus: float = 0.0, safe_zone_bonus: float = 0.0) -> void:
 	if rod_spec != null:
 		safe_min = float(rod_spec.get("safe_tension_min")) if "safe_tension_min" in rod_spec else 30.0
 		safe_max = float(rod_spec.get("safe_tension_max")) if "safe_tension_max" in rod_spec else 70.0
@@ -23,6 +23,11 @@ func setup(rod_spec: Resource) -> void:
 		safe_min = 30.0
 		safe_max = 70.0
 		max_tension = 100.0
+
+	# Bổ sung chỉ số từ Dây câu và Kỹ năng Ngự Câu
+	max_tension += line_bonus
+	safe_min = maxf(10.0, safe_min - safe_zone_bonus * 0.5)
+	safe_max = safe_max + safe_zone_bonus * 0.5
 
 	current_tension = (safe_min + safe_max) * 0.5
 	slack_time = 0.0
@@ -37,7 +42,7 @@ func update(
 	player_factor: float,
 	delta: float
 ) -> void:
-	var delta_t := FishingCalculatorScript.calculate_tension_delta(
+	var delta_t: float = FishingCalculatorScript.calculate_tension_delta(
 		is_reeling,
 		is_releasing,
 		reel_speed,

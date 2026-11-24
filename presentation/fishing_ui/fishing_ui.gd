@@ -178,7 +178,7 @@ func _setup_events() -> void:
 
 func _update_ui_state() -> void:
 	match _state:
-		"IDLE", "RESULT":
+		"IDLE", "RESULT", "CAUGHT", "ESCAPED", "FAILED":
 			_btn_cast.visible = true
 			_btn_cast.disabled = not _is_near_spot
 			_btn_cast.text = "Thả cần" if _is_near_spot else "Hướng ra mặt nước"

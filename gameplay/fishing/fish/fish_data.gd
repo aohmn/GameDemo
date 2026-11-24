@@ -31,7 +31,7 @@ static func from_resource(spec: Resource, rng: RandomNumberGenerator) -> FishDat
 	data.resistance = float(spec.get("pull_force")) / 20.0 if "pull_force" in spec else 1.0
 	data.tenacity = 1.0 + (float(data.rarity - 1) * 0.25)
 	data.swim_speed = 1.0 + (float(data.tier - 1) * 0.2)
-	data.qi_value = int(spec.get("qi_value")) if "qi_value" in spec else (data.tier * 25)
+	data.qi_value = int(spec.get("spirit_qi")) if "spirit_qi" in spec else (data.tier * 25)
 
 	var w_min: int = int(spec.get("min_weight_g")) if "min_weight_g" in spec else 100
 	var w_max: int = int(spec.get("max_weight_g")) if "max_weight_g" in spec else 300

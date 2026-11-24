@@ -7,7 +7,7 @@ extends RefCounted
 ## Payload: { "spot_id": String, "rod_id": String }
 const CAST_STARTED: String = "fishing_cast_started"
 
-## Trạng thái máy câu cá thay đổi (IDLE, CASTING, WAITING, BITE, FIGHT, RESULT)
+## Trạng thái máy câu cá thay đổi (IDLE, CASTING, WAITING, BITE, FIGHT, CAUGHT, ESCAPED, FAILED)
 ## Payload: { "from_state": String, "to_state": String }
 const STATE_CHANGED: String = "fishing_state_changed"
 
@@ -20,7 +20,7 @@ const FISH_BITING: String = "fishing_fish_biting"
 const FIGHT_UPDATE: String = "fishing_fight_update"
 
 ## Câu cá thành công và thu hoạch được sinh vật biển.
-## Payload: { "fish_id": String, "weight_g": int, "name": String }
+## Payload: { "fish_id": String, "weight_g": int, "name": String, "tier": int, "qi_value": int }
 const FISH_CAUGHT: String = "fishing_fish_caught"
 
 ## Lưỡi câu bị đứt hoặc cá trốn thoát (early, late, line_break, cancel).

@@ -7,7 +7,7 @@ extends RefCounted
 var spot_id: String = ""
 var spot_resource: Resource
 var rod_resource: Resource
-var line_resource: Resource
+var line_resource: RefCounted
 var bait_resource: Resource
 var target_fish_resource: Resource
 

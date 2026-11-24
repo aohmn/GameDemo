@@ -43,7 +43,7 @@ Tuân thủ quy tắc chống nhảy cóc trạng thái:
 2. **CASTING**: Quăng câu, chuẩn bị dữ liệu và xác định cá mục tiêu.
 3. **WAITING**: Phao nổi trên mặt nước, đếm ngược thời gian chờ cá cắn.
 4. **BITE**: Cá cắn câu, kích hoạt cửa sổ giật cần (Strike Window 0.85s).
-5. **FIGHTING**: Đấu sức giằng co thời gian thực giữa người chơi và cá.
+5. **FIGHT**: Đấu sức giằng co thời gian thực giữa người chơi và cá.
 6. **CAUGHT**: Thu phục cá thành công khi thể lực cá cạn về 0.
 7. **ESCAPED**: Cá trốn thoát (giật trễ, tuột lưỡi do chùng dây quá 3.5s).
 8. **FAILED**: Thất bại (đứt dây khi lực căng vượt `max_tension`, gãy cần, giật quá sớm).

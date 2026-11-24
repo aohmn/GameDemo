@@ -57,8 +57,8 @@ func get_state_name() -> String:
 	return FishingStateScript.get_state_name(current_state)
 
 
-## Thả câu (CASTING -> WAITING)
-func cast(spot: Resource, rod: Resource) -> bool:
+## Thả câu (IDLE -> CASTING -> WAITING)
+func cast(spot: Resource, rod: Resource, line_res: Resource = null) -> bool:
 	if not FishingStateScript.can_transition(current_state, FishingStateScript.State.CASTING):
 		return false
 	if spot == null or rod == null:
@@ -67,17 +67,22 @@ func cast(spot: Resource, rod: Resource) -> bool:
 	fishing_data.reset()
 	fishing_data.spot_resource = spot
 	fishing_data.rod_resource = rod
+	fishing_data.line_resource = line_res if line_res != null else FishingLineScript.create_default()
 	fishing_data.spot_id = str(spot.get("id"))
 
-	_transition_to(FishingStateScript.State.CASTING)
+	# Reset trạng thái kỹ năng phiên câu
+	skills.reset_session_skills()
+
+	if not _transition_to(FishingStateScript.State.CASTING):
+		return false
 
 	# Sinh cá mục tiêu
 	var bait_pref := bait_system.preferred_tier if bait_system.remaining_uses > 0 else 0
-	var fish_res := FishSpawnerScript.spawn_fish_for_spot(spot, bait_pref, rng)
+	var fish_res: Resource = FishSpawnerScript.spawn_fish_for_spot(spot, bait_pref, rng)
 	fishing_data.target_fish_resource = fish_res
 	current_fish = FishDataScript.from_resource(fish_res, rng)
 
-	# Tính thời gian chờ
+	# Tính thời gian chờ cá cắn
 	var min_w: float = float(spot.get("min_wait_time")) if "min_wait_time" in spot else 2.0
 	var max_w: float = float(spot.get("max_wait_time")) if "max_wait_time" in spot else 5.0
 	var attraction := bait_system.attraction_power if bait_system.remaining_uses > 0 else 0.0
@@ -85,11 +90,10 @@ func cast(spot: Resource, rod: Resource) -> bool:
 		min_w, max_w, current_fish.rarity, attraction, rng
 	)
 
-	_transition_to(FishingStateScript.State.WAITING)
-	return true
+	return _transition_to(FishingStateScript.State.WAITING)
 
 
-## Giật cần (WAITING/BITE -> FIGHTING)
+## Giật cần (WAITING/BITE -> FIGHT)
 func strike() -> bool:
 	if current_state == FishingStateScript.State.WAITING:
 		# Giật quá sớm trước khi cá cắn -> Thất bại
@@ -97,10 +101,25 @@ func strike() -> bool:
 		return false
 
 	if current_state == FishingStateScript.State.BITE:
-		# Giật chuẩn xác -> Bắt đầu đấu sức FIGHTING
-		_transition_to(FishingStateScript.State.FIGHTING)
-		battle.start_battle(fishing_data.rod_resource, current_fish, rng)
-		# Tiêu hao 1 lần dùng mồi
+		# Giật chuẩn xác -> Chuyển sang FIGHT
+		if not _transition_to(FishingStateScript.State.FIGHT):
+			return false
+
+		var line_obj: FishingLine = null
+		if fishing_data.line_resource is FishingLine:
+			line_obj = fishing_data.line_resource as FishingLine
+		if line_obj == null:
+			line_obj = FishingLineScript.create_default()
+
+		battle.start_battle(
+			fishing_data.rod_resource,
+			line_obj,
+			current_fish,
+			skills.get_safe_zone_bonus(),
+			skills.get_fish_pull_reduction(),
+			rng
+		)
+		# Tiêu hao 1 lần mồi câu
 		bait_system.consume_bait()
 		return true
 
@@ -138,12 +157,13 @@ func tick(delta: float) -> void:
 				# Quá thời gian giật cần -> Cá trốn thoát
 				_end_fishing(FishingStateScript.State.ESCAPED, "late")
 
-		FishingStateScript.State.FIGHTING:
+		FishingStateScript.State.FIGHT:
 			_process_fighting(delta)
 
 
 func _trigger_bite() -> void:
-	_transition_to(FishingStateScript.State.BITE)
+	if not _transition_to(FishingStateScript.State.BITE):
+		return
 	var bonus_win: float = skills.get_bite_window_bonus()
 	_bite_timer = BASE_BITE_WINDOW + bonus_win
 
@@ -164,6 +184,10 @@ func _process_fighting(delta: float) -> void:
 		delta
 	)
 
+	# Cập nhật độ bền vào data
+	fishing_data.line_durability = battle.line_durability
+	fishing_data.rod_durability = battle.rod_durability
+
 	# Phát cập nhật lực căng & thể lực
 	if on_fight_update.is_valid():
 		on_fight_update.call({
@@ -179,34 +203,55 @@ func _process_fighting(delta: float) -> void:
 			_catch_success()
 		"LINE_BREAK":
 			_end_fishing(FishingStateScript.State.FAILED, "line_break")
+		"ROD_BROKEN":
+			_end_fishing(FishingStateScript.State.FAILED, "rod_broken")
 		"SLACK_ESCAPE":
 			_end_fishing(FishingStateScript.State.ESCAPED, "slack")
 
 
 func _catch_success() -> void:
-	_transition_to(FishingStateScript.State.CAUGHT)
+	if not _transition_to(FishingStateScript.State.CAUGHT):
+		return
 	var qi_mult: float = skills.get_qi_multiplier()
-	var payload := FishingRewardScript.create_reward_payload(current_fish, qi_mult)
+	var payload: Dictionary = FishingRewardScript.create_reward_payload(current_fish, qi_mult)
 
 	if on_fish_caught.is_valid():
 		on_fish_caught.call(payload)
 
-	# Tự động trả về IDLE sau khi hoàn tất
-	_transition_to(FishingStateScript.State.IDLE)
+	# Giải phóng và đưa về IDLE
+	_cleanup_and_idle()
 
 
 func _end_fishing(target_state: int, reason: String) -> void:
-	_transition_to(target_state)
+	if not _transition_to(target_state):
+		return
 	if on_fish_lost.is_valid():
 		on_fish_lost.call({"reason": reason})
+
+	# Giải phóng và đưa về IDLE
+	_cleanup_and_idle()
+
+
+func _cleanup_and_idle() -> void:
+	fishing_data.reset()
+	current_fish = null
 	_transition_to(FishingStateScript.State.IDLE)
 
 
-func _transition_to(next_state: int) -> void:
+func _transition_to(next_state: int) -> bool:
 	if current_state == next_state:
-		return
-	var from_str := FishingStateScript.get_state_name(current_state)
-	var to_str := FishingStateScript.get_state_name(next_state)
+		return true
+
+	# BẮT BUỘC: Kiểm tra chuyển trạng thái hợp lệ
+	if not FishingStateScript.can_transition(current_state, next_state):
+		push_warning("Chuyển trạng thái bất hợp lệ từ %s sang %s" % [
+			FishingStateScript.get_state_name(current_state),
+			FishingStateScript.get_state_name(next_state)
+		])
+		return false
+
+	var from_str: String = FishingStateScript.get_state_name(current_state)
+	var to_str: String = FishingStateScript.get_state_name(next_state)
 	current_state = next_state
 
 	if on_state_changed.is_valid():
@@ -214,3 +259,4 @@ func _transition_to(next_state: int) -> void:
 			"from_state": from_str,
 			"to_state": to_str
 		})
+	return true

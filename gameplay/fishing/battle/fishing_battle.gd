@@ -2,7 +2,7 @@ class_name FishingBattle
 extends RefCounted
 
 ## Quản lý quá trình giằng co (Fight FSM):
-## Đồng bộ giữa TensionSystem, FishAI, sức chịu đựng của cá và độ bền trang bị.
+## Đồng bộ giữa TensionSystem, FishAI, sức chịu đựng của cá và độ bền trang bị thực tế.
 
 const TensionSystemScript: Script = preload("res://gameplay/fishing/battle/tension_system.gd")
 const FishAIScript: Script = preload("res://gameplay/fishing/fish/fish_ai.gd")
@@ -17,27 +17,42 @@ var line_durability: float = 100.0
 var rod_durability: float = 100.0
 
 var reel_speed: float = 35.0
-var release_speed: float = 40.0
+var release_speed: float = 25.0
 var fatigue_rate: float = 12.0
+var pull_reduction: float = 1.0
 
 
 func start_battle(
 	rod_spec: Resource,
+	line_item: FishingLine,
 	fish_data: FishData,
+	safe_zone_bonus: float,
+	fish_pull_modifier: float,
 	rng: RandomNumberGenerator
 ) -> void:
 	tension_system = TensionSystemScript.new()
-	tension_system.setup(rod_spec)
-	fish_ai = FishAIScript.new(rng)
+	var line_bonus := line_item.max_tension_bonus if line_item != null else 0.0
+	tension_system.setup(rod_spec, line_bonus, safe_zone_bonus)
 
+	fish_ai = FishAIScript.new(rng)
 	fight_time = 0.0
 	fish_stamina = fish_data.stamina
-	line_durability = 100.0
-	rod_durability = 100.0
+	pull_reduction = fish_pull_modifier
+
+	# Khởi tạo độ bền thực tế từ trang bị thay vì mặc định 100
+	if rod_spec != null and "current_durability" in rod_spec:
+		rod_durability = float(rod_spec.get("current_durability"))
+	else:
+		rod_durability = 100.0
+
+	if line_item != null:
+		line_durability = line_item.current_durability
+	else:
+		line_durability = 100.0
 
 	if rod_spec != null:
 		reel_speed = float(rod_spec.get("reel_speed")) if "reel_speed" in rod_spec else 35.0
-		release_speed = float(rod_spec.get("release_speed")) if "release_speed" in rod_spec else 40.0
+		release_speed = float(rod_spec.get("release_speed")) if "release_speed" in rod_spec else 25.0
 		fatigue_rate = float(rod_spec.get("fatigue_rate")) if "fatigue_rate" in rod_spec else 12.0
 
 
@@ -52,8 +67,8 @@ func update(
 ) -> String:
 	fight_time += delta
 
-	# Lấy lực kéo từ AI cá
-	var fish_pull := fish_ai.update_pull_force(fish_data, fight_time, delta)
+	# Lấy lực kéo từ AI cá và áp dụng hệ số Tỏa Ngư
+	var fish_pull: float = fish_ai.update_pull_force(fish_data, fight_time, delta) * pull_reduction
 
 	# Cập nhật lực căng
 	tension_system.update(
@@ -66,7 +81,7 @@ func update(
 		delta
 	)
 
-	# Kiểm tra đứt dây
+	# Kiểm tra đứt dây do vượt ngưỡng căng tối đa
 	if tension_system.is_line_broken():
 		return "LINE_BREAK"
 
@@ -75,7 +90,7 @@ func update(
 		return "SLACK_ESCAPE"
 
 	# Tiêu hao thể lực cá
-	var drain := FishingCalculatorScript.calculate_fish_stamina_drain(
+	var drain: float = FishingCalculatorScript.calculate_fish_stamina_drain(
 		tension_system.current_tension,
 		tension_system.safe_min,
 		tension_system.safe_max,
@@ -85,16 +100,20 @@ func update(
 	)
 	fish_stamina = clampf(fish_stamina - drain, 0.0, fish_data.stamina)
 
-	# Hao mòn độ bền dây
-	var line_wear := FishingCalculatorScript.calculate_line_wear(
+	# Hao mòn độ bền dây và cần câu hợp lý theo diễn biến
+	var line_wear: float = FishingCalculatorScript.calculate_line_wear(
 		tension_system.current_tension,
 		tension_system.max_tension,
 		tension_system.safe_max,
 		delta
 	)
 	line_durability = maxf(0.0, line_durability - line_wear)
+	rod_durability = maxf(0.0, rod_durability - line_wear * 0.4)
+
 	if line_durability <= 0.0:
 		return "LINE_BREAK"
+	if rod_durability <= 0.0:
+		return "ROD_BROKEN"
 
 	# Thắng cuộc khi cá kiệt sức
 	if fish_stamina <= 0.0:

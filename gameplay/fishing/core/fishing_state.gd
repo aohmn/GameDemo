@@ -1,17 +1,17 @@
 class_name FishingState
 extends RefCounted
 
-## Định nghĩa 8 trạng thái hữu hạn của máy trạng thái câu cá (FSM).
-## Tuân thủ mục 4 TASK 11: Ngăn chặn nhảy cóc trạng thái hoặc gọi tắt kết quả.
+## Định nghĩa 8 trạng thái hữu hạn chuẩn của hệ thống câu cá (FSM).
+## Tương thích và đồng bộ 100% giữa Controller, Presentation (UI, Rig) và EventBus.
 
 enum State {
-	IDLE,      # Chưa câu
-	CASTING,   # Thả câu
+	IDLE,      # Chưa câu / Sẵn sàng
+	CASTING,   # Quăng cần
 	WAITING,   # Chờ cá cắn câu
 	BITE,      # Cá cắn câu (cửa sổ giật cần)
-	FIGHTING,  # Đấu sức giằng co với cá
+	FIGHT,     # Đấu sức giằng co với cá (tên quy chuẩn FIGHT để đồng bộ EventBus/UI/Rig)
 	CAUGHT,    # Thu phục cá thành công
-	ESCAPED,   # Cá trốn thoát (giật trễ, tuột lưỡi, dây chùng)
+	ESCAPED,   # Cá trốn thoát (giật trễ, tuột lưỡi do chùng dây)
 	FAILED     # Thất bại (đứt dây, gãy cần, giật quá sớm, hủy câu)
 }
 
@@ -20,7 +20,7 @@ const STATE_NAMES: Dictionary = {
 	State.CASTING: "CASTING",
 	State.WAITING: "WAITING",
 	State.BITE: "BITE",
-	State.FIGHTING: "FIGHTING",
+	State.FIGHT: "FIGHT",
 	State.CAUGHT: "CAUGHT",
 	State.ESCAPED: "ESCAPED",
 	State.FAILED: "FAILED"
@@ -41,8 +41,8 @@ static func can_transition(from_state: int, to_state: int) -> bool:
 		State.WAITING:
 			return to_state == State.BITE or to_state == State.FAILED or to_state == State.ESCAPED
 		State.BITE:
-			return to_state == State.FIGHTING or to_state == State.ESCAPED or to_state == State.FAILED
-		State.FIGHTING:
+			return to_state == State.FIGHT or to_state == State.ESCAPED or to_state == State.FAILED
+		State.FIGHT:
 			return to_state == State.CAUGHT or to_state == State.ESCAPED or to_state == State.FAILED
 		State.CAUGHT, State.ESCAPED, State.FAILED:
 			return to_state == State.IDLE
