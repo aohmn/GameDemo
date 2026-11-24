@@ -1,6 +1,7 @@
 # GameDemo
 
-Dự án game phiêu lưu khám phá và mô phỏng câu cá thư giãn theo phong cách 2D HD (Map 3D, nhân vật 2D billboard shader SDF).
+Dự án game câu cá tu tiên 2D HD (Map 3D, nhân vật 2D billboard shader SDF).
+Người chơi từ ngư dân vô danh câu linh ngư hấp thu linh khí, tích lũy tu vi, đột phá cảnh giới và rèn đúc pháp bảo.
 
 ## Thể loại & Lối chơi
 
@@ -27,6 +28,7 @@ Bootstrap khởi tạo Camera bám theo nhân vật, nạp MapManager để tả
 - `modules/player/`: nhân vật, chuyển động vật lý, animation shader SDF và hướng nhìn.
 - `modules/sky_dome/`: vòm trời procedural 3D nhiệt đới (gradient, mặt trời, mây procedural không texture).
 - `maps/harbor_island/`: map đảo bến cảng nhiệt đới (~50 × 50m) với bãi biển, cầu tàu, vịnh kín, núi đá và rặng dừa.
+- `presentation/fishing_rig/`: cần câu, dây câu, phao 3D.
 - `presentation/joystick/`: điều khiển cảm ứng đa điểm độc lập.
 - `scenes/boot/`: Bootstrap và MapManager kết nối các thành phần.
 - `docs/`: tài liệu phong cách đồ họa và quyết định kiến trúc (`docs/decisions/`).

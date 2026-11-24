@@ -3,8 +3,8 @@
 Luật cho AI. Xung đột: mục có số nhỏ thắng. Chi tiết đặt trong README module, không đặt ở đây.
 
 ## 1. Dự án
-- Game phiêu lưu khám phá và câu cá: kết hợp trải nghiệm thư giãn, phiêu lưu và mô phỏng câu cá.
-- Người chơi khám phá các vùng biển, câu cá, sưu tập sinh vật biển, bán cá và nâng cấp thiết bị.
+- Game câu cá tu tiên: từ ngư dân vô danh, câu linh ngư hấp thu linh khí, tích lũy tu vi, đột phá cảnh giới, nâng cấp cần/dây/mồi/pháp bảo, khám phá vùng nước bí ẩn.
+- Câu cá là con đường tu đạo chính, không bắt buộc chiến đấu; cá càng hiếm càng đòi hỏi kỹ thuật và trang bị tương ứng.
 - Mỗi bản đồ câu cá là một module độc lập, dùng chung dữ liệu người chơi.
 - Phong cách 2D HD: MAP 3D, nhân vật và vật thể 2D.
 - Godot 4.x, GDScript có kiểu. Android ưu tiên (màn ngang, Joystick, cảm ứng).
@@ -46,7 +46,7 @@ Mức: 0 chưa kiểm tra · 1 kiểm tra tĩnh (lệnh Termux) · 2 Godot impor
 ## 5. Dữ liệu
 - Tách dữ liệu khỏi logic (Resource/JSON). ID ổn định kiểu `loai_ten_001`, không dùng tên hiển thị làm ID.
 - Mỗi loại dữ liệu đúng MỘT nguồn (tiền: Economy, vật phẩm: Inventory, giờ: GameClock). Module khác gọi API, không sửa trực tiếp.
-- Tiền VND là số nguyên. Giao dịch đụng nhiều nguồn phải atomic: kiểm tra đủ điều kiện, thực hiện, lỗi thì hoàn tác.
+- Tiền tệ trong game là Linh Thạch, lưu trữ bằng số nguyên (int). Giao dịch đụng nhiều nguồn phải atomic: kiểm tra đủ điều kiện, thực hiện, lỗi thì hoàn tác.
 - Save: mỗi module tự serialize phần của mình, có `version`, lưu ở `user://`.
 - Chữ hiển thị trong game: tiếng Việt CÓ DẤU đầy đủ. Comment, CHANGELOG, tài liệu: tiếng Việt có dấu, không lẫn ngôn ngữ khác.
 

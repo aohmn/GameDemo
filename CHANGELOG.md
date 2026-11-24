@@ -2,6 +2,10 @@
 
 ## Chưa phát hành
 
+- Đổi hướng dự án sang game câu cá tu tiên, cập nhật AGENTS.md, README.md, quyết định kiến trúc 0002, roadmap tu tiên và sổ ý tưởng (Mức 1, chỉ tài liệu).
+- Sửa lỗi rollback bán cá làm mất cá trong `ServiceCoordinator.sell_fish`: thêm phương thức `restore_fish(fish_id, count, weight_g)` vào `InventoryLogic` và `InventoryAPI` để khôi phục chính xác số lượng và khối lượng cá khi giao dịch bán thất bại thay vì chỉ thêm 1 con cá.
+- Chỉ cho thả cần khi điểm rơi phao (3,2 m phía trước nhân vật) là mặt nước: `map.is_water_at()` dò bằng tia vật lý, `scenes/boot/cast_coordinator.gd` nối Player, Map, UI; bỏ tọa độ cầu tàu cứng trong `main.gd`; tự hủy câu khi đi xa hơn 8 m.
+- Thêm `presentation/fishing_rig/`: cần câu, dây câu, phao 3D không texture bám nhân vật, phản ứng theo sự kiện câu cá (Mức 2; chưa xem trên Godot Android).
 - Sửa lỗi `Failed to retrieve non-existent singleton 'EventBus'`: loại bỏ `Engine.get_singleton("EventBus")` (vốn chỉ dành cho engine singleton C++), chuyển sang truy xuất Autoload node trực tiếp trên SceneTree root (`st.root.get_node("EventBus")`) trong toàn bộ các API module (fishing, inventory, economy, shop).
 - Sửa lỗi nhân vật rơi khỏi bản đồ: tăng chiều cao ranh giới đảo lên 4m, bổ sung ranh giới khép kín phía Bắc (vịnh biển) và bến cảng, thêm cơ chế an toàn phát hiện rơi vực (y < -2.0) tự động đưa nhân vật về cầu tàu.
 - Bổ sung Fishing UI (`presentation/fishing_ui/`): cụm nút Thả cần, Giật cần, Kéo dây, Xả dây góc dưới phải tối ưu cho mobile, chỉ cho phép thả cần khi đứng gần điểm câu hợp lệ, thanh hiển thị lực căng và thông báo trạng thái câu; tích hợp điều khiển FishingAPI qua Bootstrap.

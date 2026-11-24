@@ -1,0 +1,10 @@
+# Lộ trình lát cắt tu tiên (Thứ tự gợi ý, KHÔNG phải kế hoạch cứng theo AGENTS §8)
+
+1 phẩm cấp cá/cần (thêm trường tier vào FishSpec, RodSpec, chỉ dữ liệu)
+2 module cultivation (cảnh giới, tầng, tu vi, hấp thu cá, save version)
+3 đột phá (3 cảnh giới đầu trước, mở khóa cần và vùng nước)
+4 module skills (5 kỹ năng câu, mỗi kỹ năng chỉnh 1 tham số fishing)
+5 đổi tên VND -> linh thạch trong code (commit riêng, đặt TRƯỚC lát 6 nếu Economy còn chạm nhiều nơi)
+6 inventory mở rộng (vật phẩm chung, Nhẫn Trữ Vật)
+7 vùng nước thứ hai + thiên tượng (nối GameClock, linh triều đổi tỷ lệ cá)
+8 luyện khí (chế cần/dây/mồi)
