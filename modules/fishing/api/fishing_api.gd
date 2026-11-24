@@ -1,27 +1,28 @@
 class_name FishingAPI
 extends RefCounted
 
-## Giao diện lập trình (API) công khai của module câu cá (modules/fishing/).
-## Kết nối FishingLogic với EventBus và chuyển tiếp các hành vi thao tác của người chơi.
+## Giao diện lập trình (API) công khai của module câu cá.
+## Tích hợp động cơ gameplay/fishing/FishingController mới làm lõi xử lý,
+## giữ nguyên vẹn 100% hợp đồng FishingEvents với EventBus và UI hiện hành.
 
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
-const FishingLogicScript: Script = preload("res://modules/fishing/logic/fishing_logic.gd")
+const FishingControllerScript: Script = preload("res://gameplay/fishing/fishing_controller.gd")
 
-var _logic: RefCounted
+var _controller: FishingController
 var _spots: Dictionary = {}
 var _rods: Dictionary = {}
 var _default_rod_id: String = "rod_truc_nhiem"
 
 
 func _init(seed_val: int = -1) -> void:
-	_logic = FishingLogicScript.new(seed_val)
+	_controller = FishingControllerScript.new(seed_val)
 	_setup_callbacks()
 	_load_default_resources()
 
 
 func set_seed(seed_val: int) -> void:
-	if _logic != null and _logic.has_method("set_seed"):
-		_logic.call("set_seed", seed_val)
+	if _controller != null:
+		_controller.set_seed(seed_val)
 
 
 func register_spot(spot: Resource) -> void:
@@ -44,12 +45,12 @@ func set_default_rod(rod_id: String) -> void:
 
 
 func get_state() -> String:
-	if _logic != null and _logic.has_method("get_state_name"):
-		return str(_logic.call("get_state_name"))
+	if _controller != null:
+		return _controller.get_state_name()
 	return "UNKNOWN"
 
 
-## Quăng câu vào điểm câu cá spot_id.
+## Quăng câu vào điểm câu cá spot_id
 func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 	if not _spots.has(spot_id):
 		push_warning("Điểm câu không tồn tại: " + spot_id)
@@ -64,7 +65,7 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 		push_warning("Không có cần câu khả dụng.")
 		return false
 
-	var success: bool = bool(_logic.call("cast", spot, rod))
+	var success: bool = _controller.cast(spot, rod)
 	if success:
 		_emit_event(FishingEventsContract.CAST_STARTED, {
 			"spot_id": spot_id,
@@ -73,37 +74,52 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 	return success
 
 
-## Giật cần khi cá cắn câu.
+## Giật cần khi cá cắn câu
 func strike() -> bool:
-	return bool(_logic.call("strike"))
+	return _controller.strike()
 
 
-## Kéo dây cước (giữ reel).
+## Kéo dây cước (giữ reel)
 func reel(held: bool) -> void:
-	_logic.call("reel", held)
+	_controller.reel(held)
 
 
-## Xả dây cước (giữ release).
+## Xả dây cước (giữ release)
 func release(held: bool) -> void:
-	_logic.call("release", held)
+	_controller.release(held)
 
 
-## Hủy bỏ lần câu hiện tại.
+## Điều chỉnh lực kéo thời gian thực (0.5 đến 1.5)
+func set_pull_strength_factor(factor: float) -> void:
+	_controller.set_pull_strength_factor(factor)
+
+
+## Hủy bỏ lần câu hiện tại
 func cancel() -> void:
-	_logic.call("cancel")
+	_controller.cancel()
 
 
-## Cập nhật theo thời gian (frame time).
+## Cập nhật theo thời gian (frame time)
 func tick(delta: float) -> void:
-	_logic.call("tick", delta)
+	_controller.tick(delta)
+
+
+## Cung cấp quyền truy cập kỹ năng câu cá cho tu luyện
+func get_skills() -> RefCounted:
+	return _controller.skills
+
+
+## Cung cấp quyền thiết lập mồi câu cho túi đồ / trang bị
+func get_bait_system() -> RefCounted:
+	return _controller.bait_system
 
 
 func _setup_callbacks() -> void:
-	_logic.set("on_state_changed", Callable(self, "_on_state_changed"))
-	_logic.set("on_fish_bite", Callable(self, "_on_fish_bite"))
-	_logic.set("on_fight_update", Callable(self, "_on_fight_update"))
-	_logic.set("on_fish_caught", Callable(self, "_on_fish_caught"))
-	_logic.set("on_fish_lost", Callable(self, "_on_fish_lost"))
+	_controller.on_state_changed = Callable(self, "_on_state_changed")
+	_controller.on_fish_bite = Callable(self, "_on_fish_bite")
+	_controller.on_fight_update = Callable(self, "_on_fight_update")
+	_controller.on_fish_caught = Callable(self, "_on_fish_caught")
+	_controller.on_fish_lost = Callable(self, "_on_fish_lost")
 
 
 func _on_state_changed(payload: Dictionary) -> void:
