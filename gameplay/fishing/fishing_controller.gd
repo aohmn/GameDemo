@@ -54,7 +54,7 @@ func set_seed(seed_val: int) -> void:
 
 
 func get_state_name() -> String:
-	return FishingStateScript.get_name(current_state)
+	return FishingStateScript.get_state_name(current_state)
 
 
 ## Thả câu (CASTING -> WAITING)
@@ -205,8 +205,8 @@ func _end_fishing(target_state: int, reason: String) -> void:
 func _transition_to(next_state: int) -> void:
 	if current_state == next_state:
 		return
-	var from_str := FishingStateScript.get_name(current_state)
-	var to_str := FishingStateScript.get_name(next_state)
+	var from_str := FishingStateScript.get_state_name(current_state)
+	var to_str := FishingStateScript.get_state_name(next_state)
 	current_state = next_state
 
 	if on_state_changed.is_valid():

@@ -27,7 +27,7 @@ const STATE_NAMES: Dictionary = {
 }
 
 
-static func get_name(state: int) -> String:
+static func get_state_name(state: int) -> String:
 	return str(STATE_NAMES.get(state, "UNKNOWN"))
 
 
