@@ -2,6 +2,12 @@
 
 ## Chưa phát hành
 
+- Tạo module cửa hàng độc lập `modules/shop/` (danh mục cần câu .tres qua ShopItemSpec, hiển thị giá VND và chỉ số, mua vật phẩm kiểm tra số dư và chặn mua trùng, phát sự kiện ITEM_ADDED sang Inventory, trang bị cần câu đồng bộ sang Fishing API, lưu/tải user://shop.cfg, README, ROADMAP, dev.tscn chạy độc lập, và ServiceCoordinator điều phối giao dịch atomic tại Bootstrap).
+- Tạo module kinh tế độc lập `modules/economy/` (quản lý số dư VND, bảng giá cá .tres qua FishPriceSpec, tính giá theo trọng lượng và số lượng, kiểm tra giao dịch không bán vượt, ghi lịch sử, ConfigFile user://economy.cfg, phát sự kiện EventBus, README, ROADMAP, dev.tscn chạy độc lập, và điều phối giao dịch bán cá atomic tại Bootstrap).
+- Tạo giao diện túi cá `presentation/fishing_inventory_ui/` (hiển thị danh sách cá, tên có dấu, số lượng, khối lượng g/kg, trạng thái túi trống, nút mở/đóng modal tối ưu cho mobile, cập nhật tự động qua sự kiện EventBus, scene dev.tscn chạy độc lập, nạp tùy chọn tại Bootstrap).
+- Tạo module túi đồ độc lập `modules/inventory/` (lưu trữ cá theo fish_id, số lượng và tổng trọng lượng, lắng nghe FISH_CAUGHT từ EventBus, lưu/tải user://inventory.cfg bằng ConfigFile, README, ROADMAP và dev.tscn chạy riêng; nạp tùy chọn tại Bootstrap).
+- Sửa FishingLogic hồi phục sức cá khi lực căng ngoài vùng an toàn (`+ (fatigue * 0.15) * delta`) giới hạn tối đa sức cá ban đầu và kiểm tra toàn bộ FSM, scene Fishing Dev.
+- Điều chỉnh thứ tự khởi tạo Camera trước SkyDome trong `maps/harbor_island/dev.gd` để SkyDome liên kết camera mục tiêu ngay từ đầu.
 - Tạo module logic câu cá `modules/fishing/` (FSM 6 trạng thái, cửa sổ giật cần 0.8s, giằng co lực căng dây, dữ liệu .tres có kiểu gồm 6 loài cá, 2 cần câu, 1 điểm câu, dev.tscn chạy độc lập, RNG seed) và đồng bộ giá trị mặc định sun_dir/sun_direction giữa water và SkyDome (Mức 1 tĩnh; chưa kiểm tra mức 2-3 do môi trường không có Godot CLI).
 - Tạo module core gồm EventBus autoload (dùng Callable, tự dọn dẹp node giải phóng), hợp đồng sự kiện (FishingEvents, InventoryEvents, EconomyEvents), GameClock autoload (theo dõi giờ và phát tín hiệu), và đồng bộ hướng mặt trời một nguồn duy nhất từ map sang SkyDome và water shader (Mức 1 tĩnh; chưa kiểm tra mức 2-3 do môi trường không có Godot CLI).
 - Viết lại water shader cartoon nhẹ cho Android (2 lần noise mỗi điểm ảnh thay vì ~80), mặt nước 600 m mờ dần về màu chân trời, không còn lộ mép. Mức 2 (Godot Linux, không SHADER ERROR); chưa kiểm tra mức 3 trên Godot Android.

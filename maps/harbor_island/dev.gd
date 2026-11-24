@@ -12,9 +12,9 @@ var _camera_target: Vector3 = Vector3(0.0, 0.5, 10.0)
 
 func _ready() -> void:
     _create_map()
+    _create_dev_camera()
     _create_sky_dome()
     _sync_sun_direction()
-    _create_dev_camera()
 
 
 func _process(delta: float) -> void:

@@ -27,7 +27,7 @@ const STATE_NAMES: Dictionary = {
 	State.RESULT: "RESULT"
 }
 
-const BITE_WINDOW_DURATION: float = 0.8 # Cửa sổ giật cần (0.8 giây)
+const BITE_WINDOW_DURATION: float = 0.8 
 const PULSE_INTERVAL: float = 1.2       # Chu kỳ nhịp xung cá giật kéo
 
 # Callbacks nhận tín hiệu từ logic
@@ -207,8 +207,11 @@ func _process_fight(delta: float) -> void:
 	if _line_tension >= safe_min and _line_tension <= safe_max:
 		_fish_strength -= fatigue * delta
 	else:
-		# Ngoài vùng an toàn, cá hồi một phần sức
-		_fish_strength -= (fatigue * 0.15) * delta
+		# Ngoài vùng an toàn, cá hồi phục một phần sức (tối đa bằng sức chịu đựng ban đầu của cá)
+		var max_strength: float = 30.0
+		if targeted_fish != null:
+			max_strength = float(targeted_fish.get("strength"))
+		_fish_strength = minf(max_strength, _fish_strength + (fatigue * 0.15) * delta)
 
 	_line_tension = maxf(0.0, _line_tension)
 

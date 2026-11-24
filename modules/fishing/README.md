@@ -42,6 +42,7 @@ modules/fishing/
   - Giữ `release(true)`: Xả chùng dây cước.
   - Cá vùng vẫy tạo các xung lực kéo định kỳ theo chu kỳ sóng sin.
   - Khi lực căng nằm trong vùng an toàn (`safe_tension_min` đến `safe_tension_max`), sức cá (`fish_strength`) giảm dần.
+  - Ngoài vùng an toàn, cá hồi phục một phần sức (tối đa bằng sức chịu đựng ban đầu của cá).
   - Nếu lực căng vượt quá `max_tension` của cần -> Đứt dây (`reason: line_break`).
   - Khi sức cá giảm về 0 -> Bắt được cá thành công!
 - **RESULT**: Kết thúc lượt câu, phát sự kiện `fish_caught` hoặc `fish_lost`.

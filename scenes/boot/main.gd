@@ -1,15 +1,28 @@
 extends Node3D
 
 const MAP_MANAGER_SCRIPT: Script = preload("res://scenes/boot/map_manager.gd")
+const SERVICE_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/service_coordinator.gd")
 const PLAYER_SCENE_PATH: String = "res://modules/player/scenes/player.tscn"
 const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
 const SKY_DOME_SCENE_PATH: String = "res://modules/sky_dome/scenes/sky_dome.tscn"
+const INVENTORY_API_PATH: String = "res://modules/inventory/api/inventory_api.gd"
+const FISHING_INVENTORY_UI_PATH: String = "res://presentation/fishing_inventory_ui/fishing_inventory_ui.tscn"
+const ECONOMY_API_PATH: String = "res://modules/economy/api/economy_api.gd"
+const SHOP_API_PATH: String = "res://modules/shop/api/shop_api.gd"
+const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
 
 var _map_manager: Node3D
+var _coordinator: RefCounted
 var _camera: Camera3D
 var _player: CharacterBody3D
 var _joystick: Node
 var _sky_dome: Node3D
+var _inventory_api: RefCounted
+var _economy_api: RefCounted
+var _shop_api: RefCounted
+var _fishing_api: RefCounted
+var _fishing_inventory_ui: Control
+var _hud: CanvasLayer
 
 
 func _ready() -> void:
@@ -18,13 +31,15 @@ func _ready() -> void:
     _create_map_manager()
     _sync_sun_direction()
     _create_player()
+    _setup_hud()
     _create_joystick()
+    _init_services()
+    _create_inventory_ui()
 
 
 func _process(_delta: float) -> void:
     if _camera == null or _player == null:
         return
-
     var target := _player.global_position
     _camera.global_position = target + Vector3(0.0, 16.0, 23.0)
     _camera.look_at(target + Vector3(0.0, 0.8, 0.0))
@@ -41,58 +56,36 @@ func _create_camera() -> void:
 
 func _create_sky_dome() -> void:
     if not ResourceLoader.exists(SKY_DOME_SCENE_PATH):
-        push_warning("Không tìm thấy SkyDome scene.")
         return
-
-    var resource: Resource = load(SKY_DOME_SCENE_PATH)
-    var scene := resource as PackedScene
+    var scene := load(SKY_DOME_SCENE_PATH) as PackedScene
     if scene == null:
-        push_error("SkyDome scene không hợp lệ.")
         return
-
-    var dome_node: Node = scene.instantiate()
-    _sky_dome = dome_node as Node3D
-    if _sky_dome == null:
-        dome_node.free()
-        push_error("SkyDome phải có node gốc Node3D.")
-        return
-
-    _sky_dome.name = "SkyDome"
-    add_child(_sky_dome)
-
-    if _sky_dome.has_method("set_follow_target") and _camera != null:
-        _sky_dome.call("set_follow_target", _camera)
+    var dome_node := scene.instantiate() as Node3D
+    if dome_node != null:
+        _sky_dome = dome_node
+        _sky_dome.name = "SkyDome"
+        add_child(_sky_dome)
+        if _sky_dome.has_method("set_follow_target") and _camera != null:
+            _sky_dome.call("set_follow_target", _camera)
 
 
 func _create_map_manager() -> void:
     _map_manager = MAP_MANAGER_SCRIPT.new() as Node3D
-    if _map_manager == null:
-        push_error("Không thể khởi tạo MapManager.")
-        return
-
-    _map_manager.name = "MapManager"
-    add_child(_map_manager)
-
-    var loaded := bool(_map_manager.call("load_map", "harbor_island"))
-    if not loaded:
-        push_warning("Không thể tải map harbor_island; tiếp tục không có map.")
+    if _map_manager != null:
+        _map_manager.name = "MapManager"
+        add_child(_map_manager)
+        _map_manager.call("load_map", "harbor_island")
 
 
 func _sync_sun_direction() -> void:
     if _map_manager == null:
         return
-
     var current_map: Node = _map_manager.call("get_current_map") as Node
     if current_map == null or not current_map.has_method("get_sun_direction"):
         return
-
     var sun_dir: Vector3 = current_map.call("get_sun_direction")
-
-    # 1. Đồng bộ sang SkyDome nếu có
     if _sky_dome != null and _sky_dome.has_method("set_sun_direction"):
         _sky_dome.call("set_sun_direction", sun_dir)
-
-    # 2. Đồng bộ sang uniform sun_dir của water shader trên map nếu có
     if current_map.has_method("get_water_material"):
         var water_mat: ShaderMaterial = current_map.call("get_water_material") as ShaderMaterial
         if water_mat != null:
@@ -101,57 +94,99 @@ func _sync_sun_direction() -> void:
 
 func _create_player() -> void:
     if not ResourceLoader.exists(PLAYER_SCENE_PATH):
-        push_warning("Không tìm thấy Player scene; tiếp tục không có Player.")
         return
+    var scene := load(PLAYER_SCENE_PATH) as PackedScene
+    if scene != null:
+        _player = scene.instantiate() as CharacterBody3D
+        if _player != null:
+            _player.name = "Player"
+            _player.position = Vector3(-2.0, 0.05, 10.0)
+            add_child(_player)
 
-    var resource: Resource = load(PLAYER_SCENE_PATH)
-    var scene := resource as PackedScene
-    if scene == null:
-        push_error("Không thể tải Player scene.")
-        return
 
-    var player_node: Node = scene.instantiate()
-    _player = player_node as CharacterBody3D
-    if _player == null:
-        player_node.free()
-        push_error("Player phải có node gốc CharacterBody3D.")
-        return
-
-    _player.name = "Player"
-    _player.position = Vector3(-2.0, 0.05, 10.0)
-    add_child(_player)
+func _setup_hud() -> void:
+    if _hud == null:
+        _hud = CanvasLayer.new()
+        _hud.name = "HUD"
+        add_child(_hud)
 
 
 func _create_joystick() -> void:
     if not ResourceLoader.exists(JOYSTICK_SCENE_PATH):
-        push_warning("Không tìm thấy Joystick; tiếp tục không có điều khiển cảm ứng.")
         return
-
-    var resource: Resource = load(JOYSTICK_SCENE_PATH)
-    var scene := resource as PackedScene
-    if scene == null:
-        push_error("Joystick scene không hợp lệ.")
-        return
-
-    _joystick = scene.instantiate()
-    if not _joystick is Control:
-        _joystick.free()
-        _joystick = null
-        push_error("Joystick phải có node gốc Control.")
-        return
-
-    var hud := CanvasLayer.new()
-    hud.name = "HUD"
-    add_child(hud)
-    hud.add_child(_joystick)
-
-    if _joystick.has_signal("direction_changed"):
-        _joystick.connect(
-            "direction_changed",
-            _on_joystick_direction_changed
-        )
+    var scene := load(JOYSTICK_SCENE_PATH) as PackedScene
+    if scene != null:
+        _joystick = scene.instantiate()
+        if _joystick is Control:
+            _hud.add_child(_joystick)
+            if _joystick.has_signal("direction_changed"):
+                _joystick.connect("direction_changed", _on_joystick_direction_changed)
 
 
 func _on_joystick_direction_changed(direction: Vector2) -> void:
     if _player != null:
         _player.call("set_move_direction", direction)
+
+
+func _init_services() -> void:
+    if ResourceLoader.exists(INVENTORY_API_PATH):
+        var inv_s: Script = load(INVENTORY_API_PATH) as Script
+        if inv_s != null:
+            _inventory_api = inv_s.new() as RefCounted
+            if _inventory_api.has_method("load_data"):
+                _inventory_api.call("load_data")
+
+    if ResourceLoader.exists(ECONOMY_API_PATH):
+        var eco_s: Script = load(ECONOMY_API_PATH) as Script
+        if eco_s != null:
+            _economy_api = eco_s.new() as RefCounted
+            if _economy_api.has_method("load_data"):
+                _economy_api.call("load_data")
+
+    if ResourceLoader.exists(FISHING_API_PATH):
+        var fish_s: Script = load(FISHING_API_PATH) as Script
+        if fish_s != null:
+            _fishing_api = fish_s.new() as RefCounted
+
+    if ResourceLoader.exists(SHOP_API_PATH):
+        var shop_s: Script = load(SHOP_API_PATH) as Script
+        if shop_s != null:
+            _shop_api = shop_s.new() as RefCounted
+            if _shop_api.has_method("load_data"):
+                _shop_api.call("load_data")
+
+    # Khởi tạo coordinator kết nối atomic
+    _coordinator = SERVICE_COORDINATOR_SCRIPT.new()
+    _coordinator.call("setup", _inventory_api, _economy_api, _shop_api, _fishing_api)
+
+    var eb: Node = get_node_or_null("/root/EventBus")
+    if eb != null and eb.has_method("subscribe"):
+        eb.call("subscribe", "shop_rod_equipped", Callable(_coordinator, "on_shop_rod_equipped"))
+
+    if _fishing_api != null and _shop_api != null and _shop_api.has_method("get_equipped_rod_id"):
+        var eq_rod: String = str(_shop_api.call("get_equipped_rod_id"))
+        _fishing_api.call("set_default_rod", eq_rod)
+
+
+func _create_inventory_ui() -> void:
+    if not ResourceLoader.exists(FISHING_INVENTORY_UI_PATH):
+        return
+    var scene := load(FISHING_INVENTORY_UI_PATH) as PackedScene
+    if scene != null:
+        _fishing_inventory_ui = scene.instantiate() as Control
+        if _fishing_inventory_ui != null:
+            _hud.add_child(_fishing_inventory_ui)
+            if _inventory_api != null and _fishing_inventory_ui.has_method("set_inventory_api"):
+                _fishing_inventory_ui.call("set_inventory_api", _inventory_api)
+
+
+func sell_fish(fish_id: String, count: int) -> bool:
+    if _coordinator != null:
+        return bool(_coordinator.call("sell_fish", fish_id, count))
+    return false
+
+
+func buy_shop_item(item_id: String) -> bool:
+    if _coordinator != null:
+        return bool(_coordinator.call("buy_shop_item", item_id))
+    return false
