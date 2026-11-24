@@ -127,14 +127,6 @@ func _on_fish_lost(payload: Dictionary) -> void:
 
 
 func _emit_event(event_name: String, payload: Dictionary) -> void:
-	# Phát thông qua EventBus Autoload nếu tồn tại trong SceneTree / Engine
-	var engine_singleton: Object = Engine.get_singleton("EventBus")
-	if engine_singleton != null and is_instance_valid(engine_singleton):
-		engine_singleton.call("emit_event", event_name, payload)
-		return
-
-	# Trường hợp chạy độc lập không qua Engine singleton
-	# hoặc Node Autoload trên cây root
 	var main_loop: MainLoop = Engine.get_main_loop()
 	if main_loop is SceneTree:
 		var st := main_loop as SceneTree

@@ -116,11 +116,6 @@ func _on_logic_purchase_failed(payload: Dictionary) -> void:
 
 
 func _emit_event(event_name: String, payload: Dictionary) -> void:
-	var engine_singleton: Object = Engine.get_singleton("EventBus")
-	if engine_singleton != null and is_instance_valid(engine_singleton):
-		engine_singleton.call("emit_event", event_name, payload)
-		return
-
 	var main_loop: MainLoop = Engine.get_main_loop()
 	if main_loop is SceneTree:
 		var st := main_loop as SceneTree

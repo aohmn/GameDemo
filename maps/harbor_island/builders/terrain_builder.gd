@@ -105,15 +105,17 @@ static func _make_mountains(root_node: Node3D) -> void:
 
 
 static func _make_island_boundaries(root_node: Node3D) -> void:
-	var wall_h := 3.0
+	var wall_h := 4.0
 	var bounds: Array[Dictionary] = [
-		{"name": "BoundWest", "pos": Vector3(-23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
-		{"name": "BoundEast", "pos": Vector3(23.0, 1.5, 3.0), "size": Vector3(1.0, wall_h, 40.0)},
-		{"name": "BoundSouthLeft", "pos": Vector3(-16.0, 1.5, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
-		{"name": "BoundSouthMidLeft", "pos": Vector3(-6.75, 1.5, 10.5), "size": Vector3(4.5, wall_h, 1.0)},
-		{"name": "BoundSouthRight", "pos": Vector3(11.0, 1.5, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
-		{"name": "BoundCoastNorthL", "pos": Vector3(-9.75, 1.5, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
-		{"name": "BoundCoastNorthR", "pos": Vector3(9.75, 1.5, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
+		{"name": "BoundWest", "pos": Vector3(-23.0, 2.0, 3.0), "size": Vector3(1.0, wall_h, 42.0)},
+		{"name": "BoundEast", "pos": Vector3(23.0, 2.0, 3.0), "size": Vector3(1.0, wall_h, 42.0)},
+		{"name": "BoundSouthLeft", "pos": Vector3(-16.0, 2.0, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
+		{"name": "BoundSouthMidLeft", "pos": Vector3(-6.75, 2.0, 10.5), "size": Vector3(4.5, wall_h, 1.0)},
+		{"name": "BoundSouthRight", "pos": Vector3(11.0, 2.0, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
+		{"name": "BoundCoastNorthL", "pos": Vector3(-9.75, 2.0, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
+		{"name": "BoundCoastNorthR", "pos": Vector3(9.75, 2.0, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
+		{"name": "BoundBayNorthWall", "pos": Vector3(0.0, 2.0, -16.0), "size": Vector3(14.0, wall_h, 1.0)},
+		{"name": "BoundCoastNorthBack", "pos": Vector3(0.0, 2.0, -18.5), "size": Vector3(46.0, wall_h, 1.0)},
 	]
 	for b in bounds:
 		_add_box_collider(root_node, b["name"], b["pos"], b["size"])

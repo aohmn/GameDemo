@@ -7,6 +7,7 @@ const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
 const SKY_DOME_SCENE_PATH: String = "res://modules/sky_dome/scenes/sky_dome.tscn"
 const INVENTORY_API_PATH: String = "res://modules/inventory/api/inventory_api.gd"
 const FISHING_INVENTORY_UI_PATH: String = "res://presentation/fishing_inventory_ui/fishing_inventory_ui.tscn"
+const FISHING_UI_PATH: String = "res://presentation/fishing_ui/fishing_ui.tscn"
 const ECONOMY_API_PATH: String = "res://modules/economy/api/economy_api.gd"
 const SHOP_API_PATH: String = "res://modules/shop/api/shop_api.gd"
 const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
@@ -22,6 +23,7 @@ var _economy_api: RefCounted
 var _shop_api: RefCounted
 var _fishing_api: RefCounted
 var _fishing_inventory_ui: Control
+var _fishing_ui: Control
 var _hud: CanvasLayer
 
 
@@ -35,14 +37,23 @@ func _ready() -> void:
     _create_joystick()
     _init_services()
     _create_inventory_ui()
+    _create_fishing_ui()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+    if _fishing_api != null and _fishing_api.has_method("tick"):
+        _fishing_api.call("tick", delta)
+
     if _camera == null or _player == null:
         return
     var target := _player.global_position
     _camera.global_position = target + Vector3(0.0, 16.0, 23.0)
     _camera.look_at(target + Vector3(0.0, 0.8, 0.0))
+
+    # Kiểm tra khoảng cách người chơi tới điểm câu tại cầu tàu (x từ -11 đến 1, z từ 9 đến 24)
+    if _fishing_ui != null and _fishing_ui.has_method("set_near_fishing_spot"):
+        var on_pier := (target.x >= -11.0 and target.x <= 1.0 and target.z >= 9.0 and target.z <= 24.5)
+        _fishing_ui.call("set_near_fishing_spot", on_pier, "spot_cau_tau_ben_cang")
 
 
 func _create_camera() -> void:
@@ -178,6 +189,18 @@ func _create_inventory_ui() -> void:
             _hud.add_child(_fishing_inventory_ui)
             if _inventory_api != null and _fishing_inventory_ui.has_method("set_inventory_api"):
                 _fishing_inventory_ui.call("set_inventory_api", _inventory_api)
+
+
+func _create_fishing_ui() -> void:
+    if not ResourceLoader.exists(FISHING_UI_PATH):
+        return
+    var scene := load(FISHING_UI_PATH) as PackedScene
+    if scene != null:
+        _fishing_ui = scene.instantiate() as Control
+        if _fishing_ui != null:
+            _hud.add_child(_fishing_ui)
+            if _fishing_api != null and _fishing_ui.has_method("set_fishing_api"):
+                _fishing_ui.call("set_fishing_api", _fishing_api)
 
 
 func sell_fish(fish_id: String, count: int) -> bool:

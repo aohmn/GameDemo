@@ -4,6 +4,8 @@ const PLAYER_SHADER: Shader = preload("res://modules/player/assets/player.gdshad
 const MOVE_SPEED: float = 4.0
 const GRAVITY: float = 18.0
 const BODY_HEIGHT: float = 1.75
+const RESPAWN_POSITION: Vector3 = Vector3(-2.0, 0.05, 10.0)
+const FALL_Y_THRESHOLD: float = -2.0
 
 var move_direction: Vector2 = Vector2.ZERO
 var visual: MeshInstance3D
@@ -23,6 +25,12 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+    # Cơ chế phát hiện rơi khỏi bản đồ: đưa nhân vật về vị trí an toàn trên cầu tàu
+    if global_position.y < FALL_Y_THRESHOLD:
+        global_position = RESPAWN_POSITION
+        velocity = Vector3.ZERO
+        return
+
     var move_vector := Vector3(move_direction.x, 0.0, -move_direction.y)
     move_vector = move_vector.limit_length(1.0)
 

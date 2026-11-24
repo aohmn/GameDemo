@@ -2,6 +2,9 @@
 
 ## Chưa phát hành
 
+- Sửa lỗi `Failed to retrieve non-existent singleton 'EventBus'`: loại bỏ `Engine.get_singleton("EventBus")` (vốn chỉ dành cho engine singleton C++), chuyển sang truy xuất Autoload node trực tiếp trên SceneTree root (`st.root.get_node("EventBus")`) trong toàn bộ các API module (fishing, inventory, economy, shop).
+- Sửa lỗi nhân vật rơi khỏi bản đồ: tăng chiều cao ranh giới đảo lên 4m, bổ sung ranh giới khép kín phía Bắc (vịnh biển) và bến cảng, thêm cơ chế an toàn phát hiện rơi vực (y < -2.0) tự động đưa nhân vật về cầu tàu.
+- Bổ sung Fishing UI (`presentation/fishing_ui/`): cụm nút Thả cần, Giật cần, Kéo dây, Xả dây góc dưới phải tối ưu cho mobile, chỉ cho phép thả cần khi đứng gần điểm câu hợp lệ, thanh hiển thị lực căng và thông báo trạng thái câu; tích hợp điều khiển FishingAPI qua Bootstrap.
 - Tạo module cửa hàng độc lập `modules/shop/` (danh mục cần câu .tres qua ShopItemSpec, hiển thị giá VND và chỉ số, mua vật phẩm kiểm tra số dư và chặn mua trùng, phát sự kiện ITEM_ADDED sang Inventory, trang bị cần câu đồng bộ sang Fishing API, lưu/tải user://shop.cfg, README, ROADMAP, dev.tscn chạy độc lập, và ServiceCoordinator điều phối giao dịch atomic tại Bootstrap).
 - Tạo module kinh tế độc lập `modules/economy/` (quản lý số dư VND, bảng giá cá .tres qua FishPriceSpec, tính giá theo trọng lượng và số lượng, kiểm tra giao dịch không bán vượt, ghi lịch sử, ConfigFile user://economy.cfg, phát sự kiện EventBus, README, ROADMAP, dev.tscn chạy độc lập, và điều phối giao dịch bán cá atomic tại Bootstrap).
 - Tạo giao diện túi cá `presentation/fishing_inventory_ui/` (hiển thị danh sách cá, tên có dấu, số lượng, khối lượng g/kg, trạng thái túi trống, nút mở/đóng modal tối ưu cho mobile, cập nhật tự động qua sự kiện EventBus, scene dev.tscn chạy độc lập, nạp tùy chọn tại Bootstrap).

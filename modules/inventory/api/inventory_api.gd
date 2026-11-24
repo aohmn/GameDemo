@@ -139,10 +139,6 @@ func _emit_event(event_name: String, payload: Dictionary) -> void:
 
 
 func _get_event_bus() -> Node:
-	var engine_singleton: Object = Engine.get_singleton("EventBus")
-	if engine_singleton != null and is_instance_valid(engine_singleton):
-		return engine_singleton as Node
-
 	var main_loop: MainLoop = Engine.get_main_loop()
 	if main_loop is SceneTree:
 		var st := main_loop as SceneTree

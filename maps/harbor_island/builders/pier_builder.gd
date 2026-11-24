@@ -51,13 +51,13 @@ static func _make_pier_and_harbor(root_node: Node3D) -> void:
 
 
 static func _make_pier_boundaries(root_node: Node3D) -> void:
-	var wall_h := 3.0
+	var wall_h := 4.0
 	var bounds: Array[Dictionary] = [
-		{"name": "BoundMainPierWest", "pos": Vector3(-4.35, 1.5, 16.5), "size": Vector3(0.2, wall_h, 11.0)},
-		{"name": "BoundMainPierEast", "pos": Vector3(0.35, 1.5, 16.5), "size": Vector3(0.2, wall_h, 13.0)},
-		{"name": "BoundPierTNorth", "pos": Vector3(-7.5, 1.5, 20.15), "size": Vector3(6.0, wall_h, 0.3)},
-		{"name": "BoundPierTSouth", "pos": Vector3(-6.5, 1.5, 23.85), "size": Vector3(8.0, wall_h, 0.3)},
-		{"name": "BoundPierTWest", "pos": Vector3(-10.6, 1.5, 22.0), "size": Vector3(0.3, wall_h, 3.6)},
+		{"name": "BoundMainPierWest", "pos": Vector3(-4.35, 2.0, 15.0), "size": Vector3(0.2, wall_h, 11.0)},
+		{"name": "BoundMainPierEast", "pos": Vector3(0.35, 2.0, 16.5), "size": Vector3(0.2, wall_h, 14.0)},
+		{"name": "BoundPierTNorth", "pos": Vector3(-7.5, 2.0, 20.15), "size": Vector3(6.5, wall_h, 0.3)},
+		{"name": "BoundPierTSouth", "pos": Vector3(-6.5, 2.0, 23.85), "size": Vector3(8.5, wall_h, 0.3)},
+		{"name": "BoundPierTWest", "pos": Vector3(-10.6, 2.0, 22.0), "size": Vector3(0.3, wall_h, 4.0)},
 	]
 	for b in bounds:
 		_add_box_collider(root_node, b["name"], b["pos"], b["size"])
