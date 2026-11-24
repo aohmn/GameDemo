@@ -74,10 +74,14 @@ func _create_map_manager() -> void:
 
     var loaded := bool(_map_manager.call("load_map", "harbor_island"))
     if not loaded:
-        push_error("Không thể tải map harbor_island.")
+        push_warning("Không thể tải map harbor_island; tiếp tục không có map.")
 
 
 func _create_player() -> void:
+    if not ResourceLoader.exists(PLAYER_SCENE_PATH):
+        push_warning("Không tìm thấy Player scene; tiếp tục không có Player.")
+        return
+
     var resource: Resource = load(PLAYER_SCENE_PATH)
     var scene := resource as PackedScene
     if scene == null:

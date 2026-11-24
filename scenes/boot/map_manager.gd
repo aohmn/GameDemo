@@ -1,7 +1,7 @@
 extends Node3D
 
-const MAP_SCENES: Dictionary = {
-	"harbor_island": preload("res://maps/harbor_island/map.tscn"),
+const MAP_PATHS: Dictionary = {
+	"harbor_island": "res://maps/harbor_island/map.tscn",
 }
 
 var current_map_id: String = ""
@@ -12,19 +12,25 @@ func load_map(map_id: String) -> bool:
 	if map_id == current_map_id and is_instance_valid(_current_map):
 		return true
 
-	if not MAP_SCENES.has(map_id):
-		push_error("Không tìm thấy map ID: " + map_id)
+	if not MAP_PATHS.has(map_id):
+		push_warning("Không tìm thấy map ID trong danh sách: " + map_id)
 		return false
 
-	var map_scene: PackedScene = MAP_SCENES[map_id] as PackedScene
+	var path: String = MAP_PATHS[map_id]
+	if not ResourceLoader.exists(path):
+		push_warning("File scene map không tồn tại: " + path)
+		return false
+
+	var resource: Resource = load(path)
+	var map_scene := resource as PackedScene
 	if map_scene == null:
-		push_error("Scene map không hợp lệ: " + map_id)
+		push_warning("Scene map không hợp lệ: " + path)
 		return false
 
 	var next_node: Node = map_scene.instantiate()
 	if not next_node is Node3D:
 		next_node.free()
-		push_error("Map phải có node gốc Node3D: " + map_id)
+		push_warning("Map phải có node gốc Node3D: " + map_id)
 		return false
 
 	var next_map: Node3D = next_node as Node3D
