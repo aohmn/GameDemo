@@ -1,9 +1,11 @@
 extends RefCounted
 
+## TerrainBuilder — Kiến tạo địa hình Đảo Bến Cảng (Genshin x Sea of Thieves):
+## Vịnh biển, bờ cát thoai thoải, cao nguyên trung tâm, vách đá dựng đứng,
+## kết hợp Procedural Terrain Shader và Ocean Shader.
+
 const WATER_SHADER: Shader = preload("res://maps/harbor_island/water.gdshader")
-const SAND_COLOR: Color = Color(0.92, 0.84, 0.62)
-const GRASS_COLOR: Color = Color(0.38, 0.72, 0.32)
-const CLIFF_COLOR: Color = Color(0.48, 0.44, 0.40)
+const TERRAIN_SHADER: Shader = preload("res://maps/harbor_island/terrain.gdshader")
 
 
 static func build(root_node: Node3D) -> void:
@@ -20,7 +22,12 @@ static func _make_environment(root_node: Node3D) -> void:
 	settings.background_mode = Environment.BG_SKY
 	settings.sky = Sky.new()
 	settings.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
-	settings.ambient_light_energy = 0.85
+	settings.ambient_light_energy = 0.88
+	# Sương mù biển nhẹ nhàng thơ mộng phong cách Genshin
+	settings.fog_enabled = true
+	settings.fog_light_color = Color(0.68, 0.85, 0.95)
+	settings.fog_density = 0.003
+	settings.fog_sky_affect = 0.3
 	env.environment = settings
 	root_node.add_child(env)
 
@@ -28,7 +35,7 @@ static func _make_environment(root_node: Node3D) -> void:
 	sun.name = "TropicalSun"
 	sun.rotation_degrees = Vector3(-50.0, -35.0, 0.0)
 	sun.light_color = Color(1.0, 0.96, 0.88)
-	sun.light_energy = 1.3
+	sun.light_energy = 1.35
 	sun.shadow_enabled = true
 	root_node.add_child(sun)
 
@@ -49,37 +56,47 @@ static func _make_ocean(root_node: Node3D) -> void:
 	water_node.material_override = water_mat
 	root_node.add_child(water_node)
 
+	# Đáy biển sâu
 	var seabed_pos := Vector3(0.0, -4.0, 0.0)
 	var seabed_size := Vector3(80.0, 1.0, 80.0)
 	_box(root_node, "Seabed", seabed_pos, seabed_size, Color(0.12, 0.35, 0.42))
 
 
 static func _make_island_terrain(root_node: Node3D) -> void:
-	var beach_pos := Vector3(0.0, -0.2, 4.0)
-	var beach_size := Vector3(44.0, 0.4, 38.0)
-	_box(root_node, "SandyBeach", beach_pos, beach_size, SAND_COLOR)
+	var terrain_mat := ShaderMaterial.new()
+	terrain_mat.shader = TERRAIN_SHADER
+
+	# Bãi cát thoai thoải bờ biển (Beach Base)
+	var beach_pos := Vector3(0.0, -0.2, 3.5)
+	var beach_size := Vector3(45.0, 0.4, 38.0)
+	_mesh_with_mat(root_node, "SandyBeach", _box_mesh(beach_size), beach_pos, terrain_mat)
 	_add_box_collider(root_node, "BeachCollision", beach_pos, beach_size)
 
+	# Cao nguyên đồi cỏ tự nhiên (Plateau Layers)
 	var plateaus: Array[Dictionary] = [
-		{"name": "PlateauCenter", "pos": Vector3(0.0, 0.01, 7.0), "size": Vector3(32.0, 0.02, 22.0)},
-		{"name": "PlateauNorth", "pos": Vector3(0.0, 0.01, -6.0), "size": Vector3(22.0, 0.02, 14.0)},
-		{"name": "PlateauWest", "pos": Vector3(-12.0, 0.01, 3.0), "size": Vector3(14.0, 0.02, 18.0)},
-		{"name": "PlateauEast", "pos": Vector3(12.0, 0.01, 3.0), "size": Vector3(14.0, 0.02, 18.0)},
+		{"name": "PlateauCenter", "pos": Vector3(0.0, 0.02, 3.0), "size": Vector3(32.0, 0.04, 22.0)},
+		{"name": "PlateauNorth", "pos": Vector3(0.0, 0.35, -7.0), "size": Vector3(22.0, 0.7, 15.0)},
+		{"name": "PlateauWest", "pos": Vector3(-12.5, 0.1, 2.0), "size": Vector3(14.0, 0.2, 18.0)},
+		{"name": "PlateauEast", "pos": Vector3(12.5, 0.1, 2.0), "size": Vector3(14.0, 0.2, 18.0)},
 	]
 	for p in plateaus:
-		_box(root_node, p["name"], p["pos"], p["size"], GRASS_COLOR)
+		_mesh_with_mat(root_node, p["name"], _box_mesh(p["size"]), p["pos"], terrain_mat)
+		_add_box_collider(root_node, p["name"] + "Col", p["pos"], p["size"])
 
 
 static func _make_mountains(root_node: Node3D) -> void:
+	var terrain_mat := ShaderMaterial.new()
+	terrain_mat.shader = TERRAIN_SHADER
+
 	var cliffs: Array[Dictionary] = [
-		{"pos": Vector3(-18.0, 3.0, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 6.0},
-		{"pos": Vector3(-16.0, 4.5, -12.0), "r_top": 2.0, "r_bot": 7.0, "h": 9.0},
-		{"pos": Vector3(-12.5, 5.0, -18.5), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
-		{"pos": Vector3(-20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
-		{"pos": Vector3(18.0, 3.0, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 6.0},
-		{"pos": Vector3(16.0, 4.5, -12.0), "r_top": 2.0, "r_bot": 7.0, "h": 9.0},
-		{"pos": Vector3(12.5, 5.0, -18.5), "r_top": 1.5, "r_bot": 5.5, "h": 10.0},
-		{"pos": Vector3(20.0, 2.5, 6.0), "r_top": 3.0, "r_bot": 6.0, "h": 5.0},
+		{"pos": Vector3(-18.5, 3.5, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 7.0},
+		{"pos": Vector3(-16.0, 5.0, -13.0), "r_top": 2.0, "r_bot": 7.0, "h": 10.0},
+		{"pos": Vector3(-12.5, 5.5, -19.0), "r_top": 1.5, "r_bot": 5.5, "h": 11.0},
+		{"pos": Vector3(-20.0, 3.0, 7.0), "r_top": 3.0, "r_bot": 6.0, "h": 6.0},
+		{"pos": Vector3(18.5, 3.5, -4.0), "r_top": 2.5, "r_bot": 6.5, "h": 7.0},
+		{"pos": Vector3(16.0, 5.0, -13.0), "r_top": 2.0, "r_bot": 7.0, "h": 10.0},
+		{"pos": Vector3(12.5, 5.5, -19.0), "r_top": 1.5, "r_bot": 5.5, "h": 11.0},
+		{"pos": Vector3(20.0, 3.0, 7.0), "r_top": 3.0, "r_bot": 6.0, "h": 6.0},
 	]
 
 	var idx := 0
@@ -90,7 +107,7 @@ static func _make_mountains(root_node: Node3D) -> void:
 		cyl.bottom_radius = c["r_bot"]
 		cyl.height = c["h"]
 		var name_str := "Cliff_" + str(idx)
-		_mesh(root_node, name_str, cyl, c["pos"], CLIFF_COLOR)
+		_mesh_with_mat(root_node, name_str, cyl, c["pos"], terrain_mat)
 
 		var body := StaticBody3D.new()
 		body.name = name_str + "Col"
@@ -105,17 +122,16 @@ static func _make_mountains(root_node: Node3D) -> void:
 
 
 static func _make_island_boundaries(root_node: Node3D) -> void:
-	var wall_h := 4.0
+	var wall_h := 5.0
 	var bounds: Array[Dictionary] = [
-		{"name": "BoundWest", "pos": Vector3(-23.0, 2.0, 3.0), "size": Vector3(1.0, wall_h, 42.0)},
-		{"name": "BoundEast", "pos": Vector3(23.0, 2.0, 3.0), "size": Vector3(1.0, wall_h, 42.0)},
-		{"name": "BoundSouthLeft", "pos": Vector3(-16.0, 2.0, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
-		{"name": "BoundSouthMidLeft", "pos": Vector3(-6.75, 2.0, 10.5), "size": Vector3(4.5, wall_h, 1.0)},
-		{"name": "BoundSouthRight", "pos": Vector3(11.0, 2.0, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
-		{"name": "BoundCoastNorthL", "pos": Vector3(-9.75, 2.0, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
-		{"name": "BoundCoastNorthR", "pos": Vector3(9.75, 2.0, -15.5), "size": Vector3(6.5, wall_h, 1.0)},
-		{"name": "BoundBayNorthWall", "pos": Vector3(0.0, 2.0, -16.0), "size": Vector3(14.0, wall_h, 1.0)},
-		{"name": "BoundCoastNorthBack", "pos": Vector3(0.0, 2.0, -18.5), "size": Vector3(46.0, wall_h, 1.0)},
+		{"name": "BoundWest", "pos": Vector3(-24.0, 2.5, 3.0), "size": Vector3(1.0, wall_h, 44.0)},
+		{"name": "BoundEast", "pos": Vector3(24.0, 2.5, 3.0), "size": Vector3(1.0, wall_h, 44.0)},
+		{"name": "BoundSouthLeft", "pos": Vector3(-16.0, 2.5, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
+		{"name": "BoundSouthMidLeft", "pos": Vector3(-6.75, 2.5, 10.5), "size": Vector3(4.5, wall_h, 1.0)},
+		{"name": "BoundSouthRight", "pos": Vector3(11.0, 2.5, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
+		{"name": "BoundCoastNorthL", "pos": Vector3(-10.0, 2.5, -16.5), "size": Vector3(7.0, wall_h, 1.0)},
+		{"name": "BoundCoastNorthR", "pos": Vector3(10.0, 2.5, -16.5), "size": Vector3(7.0, wall_h, 1.0)},
+		{"name": "BoundBayNorthWall", "pos": Vector3(0.0, 2.5, -18.5), "size": Vector3(16.0, wall_h, 1.0)},
 	]
 	for b in bounds:
 		_add_box_collider(root_node, b["name"], b["pos"], b["size"])
@@ -125,33 +141,35 @@ static func _add_box_collider(root_node: Node3D, node_name: String, pos: Vector3
 	var body := StaticBody3D.new()
 	body.name = node_name
 	body.position = pos
-
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	shape.size = size
 	collision.shape = shape
-
 	body.add_child(collision)
 	root_node.add_child(body)
 
 
-static func _box(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3, color: Color) -> void:
+static func _box_mesh(size: Vector3) -> BoxMesh:
 	var mesh := BoxMesh.new()
 	mesh.size = size
-	_mesh(root_node, node_name, mesh, pos, color)
+	return mesh
 
 
-static func _mesh(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3, color: Color) -> void:
+static func _box(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3, color: Color) -> void:
+	var node := MeshInstance3D.new()
+	node.name = node_name
+	node.mesh = _box_mesh(size)
+	node.position = pos
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	node.material_override = mat
+	root_node.add_child(node)
+
+
+static func _mesh_with_mat(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3, mat: Material) -> void:
 	var node := MeshInstance3D.new()
 	node.name = node_name
 	node.mesh = mesh
 	node.position = pos
-	node.material_override = _mat(color)
+	node.material_override = mat
 	root_node.add_child(node)
-
-
-static func _mat(color: Color) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.roughness = 0.85
-	return material

@@ -1,7 +1,12 @@
 extends RefCounted
 
+## PierBuilder — Cầu tàu bến cảng, thuyền gỗ neo đậu và điểm câu ven biển
+## Mang phong cách mộc mạc, phóng khoáng của Sea of Thieves.
+
 const WOOD_COLOR: Color = Color(0.55, 0.38, 0.24)
 const WOOD_DARK: Color = Color(0.40, 0.26, 0.16)
+const WOOD_PLANK: Color = Color(0.60, 0.44, 0.28)
+const ROPE_COLOR: Color = Color(0.70, 0.62, 0.45)
 
 
 static func build(root_node: Node3D) -> void:
@@ -10,25 +15,25 @@ static func build(root_node: Node3D) -> void:
 
 
 static func _make_pier_and_harbor(root_node: Node3D) -> void:
-	# Cầu tàu vươn từ bờ cát (mặt trên y = 0.05)
+	# Cầu tàu vươn từ bờ cát (mặt trên y = 0.05) ra mặt biển
 	var main_pier_pos := Vector3(-2.0, -0.05, 16.5)
 	var main_pier_size := Vector3(4.5, 0.2, 13.0)
-	_box(root_node, "MainPierPlanks", main_pier_pos, main_pier_size, WOOD_COLOR)
+	_box(root_node, "MainPierPlanks", main_pier_pos, main_pier_size, WOOD_PLANK)
 	_add_box_collider(root_node, "MainPierCol", main_pier_pos, main_pier_size)
 
-	# Dốc thoai thoải nối bãi cát (y=0.0) lên cầu tàu (y=0.05)
+	# Dốc thoải kết nối bãi cát (y=0.0) lên cầu tàu (y=0.05)
 	var ramp_pos := Vector3(-2.0, -0.02, 9.5)
 	var ramp_size := Vector3(4.5, 0.08, 1.2)
 	_box(root_node, "PierRamp", ramp_pos, ramp_size, WOOD_COLOR)
 	_add_box_collider(root_node, "PierRampCol", ramp_pos, ramp_size)
 
-	# Cầu tàu ngang chữ T bến đỗ thuyền
+	# Cầu tàu ngang chữ T bến đỗ thuyền và điểm câu cá ven biển
 	var t_pier_pos := Vector3(-6.5, -0.05, 22.0)
 	var t_pier_size := Vector3(8.0, 0.2, 3.5)
-	_box(root_node, "TPierPlanks", t_pier_pos, t_pier_size, WOOD_COLOR)
+	_box(root_node, "TPierPlanks", t_pier_pos, t_pier_size, WOOD_PLANK)
 	_add_box_collider(root_node, "TPierCol", t_pier_pos, t_pier_size)
 
-	# Cọc gỗ cầu tàu
+	# Cọc gỗ cầu tàu cắm sâu xuống đáy biển
 	var post_positions: Array[Vector3] = [
 		Vector3(-4.0, -0.4, 11.0), Vector3(0.0, -0.4, 11.0),
 		Vector3(-4.0, -0.4, 16.5), Vector3(0.0, -0.4, 16.5),
@@ -45,9 +50,9 @@ static func _make_pier_and_harbor(root_node: Node3D) -> void:
 		var post_name := "PierPost" if p_idx == 1 else "PierPost_" + str(p_idx)
 		_mesh(root_node, post_name, post, p, WOOD_DARK)
 
-	# Thuyền gỗ neo đậu bên ngoài cầu tàu (không đè lên lối đi cầu tàu)
-	_boat(root_node, "DockedBoat1", Vector3(-6.5, 0.05, 25.5), Vector3(2.2, 0.8, 3.2), 0.0)
-	_boat(root_node, "DockedBoat2", Vector3(3.5, 0.05, 17.5), Vector3(2.0, 0.75, 3.8), -15.0)
+	# Thuyền gỗ đánh cá neo đậu bên mạn cầu tàu (Sea of Thieves style)
+	_boat(root_node, "DockedBoat1", Vector3(-6.5, 0.05, 25.5), Vector3(2.4, 0.8, 3.8), 0.0)
+	_boat(root_node, "DockedBoat2", Vector3(3.5, 0.05, 17.5), Vector3(2.2, 0.75, 4.0), -15.0)
 
 
 static func _make_pier_boundaries(root_node: Node3D) -> void:
@@ -74,6 +79,18 @@ static func _boat(root_node: Node3D, b_name: String, pos: Vector3, size: Vector3
 	node.material_override = _mat(WOOD_COLOR)
 	root_node.add_child(node)
 
+	# Cột buồm gỗ nhỏ
+	var mast := CylinderMesh.new()
+	mast.top_radius = 0.06
+	mast.bottom_radius = 0.08
+	mast.height = 2.2
+	var mast_node := MeshInstance3D.new()
+	mast_node.name = b_name + "Mast"
+	mast_node.mesh = mast
+	mast_node.position = pos + Vector3(0.0, 1.2, 0.0)
+	mast_node.material_override = _mat(WOOD_DARK)
+	root_node.add_child(mast_node)
+
 	var body := StaticBody3D.new()
 	body.name = b_name + "Col"
 	body.position = pos
@@ -90,12 +107,10 @@ static func _add_box_collider(root_node: Node3D, node_name: String, pos: Vector3
 	var body := StaticBody3D.new()
 	body.name = node_name
 	body.position = pos
-
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	shape.size = size
 	collision.shape = shape
-
 	body.add_child(collision)
 	root_node.add_child(body)
 
