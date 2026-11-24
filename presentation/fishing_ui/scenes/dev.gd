@@ -1,8 +1,8 @@
 extends Control
 
 ## Scene kiểm tra độc lập cho Fishing UI (presentation/fishing_ui/).
-## Tích hợp mock FishingAPI để thử nghiệm toàn bộ luồng tương tác:
-## Thả cần -> Cắn câu -> Giật cần -> Giằng co lực căng -> Bắt được cá / Đứt dây.
+## Tích hợp mock FishingAPI để thử nghiệm toàn bộ luồng tương tác và trạng thái:
+## Thả cần -> Cắn câu -> Giật cần -> Giằng co lực căng -> Bắt được cá / Thất bại.
 
 const FishingUIScript: Script = preload("res://presentation/fishing_ui/fishing_ui.gd")
 const FishingAPIScript: Script = preload("res://modules/fishing/api/fishing_api.gd")
@@ -30,7 +30,7 @@ func _ready() -> void:
 
 	# Hàng nút test giả lập
 	var test_bar := HBoxContainer.new()
-	test_bar.position = Vector2(20.0, 100.0)
+	test_bar.position = Vector2(20.0, 160.0)
 	test_bar.add_theme_constant_override("separation", 10)
 	add_child(test_bar)
 

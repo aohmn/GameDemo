@@ -1,40 +1,40 @@
 extends Control
 
-## Fishing UI điều khiển và tương tác câu cá trên màn hình ngang Android.
-## Bố trí các nút Thả cần, Giật cần, Kéo dây, Xả dây gọn gàng góc dưới bên phải.
-## Nút Thả cần chỉ kích hoạt khi người chơi đứng gần điểm câu hợp lệ.
-## Hiển thị thông báo cắn câu, thanh đo lực căng dây trong vùng an toàn và kết quả bắt cá.
-## Thuộc tầng Presentation: chỉ giao tiếp qua EventBus và API, không chứa logic gameplay.
+## Fishing UI — Giao diện câu cá màn hình ngang phong cách Tiên Hiệp Biển Khơi (Genshin x Sea of Thieves).
+## Hiển thị đầy đủ: Trạng thái, Lực căng dây, Tiến trình thu phục cá, Độ bền cần/dây, Cảnh báo trực quan.
+## Bố cục tối ưu, cụm nút cảm ứng lớn, không che Joystick hay Túi cá. Thuộc tầng Presentation.
 
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
+const ThemeUtil: Script = preload("res://presentation/fishing_ui/fishing_ui_theme.gd")
 
 var _fishing_api: RefCounted
 var _is_near_spot: bool = false
 var _current_spot_id: String = "spot_cau_tau_ben_cang"
-
-# Trạng thái câu hiện tại
 var _state: String = "IDLE"
 
-# UI Nodes
-var _container: Control
-var _status_label: Label
+var _badge_label: Label
+var _sub_label: Label
 var _alert_label: Label
 var _tension_bar: ProgressBar
-var _tension_label: Label
-var _result_panel: PanelContainer
-var _result_label: Label
+var _tension_txt: Label
+var _progress_bar: ProgressBar
+var _durability_label: Label
 
-# Action Buttons
 var _btn_cast: Button
 var _btn_strike: Button
 var _btn_reel: Button
 var _btn_release: Button
 
+var _res_popup: PanelContainer
+var _res_title: Label
+var _res_desc: Label
+var _res_timer: float = 0.0
+
 
 func _ready() -> void:
-	_setup_ui()
-	_setup_events()
-	_update_ui_state()
+	_build_ui()
+	_connect_events()
+	_update_view()
 
 
 func set_fishing_api(api: RefCounted) -> void:
@@ -44,253 +44,220 @@ func set_fishing_api(api: RefCounted) -> void:
 func set_near_fishing_spot(near: bool, spot_id: String = "spot_cau_tau_ben_cang") -> void:
 	_is_near_spot = near
 	_current_spot_id = spot_id
-	_update_ui_state()
+	_update_view()
 
 
-func _setup_ui() -> void:
+func _process(delta: float) -> void:
+	if _res_popup.visible:
+		_res_timer -= delta
+		if _res_timer <= 0.0:
+			_res_popup.visible = false
+
+
+func _build_ui() -> void:
 	anchors_preset = Control.PRESET_FULL_RECT
-	anchor_right = 1.0
-	anchor_bottom = 1.0
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# 1. Bảng đo lực căng và thông báo (nằm ở cạnh trên giữa màn hình, không vướng joystick hay nút túi cá)
-	var top_panel := PanelContainer.new()
-	top_panel.name = "FishingInfoPanel"
-	top_panel.anchor_left = 0.5
-	top_panel.anchor_top = 0.0
-	top_panel.anchor_right = 0.5
-	top_panel.anchor_bottom = 0.0
-	top_panel.offset_left = -170.0
-	top_panel.offset_top = 16.0
-	top_panel.offset_right = 170.0
-	top_panel.offset_bottom = 90.0
+	var top_widgets: Dictionary = ThemeUtil.build_top_panel()
+	add_child(top_widgets["panel"])
+	_badge_label = top_widgets["badge"]
+	_sub_label = top_widgets["sub"]
+	_alert_label = top_widgets["alert"]
+	_progress_bar = top_widgets["progress"]
+	_tension_bar = top_widgets["tension"]
+	_tension_txt = top_widgets["tension_text"]
+	_durability_label = top_widgets["durability"]
 
-	var top_style := StyleBoxFlat.new()
-	top_style.bg_color = Color(0.08, 0.12, 0.16, 0.88)
-	top_style.border_color = Color(0.25, 0.45, 0.6, 0.7)
-	top_style.set_border_width_all(1)
-	top_style.set_corner_radius_all(6)
-	top_style.content_margin_left = 12.0
-	top_style.content_margin_top = 8.0
-	top_style.content_margin_right = 12.0
-	top_style.content_margin_bottom = 8.0
-	top_panel.add_theme_stylebox_override("panel", top_style)
-	add_child(top_panel)
-
-	var info_vbox := VBoxContainer.new()
-	info_vbox.add_theme_constant_override("separation", 4)
-	top_panel.add_child(info_vbox)
-
-	_status_label = Label.new()
-	_status_label.text = "Trạng thái: Sẵn sàng câu cá"
-	_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_status_label.add_theme_font_size_override("font_size", 13)
-	info_vbox.add_child(_status_label)
-
-	_alert_label = Label.new()
-	_alert_label.text = ""
-	_alert_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_alert_label.add_theme_font_size_override("font_size", 13)
-	_alert_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
-	info_vbox.add_child(_alert_label)
-
-	_tension_bar = ProgressBar.new()
-	_tension_bar.min_value = 0.0
-	_tension_bar.max_value = 100.0
-	_tension_bar.value = 40.0
-	_tension_bar.show_percentage = false
-	_tension_bar.custom_minimum_size = Vector2(0.0, 10.0)
-	_tension_bar.visible = false
-	info_vbox.add_child(_tension_bar)
-
-	_tension_label = Label.new()
-	_tension_label.text = ""
-	_tension_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tension_label.add_theme_font_size_override("font_size", 11)
-	_tension_label.visible = false
-	info_vbox.add_child(_tension_label)
-
-	# 2. Khung nút bấm điều khiển câu cá ở góc dưới bên phải màn hình
-	# Không che khuất Joystick (ở góc dưới trái) và Nút Túi Cá (góc trên phải)
-	_container = Control.new()
-	_container.name = "FishingButtonsCluster"
-	_container.anchor_left = 1.0
-	_container.anchor_top = 1.0
-	_container.anchor_right = 1.0
-	_container.anchor_bottom = 1.0
-	_container.offset_left = -210.0
-	_container.offset_top = -140.0
-	_container.offset_right = -20.0
-	_container.offset_bottom = -20.0
-	add_child(_container)
-
-	# Nút THẢ CẦN (Cast)
-	_btn_cast = Button.new()
-	_btn_cast.name = "BtnCast"
-	_btn_cast.text = "Thả cần"
-	_btn_cast.custom_minimum_size = Vector2(90.0, 48.0)
-	_btn_cast.position = Vector2(95.0, 65.0)
-	_btn_cast.pressed.connect(_on_btn_cast_pressed)
-	_container.add_child(_btn_cast)
-
-	# Nút GIẬT CẦN (Strike)
-	_btn_strike = Button.new()
-	_btn_strike.name = "BtnStrike"
-	_btn_strike.text = "Giật cần!"
-	_btn_strike.custom_minimum_size = Vector2(90.0, 48.0)
-	_btn_strike.position = Vector2(95.0, 65.0)
-	_btn_strike.visible = false
-	_btn_strike.pressed.connect(_on_btn_strike_pressed)
-	_container.add_child(_btn_strike)
-
-	# Nút KÉO DÂY (Reel)
-	_btn_reel = Button.new()
-	_btn_reel.name = "BtnReel"
-	_btn_reel.text = "Kéo dây"
-	_btn_reel.custom_minimum_size = Vector2(85.0, 48.0)
-	_btn_reel.position = Vector2(105.0, 65.0)
-	_btn_reel.visible = false
-	_btn_reel.button_down.connect(func(): _set_reeling(true))
-	_btn_reel.button_up.connect(func(): _set_reeling(false))
-	_container.add_child(_btn_reel)
-
-	# Nút XẢ DÂY (Release)
-	_btn_release = Button.new()
-	_btn_release.name = "BtnRelease"
-	_btn_release.text = "Xả dây"
-	_btn_release.custom_minimum_size = Vector2(85.0, 48.0)
-	_btn_release.position = Vector2(10.0, 65.0)
-	_btn_release.visible = false
-	_btn_release.button_down.connect(func(): _set_releasing(true))
-	_btn_release.button_up.connect(func(): _set_releasing(false))
-	_container.add_child(_btn_release)
+	_build_buttons()
+	_build_result_popup()
 
 
-func _setup_events() -> void:
+func _build_buttons() -> void:
+	var btn_box := Control.new()
+	btn_box.anchor_left = 1.0
+	btn_box.anchor_top = 1.0
+	btn_box.anchor_right = 1.0
+	btn_box.anchor_bottom = 1.0
+	btn_box.offset_left = -260.0
+	btn_box.offset_top = -140.0
+	btn_box.offset_right = -20.0
+	btn_box.offset_bottom = -20.0
+	add_child(btn_box)
+
+	_btn_cast = ThemeUtil.make_btn("Thả Cần", Vector2(130.0, 52.0), Vector2(110.0, 55.0), Color(0.12, 0.45, 0.40))
+	_btn_cast.pressed.connect(func():
+		if _is_near_spot and _fishing_api != null and _fishing_api.has_method("cast"):
+			_fishing_api.call("cast", _current_spot_id)
+	)
+	btn_box.add_child(_btn_cast)
+
+	_btn_strike = ThemeUtil.make_btn("GIẬT CẦN!", Vector2(130.0, 52.0), Vector2(110.0, 55.0), Color(0.85, 0.28, 0.18))
+	_btn_strike.pressed.connect(func():
+		if _fishing_api != null and _fishing_api.has_method("strike"):
+			_fishing_api.call("strike")
+	)
+	btn_box.add_child(_btn_strike)
+
+	_btn_reel = ThemeUtil.make_btn("Kéo Dây", Vector2(110.0, 52.0), Vector2(130.0, 55.0), Color(0.18, 0.45, 0.65))
+	_btn_reel.button_down.connect(func(): if _fishing_api != null: _fishing_api.call("reel", true))
+	_btn_reel.button_up.connect(func(): if _fishing_api != null: _fishing_api.call("reel", false))
+	btn_box.add_child(_btn_reel)
+
+	_btn_release = ThemeUtil.make_btn("Xả Dây", Vector2(110.0, 52.0), Vector2(10.0, 55.0), Color(0.35, 0.35, 0.45))
+	_btn_release.button_down.connect(func(): if _fishing_api != null: _fishing_api.call("release", true))
+	_btn_release.button_up.connect(func(): if _fishing_api != null: _fishing_api.call("release", false))
+	btn_box.add_child(_btn_release)
+
+
+func _build_result_popup() -> void:
+	_res_popup = PanelContainer.new()
+	_res_popup.anchor_left = 0.5
+	_res_popup.anchor_top = 0.5
+	_res_popup.anchor_right = 0.5
+	_res_popup.anchor_bottom = 0.5
+	_res_popup.offset_left = -160.0
+	_res_popup.offset_top = -50.0
+	_res_popup.offset_right = 160.0
+	_res_popup.offset_bottom = 50.0
+	_res_popup.visible = false
+	add_child(_res_popup)
+
+	var res_vbox := VBoxContainer.new()
+	res_vbox.add_theme_constant_override("separation", 6)
+	_res_popup.add_child(res_vbox)
+
+	_res_title = Label.new()
+	_res_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_res_title.add_theme_font_size_override("font_size", 16)
+	res_vbox.add_child(_res_title)
+
+	_res_desc = Label.new()
+	_res_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_res_desc.add_theme_font_size_override("font_size", 12)
+	res_vbox.add_child(_res_desc)
+
+
+func _connect_events() -> void:
 	var eb: Node = get_node_or_null("/root/EventBus")
 	if eb != null and eb.has_method("subscribe"):
-		eb.call("subscribe", FishingEventsContract.STATE_CHANGED, _on_state_changed_evt)
-		eb.call("subscribe", FishingEventsContract.FISH_BITING, _on_fish_biting_evt)
+		eb.call("subscribe", FishingEventsContract.STATE_CHANGED, func(p: Dictionary): _state = str(p.get("to_state", "IDLE")); _update_view())
+		eb.call("subscribe", FishingEventsContract.FISH_BITING, func(p: Dictionary): _state = "BITE"; _alert_label.text = "Cá cắn câu! Giật trong %0.1fs!" % float(p.get("window_seconds", 0.8)); _update_view())
 		eb.call("subscribe", FishingEventsContract.FIGHT_UPDATE, _on_fight_update_evt)
 		eb.call("subscribe", FishingEventsContract.FISH_CAUGHT, _on_fish_caught_evt)
 		eb.call("subscribe", FishingEventsContract.FISH_ESCAPED, _on_fish_escaped_evt)
 
 
-func _update_ui_state() -> void:
+func _update_view() -> void:
 	match _state:
-		"IDLE", "RESULT", "CAUGHT", "ESCAPED", "FAILED":
+		"IDLE", "CAUGHT", "ESCAPED", "FAILED":
+			_set_visible_widgets(false)
 			_btn_cast.visible = true
 			_btn_cast.disabled = not _is_near_spot
-			_btn_cast.text = "Thả cần" if _is_near_spot else "Hướng ra mặt nước"
-			_btn_strike.visible = false
-			_btn_reel.visible = false
-			_btn_release.visible = false
-			_tension_bar.visible = false
-			_tension_label.visible = false
-			if _state == "IDLE":
-				_status_label.text = "Sẵn sàng thả cần" if _is_near_spot else "Quay mặt ra mặt nước, cách vài bước chân để thả cần"
-
-		"CASTING", "WAITING":
-			_btn_cast.visible = false
-			_btn_strike.visible = false
-			_btn_reel.visible = false
-			_btn_release.visible = false
-			_tension_bar.visible = false
-			_tension_label.visible = false
-			_status_label.text = "Phao đã thả... Đang đợi cá cắn câu"
+			_btn_cast.text = "Thả Cần" if _is_near_spot else "Đến Gần Nước"
+			_badge_label.text = "SẴN SÀNG"
+			_sub_label.text = "Điểm câu hợp lệ" if _is_near_spot else "Hướng ra mặt nước để câu"
 			_alert_label.text = ""
 
+		"CASTING", "WAITING":
+			_set_visible_widgets(false)
+			_badge_label.text = "CHỜ ĐỢI"
+			_sub_label.text = "Mặt nước đang gợn sóng..."
+			_alert_label.text = "Tĩnh tâm chờ linh ngư cắn câu"
+
 		"BITE":
-			_btn_cast.visible = false
+			_set_visible_widgets(false)
 			_btn_strike.visible = true
-			_btn_reel.visible = false
-			_btn_release.visible = false
-			_tension_bar.visible = false
-			_tension_label.visible = false
-			_status_label.text = "CÁ ĐANG CẮN CÂU!"
-			_alert_label.text = "Bấm [Giật cần!] ngay lập tức!"
+			_badge_label.text = "CẮN CÂU!"
+			_sub_label.text = "Phao câu đang bị kéo chìm!"
+			_alert_label.text = "BẤM GIẬT CẦN NGAY LẬP TỨC!"
 
 		"FIGHT":
-			_btn_cast.visible = false
-			_btn_strike.visible = false
-			_btn_reel.visible = true
-			_btn_release.visible = true
-			_tension_bar.visible = true
-			_tension_label.visible = true
-			_status_label.text = "Đang giằng co với cá!"
+			_set_visible_widgets(true)
+			_badge_label.text = "ĐẤU SỨC"
+			_sub_label.text = "Giữ lực căng trong vùng an toàn"
 
 
-func _on_btn_cast_pressed() -> void:
-	if not _is_near_spot:
-		return
-	if _fishing_api != null and _fishing_api.has_method("cast"):
-		_fishing_api.call("cast", _current_spot_id)
-
-
-func _on_btn_strike_pressed() -> void:
-	if _fishing_api != null and _fishing_api.has_method("strike"):
-		_fishing_api.call("strike")
-
-
-func _set_reeling(held: bool) -> void:
-	if _fishing_api != null and _fishing_api.has_method("reel"):
-		_fishing_api.call("reel", held)
-
-
-func _set_releasing(held: bool) -> void:
-	if _fishing_api != null and _fishing_api.has_method("release"):
-		_fishing_api.call("release", held)
-
-
-func _on_state_changed_evt(payload: Dictionary) -> void:
-	_state = str(payload.get("to_state", "IDLE"))
-	_update_ui_state()
-
-
-func _on_fish_biting_evt(payload: Dictionary) -> void:
-	_state = "BITE"
-	var win_sec: float = float(payload.get("window_seconds", 0.8))
-	_alert_label.text = "Cá cắn câu! Giật trong %0.1fs!" % win_sec
-	_update_ui_state()
+func _set_visible_widgets(in_fight: bool) -> void:
+	_btn_cast.visible = false
+	_btn_strike.visible = false
+	_btn_reel.visible = in_fight
+	_btn_release.visible = in_fight
+	_progress_bar.visible = in_fight
+	_tension_bar.visible = in_fight
+	_tension_txt.visible = in_fight
+	_durability_label.visible = in_fight
 
 
 func _on_fight_update_evt(payload: Dictionary) -> void:
 	_state = "FIGHT"
-	var tension: float = float(payload.get("line_tension", 0.0))
+	_set_visible_widgets(true)
+
+	var cur_t: float = float(payload.get("line_tension", 0.0))
 	var s_min: float = float(payload.get("safe_min", 30.0))
 	var s_max: float = float(payload.get("safe_max", 70.0))
 	var max_t: float = float(payload.get("max_tension", 100.0))
-	var strength: float = float(payload.get("fish_strength", 0.0))
+	var cur_stam: float = float(payload.get("fish_strength", 0.0))
+	var max_stam: float = float(payload.get("fish_max_stamina", 100.0))
+	var rod_dur: float = float(payload.get("rod_durability", 100.0))
+	var line_dur: float = float(payload.get("line_durability", 100.0))
+	var f_mode: int = int(payload.get("fish_mode", 1))
 
 	_tension_bar.max_value = max_t
-	_tension_bar.value = tension
+	_tension_bar.value = cur_t
 
-	var is_safe := (tension >= s_min and tension <= s_max)
-	var status_color := "Xanh (An toàn)" if is_safe else "Đỏ (Nguy hiểm)"
-	_tension_label.text = "Lực căng: %0.0f/%0.0f [%s] | Sức cá: %0.0f" % [tension, max_t, status_color, strength]
-	_alert_label.text = "Giữ lực căng trong khoảng %0.0f - %0.0f" % [s_min, s_max]
+	var is_safe := (cur_t >= s_min and cur_t <= s_max)
+	var t_col := Color(0.2, 0.8, 0.4) if is_safe else (Color(0.9, 0.25, 0.2) if cur_t > s_max else Color(0.85, 0.7, 0.2))
+	_tension_bar.add_theme_stylebox_override("fill", ThemeUtil.make_box(t_col, Color.TRANSPARENT, 0, 4))
+
+	var status_text := "Vùng An Toàn" if is_safe else ("QUÁ CĂNG! ĐỨT DÂY!" if cur_t > s_max else "QUÁ CHÙNG! TUỘT LƯỠI!")
+	_tension_txt.text = "Lực căng: %0.0f/%0.0f [%s]" % [cur_t, max_t, status_text]
+	_durability_label.text = "Cần: %0.0f%% | Dây: %0.0f%%" % [rod_dur, line_dur]
+
+	var progress := clampf((1.0 - (cur_stam / maxf(1.0, max_stam))) * 100.0, 0.0, 100.0)
+	_progress_bar.value = progress
+
+	var mode_name := "Bình tĩnh"
+	match f_mode:
+		0: mode_name = "Cá mệt lả"
+		2: mode_name = "CÁ GIÃY BỨT TỐC!"
+		3: mode_name = "Cá tạm nghỉ"
+	_alert_label.text = "[Thu phục: %0.0f%%] %s" % [progress, mode_name]
 
 
 func _on_fish_caught_evt(payload: Dictionary) -> void:
-	_state = "RESULT"
-	var name_str: String = str(payload.get("name", "Cá"))
-	var weight: int = int(payload.get("weight_g", 0))
-	_status_label.text = "BẮT ĐƯỢC: %s (%d g)!" % [name_str, weight]
-	_alert_label.text = "Đã cất vào túi cá. Chúc mừng!"
-	_update_ui_state()
+	_show_result(
+		"THU PHỤC THÀNH CÔNG!",
+		"Linh Ngư: %s (%d g) | +%d Linh Khí" % [
+			str(payload.get("name", "Linh Ngư")),
+			int(payload.get("weight_g", 0)),
+			int(payload.get("qi_value", 0))
+		],
+		Color(0.12, 0.45, 0.40)
+	)
+	_state = "IDLE"
+	_update_view()
 
 
 func _on_fish_escaped_evt(payload: Dictionary) -> void:
-	_state = "RESULT"
-	var reason: String = str(payload.get("reason", "unknown"))
-	var reason_text := "Cá đã trốn thoát!"
-	if reason == "early":
-		reason_text = "Giật cần quá sớm!"
-	elif reason == "late":
-		reason_text = "Cá đã đớp mồi chạy mất (giật trễ)!"
-	elif reason == "line_break":
-		reason_text = "Lực căng quá lớn làm đứt dây cước!"
+	var r: String = str(payload.get("reason", "unknown"))
+	var desc := "Cá đã trốn thoát!"
+	if r == "early": desc = "Giật cần quá sớm!"
+	elif r == "late": desc = "Cá đớp mồi chạy mất do giật trễ!"
+	elif r == "line_break": desc = "Căng quá mức làm đứt dây câu!"
+	elif r == "rod_broken": desc = "Cần câu quá tải bị gãy đôi!"
+	elif r == "slack": desc = "Dây quá chùng khiến cá tuột lưỡi câu!"
 
-	_status_label.text = "THẤT BẠI: " + reason_text
-	_alert_label.text = "Hãy thử lại lần sau."
-	_update_ui_state()
+	_show_result("CÂU CÁ THẤT BẠI", desc, Color(0.65, 0.18, 0.15))
+	_state = "IDLE"
+	_update_view()
+
+
+func _show_result(title: String, desc: String, bg_col: Color) -> void:
+	_res_popup.add_theme_stylebox_override("panel", ThemeUtil.make_box(
+		Color(bg_col.r * 0.4, bg_col.g * 0.4, bg_col.b * 0.4, 0.95),
+		Color(0.85, 0.70, 0.28), 2, 8
+	))
+	_res_title.text = title
+	_res_desc.text = desc
+	_res_popup.visible = true
+	_res_timer = 3.0

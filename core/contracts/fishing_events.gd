@@ -16,7 +16,7 @@ const STATE_CHANGED: String = "fishing_state_changed"
 const FISH_BITING: String = "fishing_fish_biting"
 
 ## Cập nhật thông số giằng co giữa người chơi và cá.
-## Payload: { "fish_strength": float, "line_tension": float, "safe_min": float, "safe_max": float, "max_tension": float }
+## Payload: { "fish_strength": float, "line_tension": float, "safe_min": float, "safe_max": float, "max_tension": float, "fish_max_stamina": float, "line_durability": float, "rod_durability": float, "fish_mode": int }
 const FIGHT_UPDATE: String = "fishing_fight_update"
 
 ## Câu cá thành công và thu hoạch được sinh vật biển.

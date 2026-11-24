@@ -190,12 +190,18 @@ func _process_fighting(delta: float) -> void:
 
 	# Phát cập nhật lực căng & thể lực
 	if on_fight_update.is_valid():
+		var fish_mode_val: int = battle.fish_ai.current_mode if battle.fish_ai != null else 1
+		var fish_max_stam: float = current_fish.stamina if current_fish != null else 100.0
 		on_fight_update.call({
 			"fish_strength": battle.fish_stamina,
+			"fish_max_stamina": fish_max_stam,
 			"line_tension": battle.tension_system.current_tension,
 			"safe_min": battle.tension_system.safe_min,
 			"safe_max": battle.tension_system.safe_max,
-			"max_tension": battle.tension_system.max_tension
+			"max_tension": battle.tension_system.max_tension,
+			"line_durability": battle.line_durability,
+			"rod_durability": battle.rod_durability,
+			"fish_mode": fish_mode_val
 		})
 
 	match result:
