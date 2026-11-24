@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FishSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/fish_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "fish_ca_mu"
+display_name = "Cá Mú Đỏ"
+min_weight_g = 1200
+max_weight_g = 4500
+strength = 68.0
+rarity = 2
+pull_force = 32.0

@@ -11,8 +11,8 @@ uniform vec4 water_deep : source_color = vec4(0.05, 0.30, 0.55, 1.0);
 uniform vec4 foam_color : source_color = vec4(0.97, 0.99, 1.0, 1.0);
 // Gần màu SkyDome ngay dưới đường chân trời (mix horizon/ground khoảng 30%).
 uniform vec4 far_color : source_color = vec4(0.44, 0.70, 0.84, 1.0);
-// Hướng TỚI mặt trời; mặc định khớp sun_direction của SkyDome.
-uniform vec3 sun_dir = vec3(-0.55, 0.72, -0.42);
+// Hướng TỚI mặt trời; khớp SUN_DIRECTION của bản đồ đảo harbor_island.
+uniform vec3 sun_dir = vec3(-0.368688, 0.766044, 0.526541);
 uniform float wave_speed = 0.5;
 uniform float fade_start = 70.0;
 uniform float fade_end = 240.0;

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RodSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/rod_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "rod_carbon_bien_sau"
+display_name = "Cần Carbon Biển Sâu"
+safe_tension_min = 35.0
+safe_tension_max = 75.0
+max_tension = 125.0
+reel_speed = 42.0
+release_speed = 28.0
+fatigue_rate = 20.0

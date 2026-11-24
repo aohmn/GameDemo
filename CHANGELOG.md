@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Tạo module logic câu cá `modules/fishing/` (FSM 6 trạng thái, cửa sổ giật cần 0.8s, giằng co lực căng dây, dữ liệu .tres có kiểu gồm 6 loài cá, 2 cần câu, 1 điểm câu, dev.tscn chạy độc lập, RNG seed) và đồng bộ giá trị mặc định sun_dir/sun_direction giữa water và SkyDome (Mức 1 tĩnh; chưa kiểm tra mức 2-3 do môi trường không có Godot CLI).
 - Tạo module core gồm EventBus autoload (dùng Callable, tự dọn dẹp node giải phóng), hợp đồng sự kiện (FishingEvents, InventoryEvents, EconomyEvents), GameClock autoload (theo dõi giờ và phát tín hiệu), và đồng bộ hướng mặt trời một nguồn duy nhất từ map sang SkyDome và water shader (Mức 1 tĩnh; chưa kiểm tra mức 2-3 do môi trường không có Godot CLI).
 - Viết lại water shader cartoon nhẹ cho Android (2 lần noise mỗi điểm ảnh thay vì ~80), mặt nước 600 m mờ dần về màu chân trời, không còn lộ mép. Mức 2 (Godot Linux, không SHADER ERROR); chưa kiểm tra mức 3 trên Godot Android.
 - Xác nhận và làm rõ hình học tấm ván nâu bên phải cầu tàu (DockedBoat2) trong hệ thống builder (Mức 2).

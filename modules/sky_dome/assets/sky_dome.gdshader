@@ -7,7 +7,8 @@ uniform vec4 ground_color : source_color = vec4(0.20, 0.52, 0.65, 1.0);
 uniform vec4 sun_color : source_color = vec4(1.0, 0.95, 0.82, 1.0);
 uniform vec4 cloud_color : source_color = vec4(0.98, 0.98, 1.0, 1.0);
 
-uniform vec3 sun_direction = vec3(-0.55, 0.72, -0.42);
+// Hướng TỚI mặt trời; đồng bộ với SUN_DIRECTION của map harbor_island.
+uniform vec3 sun_direction = vec3(-0.368688, 0.766044, 0.526541);
 uniform float sun_size = 0.04;
 uniform float sun_blur = 0.015;
 uniform float cloud_coverage = 0.45;

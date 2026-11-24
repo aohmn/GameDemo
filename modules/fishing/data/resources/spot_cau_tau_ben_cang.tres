@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="SpotSpec" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/spot_spec.gd" id="1_spec"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_com.tres" id="2_com"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_doi.tres" id="3_doi"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_chem.tres" id="4_chem"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_mu.tres" id="5_mu"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_thu.tres" id="6_thu"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_ngu_dai_duong.tres" id="7_ngu"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "spot_cau_tau_ben_cang"
+display_name = "Cầu Tàu Bến Cảng"
+min_wait_time = 2.0
+max_wait_time = 4.5
+fish_table = [
+	{"fish": ExtResource("2_com"), "weight": 35},
+	{"fish": ExtResource("3_doi"), "weight": 30},
+	{"fish": ExtResource("4_chem"), "weight": 18},
+	{"fish": ExtResource("5_mu"), "weight": 10},
+	{"fish": ExtResource("6_thu"), "weight": 5},
+	{"fish": ExtResource("7_ngu"), "weight": 2}
+]

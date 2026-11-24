@@ -22,7 +22,6 @@ GameClock="*res://core/clock/game_clock.gd"
 
 [display]
 
-window/handheld/orientation=0
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 

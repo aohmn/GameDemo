@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FishSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/fish_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "fish_ca_com"
+display_name = "Cá Cơm Biển"
+min_weight_g = 15
+max_weight_g = 60
+strength = 20.0
+rarity = 1
+pull_force = 12.0
