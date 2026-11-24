@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Tách `maps/harbor_island/map.gd` thành các builder nhỏ (terrain_builder, pier_builder, prop_builder) đều dưới 200 dòng, giữ nguyên 100% hình học bản đồ (Mức 2).
+
 - Điều chỉnh vị trí spawn Player ra giữa cầu tàu tại x=-2.0, z=10.0; xác nhận khoảng cách tới lan can hai bên đạt 2.25m (> 1.5m) (Mức 2).
 
 - Cấu hình hiển thị màn hình ngang `display/window/handheld/orientation = landscape` trong project.godot (Mức 2).
