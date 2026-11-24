@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Điều chỉnh vị trí spawn Player ra giữa cầu tàu tại x=-2.0, z=10.0; xác nhận khoảng cách tới lan can hai bên đạt 2.25m (> 1.5m) (Mức 2).
+
 - Cấu hình hiển thị màn hình ngang `display/window/handheld/orientation = landscape` trong project.godot (Mức 2).
 
 - Nạp map động qua ResourceLoader.exists và load đường dẫn chuỗi trong MapManager, kiểm tra tồn tại Player scene tại Bootstrap (Mức 2).

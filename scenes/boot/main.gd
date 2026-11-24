@@ -96,7 +96,7 @@ func _create_player() -> void:
         return
 
     _player.name = "Player"
-    _player.position = Vector3(0.0, 0.05, 10.0)
+    _player.position = Vector3(-2.0, 0.05, 10.0)
     add_child(_player)
 
 
