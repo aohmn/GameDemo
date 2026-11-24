@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Cấu hình hiển thị màn hình ngang `display/window/handheld/orientation = landscape` trong project.godot (Mức 2).
+
 - Nạp map động qua ResourceLoader.exists và load đường dẫn chuỗi trong MapManager, kiểm tra tồn tại Player scene tại Bootstrap (Mức 2).
 
 - Nâng cấp water shader đại dương chân thực bằng domain-warped procedural noise, Fresnel, Blinn-Phong specular và tính shoreline theo hình học bờ biển thực tế.
