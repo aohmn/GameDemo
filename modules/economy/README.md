@@ -14,6 +14,7 @@ modules/economy/
 │   └── economy_logic.gd           # Quản lý số dư VND, tính giá, lịch sử, ConfigFile I/O
 ├── data/
 │   ├── fish_price_spec.gd         # Resource script FishPriceSpec
+│   ├── spirit_stone_spec.gd       # Resource script SpiritStoneSpec (phẩm cấp linh thạch)
 │   └── resources/
 │       ├── price_ca_com.tres
 │       ├── price_ca_doi.tres
@@ -26,19 +27,24 @@ modules/economy/
     └── dev.tscn                   # Scene dev giao diện kiểm tra
 ```
 
-## 1. Quản lý số dư VND
-- Đơn vị tiền tệ: **VND** (số nguyên `int`).
+## 1. Quản lý số dư Linh Thạch
+- Đơn vị tiền tệ chính: **Linh Thạch** (hạ phẩm, số nguyên `int`).
+- Phẩm cấp Linh Thạch (hỗ trợ mở rộng theo `SpiritStoneSpec`):
+  - `HA_PHAM`: Hạ phẩm linh thạch (tiền tệ cơ sở).
+  - `TRUNG_PHAM`: Trung phẩm linh thạch.
+  - `THUONG_PHAM`: Thượng phẩm linh thạch.
+  - `CUC_PHAM`: Cực phẩm linh thạch.
 - Lưu trữ bằng ConfigFile tại `user://economy.cfg`:
   - Section `[wallet]`: Lưu `balance`.
   - Section `[history]`: Lưu lịch sử các giao dịch gần nhất.
-  - Section `[meta]`: Lưu phiên bản lưu trữ `version = 1`.
+  - Section `[meta]`: Lưu phiên bản lưu trữ `version = 2` (tự động chuyển đổi tương thích từ version 1).
 
 ## 2. Bảng giá (.tres)
 - Dữ liệu giá được lưu bằng các tài nguyên có kiểu `FishPriceSpec` (`.tres`):
   - `fish_id`: Mã định danh loài cá.
   - `display_name`: Tên tiếng Việt có dấu.
-  - `base_price`: Giá cơ bản mỗi con.
-  - `price_per_kg`: Giá theo khối lượng (VND/kg).
+  - `base_price`: Giá cơ bản mỗi con (Linh Thạch).
+  - `price_per_kg`: Giá theo khối lượng (Linh Thạch/kg).
 - Công thức tính giá:
   `Giá = (base_price * số_lượng) + round((khối_lượng_gam / 1000.0) * price_per_kg)`
 

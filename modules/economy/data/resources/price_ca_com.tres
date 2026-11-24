@@ -6,5 +6,5 @@
 script = ExtResource("1_spec")
 fish_id = "fish_ca_com"
 display_name = "Cá Cơm Biển"
-price_per_kg = 50000
-base_price = 1000
+price_per_kg = 50
+base_price = 1

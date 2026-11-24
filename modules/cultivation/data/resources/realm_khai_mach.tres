@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 2
+id = "realm_khai_mach"
+display_name = "Khai Mạch"
+description = "Đả thông kinh mạch toàn thân, linh lực lưu chuyển thông suốt."
+max_layer = 9
+layer_exp_requirements = [30000, 40000, 52000, 67000, 85000, 107000, 135000, 170000, 215000]
+base_breakthrough_chance = 0.95

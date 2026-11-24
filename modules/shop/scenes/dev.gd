@@ -20,7 +20,7 @@ func _ready() -> void:
 	_setup_ui()
 	_api = ShopAPIScript.new()
 	_setup_event_listeners()
-	_log("Khởi tạo module Shop dev scene thành công (Mock số dư: %d VND)." % _mock_balance)
+	_log("Khởi tạo module Shop dev scene thành công (Mock số dư: %d Linh Thạch)." % _mock_balance)
 	_refresh_display()
 
 
@@ -52,7 +52,7 @@ func _setup_ui() -> void:
 	vbox.add_child(title)
 
 	_status_label = Label.new()
-	_status_label.text = "Số dư: 0 VND | Cần đang trang bị: None"
+	_status_label.text = "Số dư: 0 Linh Thạch | Cần đang trang bị: None"
 	_status_label.add_theme_font_size_override("font_size", 14)
 	vbox.add_child(_status_label)
 
@@ -61,7 +61,7 @@ func _setup_ui() -> void:
 	vbox.add_child(hbox_btns)
 
 	var btn_add_money := Button.new()
-	btn_add_money.text = "+ 2,000,000 VND (Nạp tiền mock)"
+	btn_add_money.text = "+ 2,000 Linh Thạch (Nạp thử nghiệm)"
 	btn_add_money.pressed.connect(func(): _mock_balance += 2000000; _refresh_display())
 	hbox_btns.add_child(btn_add_money)
 
@@ -103,7 +103,7 @@ func _setup_event_listeners() -> void:
 
 
 func _on_item_purchased_evt(payload: Dictionary) -> void:
-	_log("Event: Mua thành công %s (-%d VND)" % [str(payload.get("display_name", "")), int(payload.get("price", 0))])
+	_log("Event: Mua thành công %s (-%d Linh Thạch)" % [str(payload.get("display_name", "")), int(payload.get("price", 0))])
 
 
 func _on_rod_equipped_evt(payload: Dictionary) -> void:
@@ -120,7 +120,7 @@ func _refresh_display() -> void:
 
 	var equipped: String = str(_api.call("get_equipped_rod_id"))
 	if _status_label != null:
-		_status_label.text = "Số dư mock: %d VND | Cần đang trang bị: %s" % [_mock_balance, equipped]
+		_status_label.text = "Số dư mock: %d Linh Thạch | Cần đang trang bị: %s" % [_mock_balance, equipped]
 
 	for child in _items_container.get_children():
 		child.queue_free()
@@ -133,7 +133,7 @@ func _refresh_display() -> void:
 		var item_id: String = str(item.get("id"))
 		var d_name: String = str(item.get("display_name"))
 		var desc: String = str(item.get("description"))
-		var price: int = int(item.get("price_vnd"))
+		var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
 		var is_owned: bool = bool(_api.call("is_owned", item_id))
 		var r_id: String = str(item.get("rod_id"))
 		var is_equipped: bool = (r_id == equipped)
@@ -147,7 +147,7 @@ func _refresh_display() -> void:
 		hbox.add_child(info_vbox)
 
 		var name_lbl := Label.new()
-		name_lbl.text = "%s — Giá: %d VND" % [d_name, price]
+		name_lbl.text = "%s — Giá: %d Linh Thạch" % [d_name, price]
 		name_lbl.add_theme_font_size_override("font_size", 14)
 		info_vbox.add_child(name_lbl)
 
@@ -170,7 +170,7 @@ func _refresh_display() -> void:
 
 		var btn_action := Button.new()
 		if not is_owned:
-			btn_action.text = "Mua (%d VND)" % price
+			btn_action.text = "Mua (%d Linh Thạch)" % price
 			btn_action.pressed.connect(func(): _buy_item(item_id, price))
 		else:
 			if is_equipped:

@@ -6,8 +6,15 @@
 script = ExtResource("1_spec")
 id = "fish_ca_chem"
 display_name = "Cá Chẽm Bờ"
+description = "Linh ngư sơ cấp tích tụ linh khí triều dâng, vây cứng như thép, sức giãy mạnh mẽ."
+tier = 1
+spirit_qi = 25
+base_value = 350
+element = "thuy"
 min_weight_g = 800
 max_weight_g = 3200
 strength = 50.0
 rarity = 2
 pull_force = 26.0
+habitat_water_type = "bien"
+weather_condition = "tat_ca"

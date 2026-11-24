@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 0
+id = "realm_luyen_the"
+display_name = "Luyện Thể"
+description = "Rèn luyện thể phách, khí huyết cường thịnh, gân cốt cứng như đá."
+max_layer = 9
+layer_exp_requirements = [100, 150, 220, 320, 460, 650, 900, 1250, 1700]
+base_breakthrough_chance = 1.0

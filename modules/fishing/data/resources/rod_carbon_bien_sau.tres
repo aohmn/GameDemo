@@ -6,9 +6,16 @@
 script = ExtResource("1_spec")
 id = "rod_carbon_bien_sau"
 display_name = "Cần Carbon Biển Sâu"
+description = "Pháp bảo cần câu cấp Linh tôi luyện từ hắc thạch và gân giao long, chịu lực kéo vượt trội."
+tier = 1
+max_durability = 250
+current_durability = 250
+required_realm_level = 0
 safe_tension_min = 35.0
 safe_tension_max = 75.0
 max_tension = 125.0
 reel_speed = 42.0
 release_speed = 28.0
 fatigue_rate = 20.0
+control_power = 1.2
+special_effect = "ngu_luc"

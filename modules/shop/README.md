@@ -26,14 +26,15 @@ modules/shop/
 - Dữ liệu vật phẩm lưu bằng Resource có kiểu `ShopItemSpec`:
   - `id`: Mã định danh vật phẩm shop (vd: `shop_rod_truc_nhiem`, `shop_rod_carbon_bien_sau`).
   - `display_name`: Tên tiếng Việt có dấu.
-  - `description`: Mô tả trang bị.
-  - `price_vnd`: Giá bán bằng VND.
+  - `description`: Mô tả trang bị / pháp bảo.
+  - `price_spirit_stone`: Giá bán bằng Linh Thạch (hạ phẩm).
+  - `price_vnd`: Thuộc tính cũ giữ lại để tương thích ngược.
   - `category`: Phân loại (`rod`, `equipment`, `bait`).
   - Chỉ số cần câu chuẩn xác tương ứng với hệ thống mô phỏng: `safe_tension_min`, `safe_tension_max`, `max_tension`, `reel_speed`, `release_speed`, `fatigue_rate`.
 
 ## 2. Quản lý mua và trang bị
 - **Kiểm tra giao dịch mua**:
-  - Không cho mua nếu số dư VND từ Economy không đủ.
+  - Không cho mua nếu số dư Linh Thạch từ Economy không đủ.
   - Chặn mua trùng nếu đã sở hữu vật phẩm (`already_owned`).
   - Khi mua thành công: tự động thêm vào danh sách sở hữu và phát sự kiện `ITEM_ADDED` để `Inventory` nhận vật phẩm.
 - **Trang bị cần câu**:

@@ -61,10 +61,10 @@ func buy_item(item_id: String, current_balance: int) -> Dictionary:
 		return {"success": false, "price": 0, "item_id": item_id, "reason": "already_owned"}
 
 	var item: Resource = _items[item_id] as Resource
-	var price: int = int(item.get("price_vnd"))
+	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
 
 	if current_balance < price:
-		_fail_purchase(item_id, "Không đủ tiền để mua vật phẩm này")
+		_fail_purchase(item_id, "Không đủ linh thạch để mua vật phẩm này")
 		return {"success": false, "price": price, "item_id": item_id, "reason": "insufficient_funds"}
 
 	# Thêm vào danh sách sở hữu

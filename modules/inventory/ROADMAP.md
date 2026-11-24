@@ -8,12 +8,16 @@
 - [x] Scene chạy thử độc lập `scenes/dev.tscn`.
 - [x] Tích hợp nạp tùy chọn tại Bootstrap (`scenes/boot/main.gd`).
 
-## Giai đoạn 2: Giới hạn sức chứa và phân loại kho (Tương lai)
-- [ ] Bổ sung giới hạn tải trọng tối đa của túi đồ (Weight Capacity) theo cấp độ túi.
-- [ ] Phát sự kiện `INVENTORY_FULL` khi trọng lượng vượt quá sức chứa.
-- [ ] Phân loại ngăn chứa đồ: Ngăn chứa sinh vật biển / Ngăn chứa mồi câu / Dụng cụ câu.
+## Giai đoạn 2: Kho Đồ Tu Tiên Đa Năng (TASK 05 - Đã hoàn thành)
+- [x] Tạo `ItemSpec` Resource phân loại 5 nhóm: Cá, Nguyên liệu, Pháp bảo, Tiêu hao, Khác.
+- [x] Hỗ trợ phẩm cấp vật phẩm: Phàm, Linh, Huyền, Địa, Thiên, Thánh.
+- [x] Thêm hàm `add_item()`, `remove_item()`, `has_item()`, `get_item_count()`.
+- [x] Kiểm tra giới hạn kho chứa (`max_slots = 100`) và giới hạn xếp chồng `max_stack`.
+- [x] Hỗ trợ lọc theo loại qua `get_items_by_category()`.
+- [x] Nâng cấp lưu trữ ConfigFile version 2, tương thích ngược hoàn hảo với save version 1.
+- [x] Đảm bảo tương thích 100% với bán cá (`Economy`), mua cần (`Shop`) và hấp thu linh khí (`Cultivation`).
 
-## Giai đoạn 3: Tích hợp kinh tế và bán cá (Tương lai)
-- [ ] Giao tiếp với Module Economy (thương lái bến cảng) để bán cá lấy tiền VND.
-- [ ] Hỗ trợ bán toàn bộ hoặc bán theo từng loài cá.
-- [ ] Trừ cá và phát sự kiện `ITEM_REMOVED` khi giao dịch hoàn tất atomic.
+## Giai đoạn 3: Tính Năng Kho Nâng Cao (Kế hoạch tương lai)
+- [ ] Mở rộng sức chứa kho thông qua Túi Càn Khôn / Nhẫn Trữ Vật.
+- [ ] Cơ chế sử dụng đan dược / bùa chú trực tiếp từ kho đồ.
+- [ ] Sắp xếp kho đồ tự động theo phẩm cấp và nhóm vật phẩm.

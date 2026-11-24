@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 10
+id = "realm_do_kiep"
+display_name = "Độ Kiếp"
+description = "Nghênh tiếp lôi kiếp thử thách, tẩy luyện phàm thân tiến nhập tiên đạo."
+max_layer = 9
+layer_exp_requirements = [160000000000, 195000000000, 240000000000, 295000000000, 360000000000, 440000000000, 540000000000, 660000000000, 800000000000]
+base_breakthrough_chance = 0.5

@@ -16,20 +16,20 @@ func _init() -> void:
 	_load_default_price_resources()
 
 
-## Lấy số dư hiện tại (VND).
+## Lấy số dư hiện tại (Linh Thạch hạ phẩm).
 func get_balance() -> int:
 	if _logic != null and _logic.has_method("get_balance"):
 		return int(_logic.call("get_balance"))
 	return 0
 
 
-## Thêm tiền vào tài khoản.
+## Thêm linh thạch vào tài khoản.
 func add_funds(amount: int, reason: String = "income") -> void:
 	if _logic != null and _logic.has_method("add_funds"):
 		_logic.call("add_funds", amount, reason)
 
 
-## Trừ tiền từ tài khoản khi mua vật phẩm (trả về true nếu thành công).
+## Trừ linh thạch từ tài khoản khi mua vật phẩm (trả về true nếu thành công).
 func deduct_funds(amount: int, reason: String = "purchase") -> bool:
 	if _logic != null and _logic.has_method("deduct_funds"):
 		return bool(_logic.call("deduct_funds", amount, reason))

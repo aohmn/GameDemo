@@ -6,8 +6,15 @@
 script = ExtResource("1_spec")
 id = "fish_ca_com"
 display_name = "Cá Cơm Biển"
+description = "Loài phàm ngư phổ biến vùng duyên hải, linh khí mỏng manh nhưng dồi dào số lượng."
+tier = 0
+spirit_qi = 5
+base_value = 50
+element = "thuy"
 min_weight_g = 15
 max_weight_g = 60
 strength = 20.0
 rarity = 1
 pull_force = 12.0
+habitat_water_type = "bien"
+weather_condition = "tat_ca"

@@ -2,6 +2,13 @@
 
 ## Chưa phát hành
 
+- TASK 07: Hệ thống chế tạo và rèn đúc pháp bảo `modules/crafting/` (RecipeSpec Resource, công thức rèn cần trúc và cần carbon, kiểm tra cảnh giới tu vi, hàng đợi chế tạo theo thời gian và hủy lệnh, quy trình atomic với cơ chế rollback nguyên liệu qua ServiceCoordinator, lưu trữ user://crafting.cfg).
+- TASK 06: Hệ thống pháp bảo và trang bị `modules/equipment/` (8 phẩm cấp, 5 vị trí trang bị cần/dây/mồi/bảo vật 1/bảo vật 2, tính toán chỉ số tổng hợp, kiểm tra cảnh giới yêu cầu, ngăn trang bị trùng lặp, lưu trữ user://equipment.cfg tương thích với cần câu cũ, đồng bộ sang Fishing API).
+- TASK 05: Kho đồ và hệ thống vật phẩm tu tiên đa năng (tạo ItemSpec Resource phân 5 nhóm vật phẩm và 6 phẩm cấp, nâng cấp InventoryLogic hỗ trợ thêm/lấy/xếp chồng/kiểm tra tồn tại/lọc nhóm/giới hạn kho, nâng cấp save v2 tương thích ngược 100% với dữ liệu cá, bán cá và hấp thu linh khí).
+- TASK 04: Kết nối câu cá và tu luyện (triển khai `ServiceCoordinator.absorb_fish_qi` cho phép người chơi hấp thu linh khí từ cá trong túi đồ thành tu vi, kiểm tra số lượng và tính atomic không mất cá/tu vi khi lỗi, lưu dữ liệu sau hấp thu).
+- TASK 03: Hệ thống Tu Luyện `modules/cultivation/` độc lập (12 cảnh giới x 9 tầng qua RealmSpec và 12 file .tres, tích lũy tu vi, thăng tầng tự động 1->9, API đột phá đại cảnh giới, lưu trữ user://cultivation.cfg, dev scene chạy độc lập).
+- TASK 02: Hệ thống Linh Thạch (chuyển tiền tệ sang Linh Thạch hạ phẩm, hỗ trợ 4 phẩm cấp qua SpiritStoneSpec, cập nhật ShopItemSpec/FishPriceSpec sang giá Linh Thạch, bảo toàn dữ liệu save v1->v2, giao dịch atomic nhất quán không mất tiền/vật phẩm).
+- TASK 01: Chuẩn hóa dữ liệu câu cá tu tiên (FishSpec phẩm cấp/linh khí/nguyên tố/thiên tượng; RodSpec phẩm cấp pháp bảo/độ bền/cảnh giới/hiệu ứng; SpotSpec loại nước/nguy hiểm/cảnh giới/thiên tượng; cập nhật 9 file .tres tương thích hoàn toàn; tài liệu README/ROADMAP).
 - Đổi hướng dự án sang game câu cá tu tiên, cập nhật AGENTS.md, README.md, quyết định kiến trúc 0002, roadmap tu tiên và sổ ý tưởng (Mức 1, chỉ tài liệu).
 - Sửa lỗi rollback bán cá làm mất cá trong `ServiceCoordinator.sell_fish`: thêm phương thức `restore_fish(fish_id, count, weight_g)` vào `InventoryLogic` và `InventoryAPI` để khôi phục chính xác số lượng và khối lượng cá khi giao dịch bán thất bại thay vì chỉ thêm 1 con cá.
 - Chỉ cho thả cần khi điểm rơi phao (3,2 m phía trước nhân vật) là mặt nước: `map.is_water_at()` dò bằng tia vật lý, `scenes/boot/cast_coordinator.gd` nối Player, Map, UI; bỏ tọa độ cầu tàu cứng trong `main.gd`; tự hủy câu khi đi xa hơn 8 m.

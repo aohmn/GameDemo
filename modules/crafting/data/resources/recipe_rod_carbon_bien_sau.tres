@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/crafting/data/recipe_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "recipe_rod_carbon_bien_sau"
+display_name = "Rèn Đúc Cần Carbon Biển Sâu"
+description = "Kết hợp vây cá mú và cá thu vàng tôi luyện cần câu biển sâu cấp Linh."
+category = "rod"
+output_item_id = "rod_carbon_bien_sau"
+output_count = 1
+required_realm_level = 1
+is_unlocked_by_default = true
+craft_duration = 2.0
+ingredients = [
+	{"item_id": "fish_ca_mu", "count": 2},
+	{"item_id": "fish_ca_thu", "count": 1}
+]

@@ -1,14 +1,14 @@
 class_name EconomyLogic
 extends RefCounted
 
-## Quản lý tài chính, số dư VND, bảng giá và giao dịch bán cá.
+## Quản lý tài chính, số dư Linh Thạch (hạ phẩm), bảng giá và giao dịch bán cá.
 ## Lưu trữ số dư và lịch sử giao dịch vào user://economy.cfg bằng ConfigFile.
 
 const SAVE_PATH: String = "user://economy.cfg"
 const SECTION_WALLET: String = "wallet"
 const SECTION_HISTORY: String = "history"
 const SECTION_META: String = "meta"
-const SAVE_VERSION: int = 1
+const SAVE_VERSION: int = 2
 const MAX_HISTORY: int = 20
 
 var _balance: int = 0
@@ -174,6 +174,8 @@ func load_from_disk(custom_path: String = "") -> bool:
 	if err != OK:
 		return false
 
+	var save_ver: int = int(config.get_value(SECTION_META, "version", 1))
+	# Tương thích và bảo toàn dữ liệu: đọc balance an toàn
 	_balance = int(config.get_value(SECTION_WALLET, "balance", 0))
 	_history.clear()
 	if config.has_section(SECTION_HISTORY):
@@ -197,6 +199,10 @@ func load_from_disk(custom_path: String = "") -> bool:
 				"weight_g": 0,
 				"timestamp": 0
 			})
+
+	# Nếu đọc từ save cũ version 1, tự động ghi chú trong log hệ thống
+	if save_ver < 2:
+		print("Economy: Chuyển đổi file save từ version %d sang version %d (Linh Thạch)" % [save_ver, SAVE_VERSION])
 
 	if on_balance_changed.is_valid():
 		on_balance_changed.call({

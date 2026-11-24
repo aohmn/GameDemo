@@ -55,7 +55,7 @@ func _setup_ui() -> void:
 	vbox.add_child(title)
 
 	_balance_label = Label.new()
-	_balance_label.text = "Số dư: 0 VND"
+	_balance_label.text = "Số dư: 0 Linh Thạch"
 	_balance_label.add_theme_font_size_override("font_size", 15)
 	vbox.add_child(_balance_label)
 
@@ -120,7 +120,7 @@ func _on_sell_1_com() -> void:
 	if bool(res.get("success", false)):
 		data["count"] = count - 1
 		data["weight_g"] = int(data.get("weight_g", 0)) - 50
-		_log("Bán thành công 1 Cá Cơm: +%d VND" % int(res.get("price", 0)))
+		_log("Bán thành công 1 Cá Cơm: +%d Linh Thạch" % int(res.get("price", 0)))
 	else:
 		_log("Bán thất bại: %s" % str(res.get("reason", "")))
 	_refresh_display()
@@ -137,7 +137,7 @@ func _on_sell_all_mu() -> void:
 	if bool(res.get("success", false)):
 		data["count"] = 0
 		data["weight_g"] = 0
-		_log("Bán toàn bộ cá mú thành công: +%d VND" % int(res.get("price", 0)))
+		_log("Bán toàn bộ cá mú thành công: +%d Linh Thạch" % int(res.get("price", 0)))
 	else:
 		_log("Bán thất bại: %s" % str(res.get("reason", "")))
 	_refresh_display()
@@ -153,14 +153,14 @@ func _on_sell_overflow() -> void:
 
 
 func _on_balance_changed_evt(payload: Dictionary) -> void:
-	_log("Event: Số dư đổi %d -> Hiện tại: %d VND" % [
+	_log("Event: Số dư đổi %d -> Hiện tại: %d Linh Thạch" % [
 		int(payload.get("amount_change", 0)),
 		int(payload.get("new_balance", 0))
 	])
 
 
 func _on_tx_completed_evt(payload: Dictionary) -> void:
-	_log("Event: Giao dịch %s thành công (+%d VND)" % [
+	_log("Event: Giao dịch %s thành công (+%d Linh Thạch)" % [
 		str(payload.get("transaction_id", "")),
 		int(payload.get("price", 0))
 	])
@@ -175,7 +175,7 @@ func _refresh_display() -> void:
 		return
 	var bal: int = int(_api.call("get_balance"))
 	if _balance_label != null:
-		_balance_label.text = "Số dư: %d VND" % bal
+		_balance_label.text = "Số dư: %d Linh Thạch" % bal
 
 	var history: Array = _api.call("get_history") as Array
 	if _history_label != null:
@@ -183,7 +183,7 @@ func _refresh_display() -> void:
 			_history_label.text = "Lịch sử: Chưa có giao dịch"
 		else:
 			var last_tx: Dictionary = history[history.size() - 1] as Dictionary
-			_history_label.text = "Lịch sử: Giao dịch gần nhất %s (+%d VND cho %d %s)" % [
+			_history_label.text = "Lịch sử: Giao dịch gần nhất %s (+%d Linh Thạch cho %d %s)" % [
 				str(last_tx.get("transaction_id", "")),
 				int(last_tx.get("price", 0)),
 				int(last_tx.get("quantity", 0)),

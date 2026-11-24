@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 1
+id = "realm_tu_khi"
+display_name = "Tụ Khí"
+description = "Cảm ứng thiên địa linh khí, dẫn khí nhập thể, đan điền tụ linh."
+max_layer = 9
+layer_exp_requirements = [2400, 3300, 4500, 6000, 8000, 10500, 13500, 17500, 22500]
+base_breakthrough_chance = 1.0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 4
+id = "realm_kim_dan"
+display_name = "Kim Đan"
+description = "Ngưng tụ kim đan viên mãn, linh lực ngập tràn, ngự phong lướt sóng."
+max_layer = 9
+layer_exp_requirements = [2200000, 2800000, 3500000, 4400000, 5500000, 6800000, 8400000, 10400000, 13000000]
+base_breakthrough_chance = 0.85

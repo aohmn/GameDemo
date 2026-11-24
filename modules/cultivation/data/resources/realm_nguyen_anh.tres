@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 5
+id = "realm_nguyen_anh"
+display_name = "Nguyên Anh"
+description = "Phá đan hóa anh, nguyên thần bất diệt, có thể xuất khiếu du ngoạn phương xa."
+max_layer = 9
+layer_exp_requirements = [16000000, 20000000, 25000000, 31000000, 38000000, 47000000, 58000000, 72000000, 90000000]
+base_breakthrough_chance = 0.8

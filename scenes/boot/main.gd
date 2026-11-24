@@ -2,12 +2,14 @@ extends Node3D
 
 const MAP_MANAGER_SCRIPT: Script = preload("res://scenes/boot/map_manager.gd")
 const SERVICE_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/service_coordinator.gd")
+const CAST_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/cast_coordinator.gd")
 const PLAYER_SCENE_PATH: String = "res://modules/player/scenes/player.tscn"
 const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
 const SKY_DOME_SCENE_PATH: String = "res://modules/sky_dome/scenes/sky_dome.tscn"
 const INVENTORY_API_PATH: String = "res://modules/inventory/api/inventory_api.gd"
 const FISHING_INVENTORY_UI_PATH: String = "res://presentation/fishing_inventory_ui/fishing_inventory_ui.tscn"
 const FISHING_UI_PATH: String = "res://presentation/fishing_ui/fishing_ui.tscn"
+const FISHING_RIG_PATH: String = "res://presentation/fishing_rig/fishing_rig.tscn"
 const ECONOMY_API_PATH: String = "res://modules/economy/api/economy_api.gd"
 const SHOP_API_PATH: String = "res://modules/shop/api/shop_api.gd"
 const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
@@ -24,6 +26,8 @@ var _shop_api: RefCounted
 var _fishing_api: RefCounted
 var _fishing_inventory_ui: Control
 var _fishing_ui: Control
+var _fishing_rig: Node3D
+var _cast_coordinator: RefCounted
 var _hud: CanvasLayer
 
 
@@ -38,6 +42,12 @@ func _ready() -> void:
     _init_services()
     _create_inventory_ui()
     _create_fishing_ui()
+    _create_fishing_rig()
+
+
+func _physics_process(_delta: float) -> void:
+    if _cast_coordinator != null:
+        _cast_coordinator.call("update")
 
 
 func _process(delta: float) -> void:
@@ -50,10 +60,6 @@ func _process(delta: float) -> void:
     _camera.global_position = target + Vector3(0.0, 16.0, 23.0)
     _camera.look_at(target + Vector3(0.0, 0.8, 0.0))
 
-    # Kiểm tra khoảng cách người chơi tới điểm câu tại cầu tàu (x từ -11 đến 1, z từ 9 đến 24)
-    if _fishing_ui != null and _fishing_ui.has_method("set_near_fishing_spot"):
-        var on_pier := (target.x >= -11.0 and target.x <= 1.0 and target.z >= 9.0 and target.z <= 24.5)
-        _fishing_ui.call("set_near_fishing_spot", on_pier, "spot_cau_tau_ben_cang")
 
 
 func _create_camera() -> void:
@@ -213,3 +219,19 @@ func buy_shop_item(item_id: String) -> bool:
     if _coordinator != null:
         return bool(_coordinator.call("buy_shop_item", item_id))
     return false
+
+
+func _create_fishing_rig() -> void:
+    if _player == null or not ResourceLoader.exists(FISHING_RIG_PATH):
+        return
+    var scene := load(FISHING_RIG_PATH) as PackedScene
+    if scene == null:
+        return
+    _fishing_rig = scene.instantiate() as Node3D
+    if _fishing_rig == null:
+        return
+    add_child(_fishing_rig)
+    _fishing_rig.call("set_anchor", _player)
+    _cast_coordinator = CAST_COORDINATOR_SCRIPT.new()
+    var map_node: Node = _map_manager.call("get_current_map") as Node
+    _cast_coordinator.call("setup", _player, map_node, _fishing_ui, _fishing_rig, _fishing_api)

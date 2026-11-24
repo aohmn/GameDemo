@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 6
+id = "realm_hoa_than"
+display_name = "Hóa Thần"
+description = "Ý niệm câu thông thiên địa, thần thức bao trùm ngàn dặm."
+max_layer = 9
+layer_exp_requirements = [110000000, 135000000, 165000000, 200000000, 245000000, 300000000, 370000000, 460000000, 570000000]
+base_breakthrough_chance = 0.75

@@ -27,3 +27,11 @@ func get_water_material() -> ShaderMaterial:
 		return ocean_node.material_override as ShaderMaterial
 	return null
 
+
+## Điểm (x, z) trong thế giới có phải mặt nước không: tia thẳng đứng từ trên xuống không chạm bãi, cầu, thuyền, vách hay cây.
+func is_water_at(world_pos: Vector3) -> bool:
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var from_pos := Vector3(world_pos.x, 8.0, world_pos.z)
+	var to_pos := Vector3(world_pos.x, -0.6, world_pos.z)
+	var query := PhysicsRayQueryParameters3D.create(from_pos, to_pos)
+	return space.intersect_ray(query).is_empty()

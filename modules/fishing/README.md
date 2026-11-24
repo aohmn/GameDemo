@@ -47,11 +47,17 @@ modules/fishing/
   - Khi sức cá giảm về 0 -> Bắt được cá thành công!
 - **RESULT**: Kết thúc lượt câu, phát sự kiện `fish_caught` hoặc `fish_lost`.
 
-## 2. Dữ liệu (.tres)
+## 2. Dữ liệu (.tres) chuẩn hóa Tu Tiên
 Toàn bộ dữ liệu được lưu bằng file tài nguyên Godot (`.tres`) có kiểu tĩnh kế thừa từ Resource:
-- **FishSpec**: ID, tên tiếng Việt có dấu, cân nặng min/max (gam), sức chịu đựng, độ hiếm (1-4), lực kéo xung.
-- **RodSpec**: Vùng lực căng an toàn, ngưỡng đứt dây, tốc độ kéo/xả, tốc độ bào mòn sức cá.
-- **SpotSpec**: Tỷ lệ xuất hiện các loài cá, khoảng thời gian chờ min/max.
+- **FishSpec**:
+  - *Thuộc tính đã triển khai*: ID, tên tiếng Việt có dấu, mô tả, phẩm cấp (`tier`: Phàm/Linh/Yêu/Tiên/Thần/Thái Cổ), linh khí nhận được (`spirit_qi`), giá trị trao đổi cơ bản (`base_value`), thuộc tính nguyên tố (`element`), cân nặng min/max (gam), sức chịu đựng, độ hiếm (1-4), lực kéo xung, loại vùng nước sinh sống (`habitat_water_type`), điều kiện thiên tượng (`weather_condition`).
+  - *Phần để mở rộng*: Động thái linh ngư (kỹ năng né tránh, nộ khí khi giằng co) khi module skills và cultivation tích hợp sâu hơn.
+- **RodSpec**:
+  - *Thuộc tính đã triển khai*: ID, tên tiếng Việt có dấu, mô tả, phẩm cấp pháp bảo (`tier`: Phàm/Linh/Huyền/Địa/Thiên/Thánh/Tiên/Thần), độ bền tối đa và hiện tại (`max_durability`, `current_durability`), cảnh giới yêu cầu (`required_realm_level`), vùng lực căng an toàn (`safe_tension_min`, `safe_tension_max`), ngưỡng đứt dây (`max_tension`), tốc độ kéo/xả, tốc độ bào mòn sức cá, hệ số kiểm soát (`control_power`), hiệu ứng pháp bảo đặc biệt (`special_effect`).
+  - *Phần để mở rộng*: Luyện khí khảm ngọc/phù văn gia hộ pháp bảo khi module luyện khí ra mắt.
+- **SpotSpec**:
+  - *Thuộc tính đã triển khai*: ID, tên điểm câu, mô tả, loại vùng nước (`water_type`), cấp độ nguy hiểm (`danger_level`), cảnh giới yêu cầu (`required_realm_level`), thời gian chờ min/max, điều kiện thời gian (`time_condition`), điều kiện thiên tượng (`weather_condition`), bảng cá theo tỷ trọng (`fish_table`).
+  - *Phần để mở rộng*: Linh mạch phụ trợ, cấm chế trận pháp bảo hộ vùng nước bí cảnh.
 
 ## 3. Khả năng chạy độc lập & tái lập (Determinism)
 - `FishingLogic` sử dụng `RandomNumberGenerator` cho phép truyền hạt giống `seed` để chạy test tự động lặp lại được kết quả.

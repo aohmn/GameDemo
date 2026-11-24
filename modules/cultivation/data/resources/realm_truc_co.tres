@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 3
+id = "realm_truc_co"
+display_name = "Trúc Cơ"
+description = "Đặt nền móng đại đạo, đan điền hóa linh dịch, thọ nguyên tăng gấp bội."
+max_layer = 9
+layer_exp_requirements = [280000, 360000, 460000, 580000, 720000, 900000, 1120000, 1400000, 1750000]
+base_breakthrough_chance = 0.9

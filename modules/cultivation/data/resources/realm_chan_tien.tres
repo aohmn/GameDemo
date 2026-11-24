@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 11
+id = "realm_chan_tien"
+display_name = "Chân Tiên"
+description = "Đột phá phàm trần, chứng đắc chân tiên quả vị, trường sinh bất tử."
+max_layer = 9
+layer_exp_requirements = [1000000000000, 1300000000000, 1700000000000, 2200000000000, 2800000000000, 3600000000000, 4600000000000, 5800000000000, 7500000000000]
+base_breakthrough_chance = 1.0

@@ -53,6 +53,16 @@ func _physics_process(delta: float) -> void:
     _update_billboard()
 
 
+## Hướng nhìn hiện tại trên mặt phẳng XZ (xuống màn hình = +Z, lên = -Z).
+func get_facing_vector() -> Vector3:
+    match current_facing:
+        1:
+            return Vector3(0.0, 0.0, -1.0)
+        2:
+            return Vector3(1.0, 0.0, 0.0) if current_flip else Vector3(-1.0, 0.0, 0.0)
+    return Vector3(0.0, 0.0, 1.0)
+
+
 func _create_collision() -> void:
     var collision := CollisionShape3D.new()
     collision.name = "BodyCollision"

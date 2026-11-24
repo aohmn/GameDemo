@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 8
+id = "realm_hop_the"
+display_name = "Hợp Thể"
+description = "Thân thể và nguyên thần hợp nhất, dung hợp thiên đạo quy tắc."
+max_layer = 9
+layer_exp_requirements = [4300000000, 5300000000, 6500000000, 8000000000, 9800000000, 12000000000, 14700000000, 18000000000, 22000000000]
+base_breakthrough_chance = 0.65

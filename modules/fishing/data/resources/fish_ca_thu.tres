@@ -6,8 +6,15 @@
 script = ExtResource("1_spec")
 id = "fish_ca_thu"
 display_name = "Cá Thu Vàng"
+description = "Yêu ngư tốc độ lướt sóng như tia chớp, mang phong lôi thuộc tính, giằng co quyết liệt."
+tier = 2
+spirit_qi = 120
+base_value = 2200
+element = "phong"
 min_weight_g = 2000
 max_weight_g = 7000
 strength = 85.0
 rarity = 3
 pull_force = 40.0
+habitat_water_type = "bien"
+weather_condition = "tat_ca"

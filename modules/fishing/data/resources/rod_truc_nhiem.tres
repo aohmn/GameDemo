@@ -6,9 +6,16 @@
 script = ExtResource("1_spec")
 id = "rod_truc_nhiem"
 display_name = "Cần Trúc Nhiệm Màu"
+description = "Pháp bảo cần câu cấp Phàm luyện chế từ thanh trúc lâu năm, dẻo dai vừa đủ câu phàm ngư và linh ngư nhỏ."
+tier = 0
+max_durability = 100
+current_durability = 100
+required_realm_level = 0
 safe_tension_min = 25.0
 safe_tension_max = 65.0
 max_tension = 100.0
 reel_speed = 32.0
 release_speed = 22.0
 fatigue_rate = 14.0
+control_power = 1.0
+special_effect = ""

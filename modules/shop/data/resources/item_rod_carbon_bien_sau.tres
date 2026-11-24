@@ -6,7 +6,8 @@
 script = ExtResource("1_spec")
 id = "shop_rod_carbon_bien_sau"
 display_name = "Cần Carbon Biển Sâu"
-description = "Cần câu sợi carbon chuyên dụng biển sâu, chịu lực căng cực đại 125.0 và tốc độ kéo dây vượt trội."
+description = "Pháp bảo cần câu cấp Linh tôi luyện từ hắc thạch, độ bền 250, chịu lực căng cực đại 125.0."
+price_spirit_stone = 1500
 price_vnd = 1500000
 category = "rod"
 rod_id = "rod_carbon_bien_sau"

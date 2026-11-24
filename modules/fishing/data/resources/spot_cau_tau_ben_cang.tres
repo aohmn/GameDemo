@@ -12,8 +12,14 @@
 script = ExtResource("1_spec")
 id = "spot_cau_tau_ben_cang"
 display_name = "Cầu Tàu Bến Cảng"
+description = "Điểm câu ven đảo bến cảng, sóng êm nước lặng, tập trung nhiều phàm ngư và linh ngư ven bờ."
+water_type = "bien"
+danger_level = 0
+required_realm_level = 0
 min_wait_time = 2.0
 max_wait_time = 4.5
+time_condition = "tat_ca"
+weather_condition = "tat_ca"
 fish_table = [
 	{"fish": ExtResource("2_com"), "weight": 35},
 	{"fish": ExtResource("3_doi"), "weight": 30},

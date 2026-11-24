@@ -181,14 +181,14 @@ func _update_ui_state() -> void:
 		"IDLE", "RESULT":
 			_btn_cast.visible = true
 			_btn_cast.disabled = not _is_near_spot
-			_btn_cast.text = "Thả cần" if _is_near_spot else "Đến gần nước"
+			_btn_cast.text = "Thả cần" if _is_near_spot else "Hướng ra mặt nước"
 			_btn_strike.visible = false
 			_btn_reel.visible = false
 			_btn_release.visible = false
 			_tension_bar.visible = false
 			_tension_label.visible = false
 			if _state == "IDLE":
-				_status_label.text = "Đang ở điểm câu" if _is_near_spot else "Hãy di chuyển ra cầu tàu để câu cá"
+				_status_label.text = "Sẵn sàng thả cần" if _is_near_spot else "Quay mặt ra mặt nước, cách vài bước chân để thả cần"
 
 		"CASTING", "WAITING":
 			_btn_cast.visible = false

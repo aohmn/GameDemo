@@ -6,7 +6,8 @@
 script = ExtResource("1_spec")
 id = "shop_rod_truc_nhiem"
 display_name = "Cần Trúc Nhiệm Màu"
-description = "Cần câu trúc truyền thống, dẻo dai và ổn định, thích hợp cho người mới bắt đầu câu bờ bến cảng."
+description = "Pháp bảo cần câu cấp Phàm luyện từ thanh trúc, độ bền 100, thích hợp cho tu sĩ mới nhập môn câu bờ."
+price_spirit_stone = 200
 price_vnd = 200000
 category = "rod"
 rod_id = "rod_truc_nhiem"

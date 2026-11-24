@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RealmSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/cultivation/data/realm_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+realm_index = 7
+id = "realm_luyen_hu"
+display_name = "Luyện Hư"
+description = "Hóa thực vi hư, thấu hiểu quy tắc không gian, thần thông quảng đại."
+max_layer = 9
+layer_exp_requirements = [700000000, 860000000, 1050000000, 1280000000, 1560000000, 1900000000, 2320000000, 2840000000, 3500000000]
+base_breakthrough_chance = 0.7
