@@ -42,7 +42,8 @@ func register_recipe(spec: Resource) -> void:
 		var r_id: String = str(spec.get("id"))
 		if not r_id.is_empty():
 			_recipes[r_id] = spec
-			if bool(spec.get("is_unlocked_by_default", true)):
+			var is_default: bool = bool(spec.get("is_unlocked_by_default")) if "is_unlocked_by_default" in spec else true
+			if is_default:
 				_unlocked_recipe_ids[r_id] = true
 
 
@@ -74,7 +75,7 @@ func can_craft_recipe(recipe_id: String, current_realm_level: int = 0) -> Dictio
 		return {"can_craft": false, "reason": "recipe_locked"}
 
 	var spec: Resource = _recipes[recipe_id] as Resource
-	var req_realm: int = int(spec.get("required_realm_level", 0))
+	var req_realm: int = int(spec.get("required_realm_level")) if "required_realm_level" in spec else 0
 	if current_realm_level < req_realm:
 		return {"can_craft": false, "reason": "insufficient_realm"}
 
@@ -94,9 +95,9 @@ func start_craft(recipe_id: String, current_realm_level: int = 0) -> Dictionary:
 		return {"success": false, "completed_now": false, "reason": r}
 
 	var spec: Resource = _recipes[recipe_id] as Resource
-	var duration: float = float(spec.get("craft_duration", 0.0))
+	var duration: float = float(spec.get("craft_duration")) if "craft_duration" in spec else 0.0
 	var out_id: String = str(spec.get("output_item_id"))
-	var out_count: int = int(spec.get("output_count", 1))
+	var out_count: int = int(spec.get("output_count")) if "output_count" in spec else 1
 
 	if duration <= 0.0:
 		# Chế tạo tức thì

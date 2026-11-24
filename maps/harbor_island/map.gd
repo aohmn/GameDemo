@@ -3,6 +3,8 @@ extends Node3D
 const TerrainBuilder: Script = preload("res://maps/harbor_island/builders/terrain_builder.gd")
 const PierBuilder: Script = preload("res://maps/harbor_island/builders/pier_builder.gd")
 const PropBuilder: Script = preload("res://maps/harbor_island/builders/prop_builder.gd")
+const SectBuildingBuilder: Script = preload("res://maps/harbor_island/builders/sect_building_builder.gd")
+const PlazaPathBuilder: Script = preload("res://maps/harbor_island/builders/plaza_path_builder.gd")
 
 ## Hướng TỚI mặt trời chuẩn của bản đồ đảo harbor_island.
 ## Đây là nguồn duy nhất (single source of truth) được Bootstrap đồng bộ sang SkyDome và water shader.
@@ -12,7 +14,10 @@ const SUN_DIRECTION: Vector3 = Vector3(-0.368688, 0.766044, 0.526541)
 func _ready() -> void:
 	TerrainBuilder.build(self)
 	PierBuilder.build(self)
+	PlazaPathBuilder.build(self)
+	SectBuildingBuilder.build(self)
 	PropBuilder.build(self)
+
 
 
 ## Trả về vector đơn vị hướng TỚI mặt trời.

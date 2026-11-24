@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- TASK 09: Xây dựng Đảo Bến Cảng thành đại bản doanh tu tiên (chia nhỏ qua các builder: PlazaPathBuilder, SectBuildingBuilder; bổ sung Quảng trường trung tâm, Tiên Các 2 tầng bạch ngọc, Thương Hội gỗ đỏ, Lò Chế Tạo huyền thạch, Kho Linh Ngư, Hồ Linh Ngư xanh biếc và đường đi đá phiến kết nối liền mạch; collision đầy đủ, không dùng texture).
+- TASK 08: Hệ thống đa bản đồ Multi-Map (tạo MapDefinition, MapConnection bằng Resource .tres, MapEvents contract, nâng cấp MapManager hỗ trợ đăng ký, mở khóa, kiểm tra cảnh giới và chuyển đổi bản đồ, tích hợp đảo bến cảng harbor_island hiện tại, bảo toàn nguyên vẹn 100% Player, Inventory, Cultivation, Economy, Equipment).
 - TASK 07: Hệ thống chế tạo và rèn đúc pháp bảo `modules/crafting/` (RecipeSpec Resource, công thức rèn cần trúc và cần carbon, kiểm tra cảnh giới tu vi, hàng đợi chế tạo theo thời gian và hủy lệnh, quy trình atomic với cơ chế rollback nguyên liệu qua ServiceCoordinator, lưu trữ user://crafting.cfg).
 - TASK 06: Hệ thống pháp bảo và trang bị `modules/equipment/` (8 phẩm cấp, 5 vị trí trang bị cần/dây/mồi/bảo vật 1/bảo vật 2, tính toán chỉ số tổng hợp, kiểm tra cảnh giới yêu cầu, ngăn trang bị trùng lặp, lưu trữ user://equipment.cfg tương thích với cần câu cũ, đồng bộ sang Fishing API).
 - TASK 05: Kho đồ và hệ thống vật phẩm tu tiên đa năng (tạo ItemSpec Resource phân 5 nhóm vật phẩm và 6 phẩm cấp, nâng cấp InventoryLogic hỗ trợ thêm/lấy/xếp chồng/kiểm tra tồn tại/lọc nhóm/giới hạn kho, nâng cấp save v2 tương thích ngược 100% với dữ liệu cá, bán cá và hấp thu linh khí).

@@ -44,6 +44,42 @@ func _ready() -> void:
     _create_fishing_ui()
     _create_fishing_rig()
 
+    var eb: Node = get_node_or_null("/root/EventBus")
+    if eb != null and eb.has_method("subscribe"):
+        eb.call("subscribe", "map_change_requested", Callable(self, "_on_map_change_requested"))
+
+
+func _on_map_change_requested(payload: Dictionary) -> void:
+    var target_id: String = str(payload.get("target_map_id", ""))
+    if not target_id.is_empty():
+        change_map(target_id)
+
+
+## Chuyển map an toàn: giữ nguyên Player, Inventory, Cultivation, Economy, Equipment.
+func change_map(target_map_id: String) -> bool:
+    if _map_manager == null:
+        return false
+
+    var ok: bool = bool(_map_manager.call("load_map", target_map_id))
+    if not ok:
+        return false
+
+    _sync_sun_direction()
+
+    # Cập nhật vị trí xuất hiện của Player nếu có định nghĩa
+    if _player != null:
+        var spawn_pos: Vector3 = _map_manager.call("get_default_spawn_position", target_map_id) as Vector3
+        _player.global_position = spawn_pos
+        _player.velocity = Vector3.ZERO
+
+    # Tái kết nối CastCoordinator với bản đồ mới
+    if _cast_coordinator != null:
+        var new_map_node: Node = _map_manager.call("get_current_map") as Node
+        _cast_coordinator.call("setup", _player, new_map_node, _fishing_ui, _fishing_rig, _fishing_api)
+
+    return true
+
+
 
 func _physics_process(_delta: float) -> void:
     if _cast_coordinator != null:

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MapDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://core/contracts/map_definition.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+map_id = "harbor_island"
+display_name = "Đảo Bến Cảng"
+description = "Đảo bến cảng nhiệt đới khởi đầu của ngư dân, sóng êm gió lặng, tụ tập linh khí sơ cấp ven vịnh biển."
+scene_path = "res://maps/harbor_island/map.tscn"
+default_spawn_position = Vector3(-2, 0.05, 10)
+is_unlocked_by_default = true
+required_realm_level = 0
+water_type = "bien"
+spiritual_energy_density = 1.0
+danger_level = 0
+connections = []
