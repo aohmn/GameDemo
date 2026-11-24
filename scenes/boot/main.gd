@@ -16,6 +16,7 @@ func _ready() -> void:
     _create_camera()
     _create_sky_dome()
     _create_map_manager()
+    _sync_sun_direction()
     _create_player()
     _create_joystick()
 
@@ -75,6 +76,27 @@ func _create_map_manager() -> void:
     var loaded := bool(_map_manager.call("load_map", "harbor_island"))
     if not loaded:
         push_warning("Không thể tải map harbor_island; tiếp tục không có map.")
+
+
+func _sync_sun_direction() -> void:
+    if _map_manager == null:
+        return
+
+    var current_map: Node = _map_manager.call("get_current_map") as Node
+    if current_map == null or not current_map.has_method("get_sun_direction"):
+        return
+
+    var sun_dir: Vector3 = current_map.call("get_sun_direction")
+
+    # 1. Đồng bộ sang SkyDome nếu có
+    if _sky_dome != null and _sky_dome.has_method("set_sun_direction"):
+        _sky_dome.call("set_sun_direction", sun_dir)
+
+    # 2. Đồng bộ sang uniform sun_dir của water shader trên map nếu có
+    if current_map.has_method("get_water_material"):
+        var water_mat: ShaderMaterial = current_map.call("get_water_material") as ShaderMaterial
+        if water_mat != null:
+            water_mat.set_shader_parameter("sun_dir", sun_dir)
 
 
 func _create_player() -> void:

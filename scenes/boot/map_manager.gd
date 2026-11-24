@@ -48,5 +48,9 @@ func load_map(map_id: String) -> bool:
 	return true
 
 
+func get_current_map() -> Node3D:
+	return _current_map
+
+
 func get_current_map_id() -> String:
 	return current_map_id

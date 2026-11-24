@@ -27,6 +27,11 @@ func get_shader_material() -> ShaderMaterial:
     return _shader_material
 
 
+func set_sun_direction(sun_dir: Vector3) -> void:
+    if _shader_material != null:
+        _shader_material.set_shader_parameter("sun_direction", sun_dir)
+
+
 func _create_dome_mesh() -> void:
     _mesh_instance = MeshInstance3D.new()
     _mesh_instance.name = "DomeMesh"

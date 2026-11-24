@@ -13,6 +13,7 @@ var _camera_target: Vector3 = Vector3(0.0, 0.5, 10.0)
 func _ready() -> void:
     _create_map()
     _create_sky_dome()
+    _sync_sun_direction()
     _create_dev_camera()
 
 
@@ -30,6 +31,7 @@ func _process(delta: float) -> void:
 
 func _create_map() -> void:
     var map_node: Node = MAP_SCENE.instantiate()
+    map_node.name = "Map"
     add_child(map_node)
 
 
@@ -37,6 +39,7 @@ func _create_sky_dome() -> void:
     var dome_node: Node = SKY_DOME_SCENE.instantiate()
     var dome := dome_node as Node3D
     if dome != null:
+        dome.name = "SkyDome"
         add_child(dome)
         if dome.has_method("set_follow_target") and _camera != null:
             dome.call("set_follow_target", _camera)
@@ -48,3 +51,16 @@ func _create_dev_camera() -> void:
     _camera.fov = 50.0
     _camera.current = true
     add_child(_camera)
+
+
+func _sync_sun_direction() -> void:
+    var map_node := get_node_or_null("Map")
+    var dome_node := get_node_or_null("SkyDome")
+    if map_node != null and map_node.has_method("get_sun_direction"):
+        var sun_dir: Vector3 = map_node.call("get_sun_direction")
+        if dome_node != null and dome_node.has_method("set_sun_direction"):
+            dome_node.call("set_sun_direction", sun_dir)
+        if map_node.has_method("get_water_material"):
+            var water_mat: ShaderMaterial = map_node.call("get_water_material") as ShaderMaterial
+            if water_mat != null:
+                water_mat.set_shader_parameter("sun_dir", sun_dir)
