@@ -137,6 +137,8 @@ func _build_result_popup() -> void:
 
 	_res_desc = Label.new()
 	_res_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_res_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_res_desc.custom_minimum_size = Vector2(300.0, 0.0)
 	_res_desc.add_theme_font_size_override("font_size", 12)
 	res_vbox.add_child(_res_desc)
 
@@ -230,7 +232,7 @@ func _on_fight_update_evt(payload: Dictionary) -> void:
 func _on_fish_caught_evt(payload: Dictionary) -> void:
 	_show_result(
 		"THU PHỤC THÀNH CÔNG!",
-		"Linh Ngư: %s (%d g) | +%d Linh Khí" % [
+		"Linh Ngư: %s (%d g)\nChứa %d linh khí - mở Túi, bấm Hấp thu để vào tu vi" % [
 			str(payload.get("name", "Linh Ngư")),
 			int(payload.get("weight_g", 0)),
 			int(payload.get("qi_value", 0))

@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Popup bắt cá ghi rõ linh khí nằm trong cá và chỉ vào tu vi khi mở Túi bấm Hấp thu (trước đó ghi "+N Linh Khí" khiến người chơi tưởng tu vi tự tăng) (Mức 2; chưa chạy Godot Android).
 - Hấp thu linh khí: HUD tu vi (`presentation/cultivation_ui/`), nút Hấp thu/Bán trong túi cá, nút ĐỘT PHÁ, thông báo khi bị từ chối thả cần; `scenes/boot/ui_action_router.gd` nối UI với logic; cần carbon yêu cầu cảnh giới 1 (Mức 2, chạm mô phỏng; chưa chạy Godot Android).
 - Sửa lỗi nghiêm trọng: inventory, cultivation, crafting, equipment, map_manager gọi `EventBus.emit` (không tồn tại) nên mọi sự kiện của chúng bị nuốt; nay gọi `emit_event`.
 - Sửa lỗi nút "Thả Cần" sáng nhưng chạm không ăn trên điện thoại: UI bị vẽ lại mỗi khung vật lý làm nút ẩn/hiện liên tục và Godot hủy trạng thái nhấn; nay `set_near_fishing_spot` bỏ qua khi không đổi và `_set_visible_widgets` không ẩn rồi hiện lại (Mức 2, tái hiện bằng chạm giữ 0,1 s; chưa chạy Godot Android).
