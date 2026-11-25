@@ -42,6 +42,10 @@ func set_fishing_api(api: RefCounted) -> void:
 
 
 func set_near_fishing_spot(near: bool, spot_id: String = "spot_cau_tau_ben_cang") -> void:
+	# Bootstrap gọi mỗi khung vật lý: chỉ vẽ lại khi có thay đổi, nếu không nút bị ẩn/hiện liên tục
+	# và Godot hủy trạng thái "đang nhấn" nên chạm thật trên điện thoại không bao giờ kích hoạt.
+	if near == _is_near_spot and spot_id == _current_spot_id:
+		return
 	_is_near_spot = near
 	_current_spot_id = spot_id
 	_update_view()
@@ -150,8 +154,7 @@ func _connect_events() -> void:
 func _update_view() -> void:
 	match _state:
 		"IDLE", "CAUGHT", "ESCAPED", "FAILED":
-			_set_visible_widgets(false)
-			_btn_cast.visible = true
+			_set_visible_widgets(false, true)
 			_btn_cast.disabled = not _is_near_spot
 			_btn_cast.text = "Thả Cần" if _is_near_spot else "Đến Gần Nước"
 			_badge_label.text = "SẴN SÀNG"
@@ -165,8 +168,7 @@ func _update_view() -> void:
 			_alert_label.text = "Tĩnh tâm chờ linh ngư cắn câu"
 
 		"BITE":
-			_set_visible_widgets(false)
-			_btn_strike.visible = true
+			_set_visible_widgets(false, false, true)
 			_badge_label.text = "CẮN CÂU!"
 			_sub_label.text = "Phao câu đang bị kéo chìm!"
 			_alert_label.text = "BẤM GIẬT CẦN NGAY LẬP TỨC!"
@@ -177,9 +179,9 @@ func _update_view() -> void:
 			_sub_label.text = "Giữ lực căng trong vùng an toàn"
 
 
-func _set_visible_widgets(in_fight: bool) -> void:
-	_btn_cast.visible = false
-	_btn_strike.visible = false
+func _set_visible_widgets(in_fight: bool, show_cast: bool = false, show_strike: bool = false) -> void:
+	_btn_cast.visible = show_cast
+	_btn_strike.visible = show_strike
 	_btn_reel.visible = in_fight
 	_btn_release.visible = in_fight
 	_progress_bar.visible = in_fight
