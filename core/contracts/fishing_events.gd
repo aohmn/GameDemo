@@ -26,3 +26,6 @@ const FISH_CAUGHT: String = "fishing_fish_caught"
 ## Lưỡi câu bị đứt hoặc cá trốn thoát (early, late, line_break, cancel).
 ## Payload: { "reason": String }
 const FISH_ESCAPED: String = "fishing_fish_escaped"
+
+## Không cho thả cần. Payload: {reason: "spot_realm"|"rod_realm"|"no_fish_for_rod", required: int, current: int}
+const CAST_DENIED: String = "fishing_cast_denied"

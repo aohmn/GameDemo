@@ -12,6 +12,7 @@ var _controller: FishingController
 var _spots: Dictionary = {}
 var _rods: Dictionary = {}
 var _default_rod_id: String = "rod_truc_nhiem"
+var _realm_provider: Callable = Callable() # trả về chỉ số cảnh giới hiện tại (int), do Bootstrap gắn
 
 
 func _init(seed_val: int = -1) -> void:
@@ -37,6 +38,22 @@ func register_rod(rod: Resource) -> void:
 		var r_id: String = str(rod.get("id"))
 		if not r_id.is_empty():
 			_rods[r_id] = rod
+
+
+## Bootstrap gắn nguồn cảnh giới (ví dụ Cultivation.get_current_realm_index). Chưa gắn = cảnh giới 0.
+func set_realm_provider(provider: Callable) -> void:
+	_realm_provider = provider
+
+
+func _current_realm() -> int:
+	if _realm_provider.is_valid():
+		return int(_realm_provider.call())
+	return 0
+
+
+func _deny_cast(reason: String, required: int, current: int) -> bool:
+	_emit_event(FishingEventsContract.CAST_DENIED, {"reason": reason, "required": required, "current": current})
+	return false
 
 
 func set_default_rod(rod_id: String) -> void:
@@ -65,7 +82,17 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 		push_warning("Không có cần câu khả dụng.")
 		return false
 
+	var realm: int = _current_realm()
+	var spot_req: int = int(spot.get("required_realm_level")) if "required_realm_level" in spot else 0
+	if realm < spot_req:
+		return _deny_cast("spot_realm", spot_req, realm)
+	var rod_req: int = int(rod.get("required_realm_level")) if "required_realm_level" in rod else 0
+	if realm < rod_req:
+		return _deny_cast("rod_realm", rod_req, realm)
+
 	var success: bool = _controller.cast(spot, rod, null)
+	if not success and _controller.get_state_name() == "IDLE":
+		return _deny_cast("no_fish_for_rod", 0, realm)
 	if success:
 		_emit_event(FishingEventsContract.CAST_STARTED, {
 			"spot_id": spot_id,

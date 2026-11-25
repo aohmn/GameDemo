@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Fishing chuẩn thiết kế tu tiên: cần câu phẩm N chỉ câu được cá phẩm ≤ N+1 (`FishingCalculator.max_catchable_fish_tier`); cổng cảnh giới của điểm câu/cần câu qua `FishingAPI.set_realm_provider` + sự kiện `fishing_cast_denied`; Bootstrap tạo Cultivation (trước đó chưa nối vào game); sửa test dev bị sai do lambda bắt biến theo giá trị, thêm test phẩm cấp (Mức 2, 10/10 test xanh; chưa chạy Godot Android).
 - Sửa lỗi khó thả cần: thêm lan can đầu cầu chính (`BoundMainPierEnd`) để nhân vật không đi rơi khỏi cầu rồi bị đưa về điểm xuất phát; tăng tầm thả phao lên 4 m; gợi ý trên UI chỉ rõ cách ra điểm câu (Mức 2, chưa chạy Godot Android).
 - Sửa kiến trúc: chuyển `gameplay/fishing/` vào `modules/fishing/gameplay/` (module fishing không còn preload ra thư mục ngoài, thử xóa từng module vẫn boot); sửa lỗi parse `modules/fishing/gameplay/dev.gd` và lỗi `look_at` của `modules/player/scenes/dev.gd` (Mức 2, chưa chạy Godot Android).
 - TASK 13: Hoàn thiện Fishing UI phong cách Genshin Impact x Sea of Thieves — thiết kế lại toàn bộ bảng HUD tiên hiệp biển khơi trung tâm và cụm phím điều khiển cảm ứng tối ưu Android ngang; hiển thị rõ trạng thái câu, thanh tiến trình thu phục cá, thanh lực căng dây đa sắc theo vùng an toàn, độ bền cần/dây thời gian thực, phản hồi hành vi cá (mệt lả, giãy bứt tốc, tạm nghỉ) và popup kết quả câu; đồng bộ đầy đủ với FishingController, FishingBattle, FishingRig và EventBus (FIGHT_UPDATE bổ sung metadata độ bền và chế độ cá); tách tiện ích FishingUITheme đảm bảo <300 dòng/file, không dùng texture.

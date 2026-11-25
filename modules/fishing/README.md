@@ -62,3 +62,8 @@ Toàn bộ dữ liệu được lưu bằng file tài nguyên Godot (`.tres`) c�
 ## 3. Khả năng chạy độc lập & tái lập (Determinism)
 - `FishingLogic` sử dụng `RandomNumberGenerator` cho phép truyền hạt giống `seed` để chạy test tự động lặp lại được kết quả.
 - Chạy thử riêng biệt qua `scenes/dev.tscn`.
+
+## Luật phẩm cấp và cảnh giới
+- Cần câu phẩm N chỉ mắc được cá phẩm ≤ N+1 (`FishingCalculator.max_catchable_fish_tier`). Điểm câu không có cá hợp phẩm cấp thì từ chối thả cần.
+- `FishingAPI.set_realm_provider(Callable)`: Bootstrap gắn cảnh giới hiện tại. Cảnh giới thấp hơn `required_realm_level` của điểm câu hoặc cần câu thì bị từ chối.
+- Từ chối thả cần phát `fishing_cast_denied` với `reason` là `spot_realm`, `rod_realm` hoặc `no_fish_for_rod`.

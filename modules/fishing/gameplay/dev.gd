@@ -1,8 +1,7 @@
 extends Node3D
 
 ## Scene kiểm thử độc lập cho module modules/fishing/gameplay/.
-## Dùng typed Resources (FishSpec, RodSpec, SpotSpec) thay vì Resource.set() tuỳ ý.
-## Kiểm tra FSM, giằng co, đứt dây, trốn thoát, thu phục, độ bền trang bị, kỹ năng.
+## Kiểm tra FSM, giằng co, đứt dây, trốn thoát, thu phục, độ bền, kỹ năng, luật phẩm cấp.
 
 const FishingControllerScript: Script = preload("res://modules/fishing/gameplay/fishing_controller.gd")
 const FishingStateScript: Script = preload("res://modules/fishing/gameplay/core/fishing_state.gd")
@@ -16,6 +15,15 @@ func _ready() -> void:
 	_run_all_tests()
 
 
+var _failures: int = 0
+
+
+func _check(condition: bool, message: String) -> void:
+	if not condition:
+		_failures += 1
+		push_error("FAIL: " + message)
+
+
 func _run_all_tests() -> void:
 	_test_fsm_valid_transitions()
 	_test_strike_early_failure()
@@ -25,7 +33,20 @@ func _run_all_tests() -> void:
 	_test_slack_escape_condition()
 	_test_equipment_durability()
 	_test_skill_effects()
-	print("=== TẤT CẢ BÀI TEST GAMEPLAY/FISHING ĐỀU ĐẠT! ===")
+	_test_tier_gating()
+	_test_no_fish_for_weak_rod()
+	if _failures == 0:
+		print("=== TẤT CẢ BÀI TEST GAMEPLAY/FISHING ĐỀU ĐẠT! ===")
+	else:
+		print("=== CÓ %d KIỂM TRA THẤT BẠI ===" % _failures)
+
+
+## Chờ cá cắn câu (thời gian chờ có sàn 0,8 s nên không thể tick cố định).
+func _wait_for_bite(ctrl: FishingController) -> void:
+	for i in range(200):
+		if ctrl.get_state_name() == "BITE":
+			return
+		ctrl.tick(0.1)
 
 
 func _create_mock_spot() -> SpotSpec:
@@ -68,13 +89,13 @@ func _create_mock_rod() -> RodSpec:
 
 func _test_fsm_valid_transitions() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
-	assert(ctrl.get_state_name() == "IDLE", "Phải khởi đầu ở IDLE")
+	_check(ctrl.get_state_name() == "IDLE", "Phải khởi đầu ở IDLE")
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 
 	var ok: bool = ctrl.cast(spot, rod)
-	assert(ok, "Thả câu phải thành công")
-	assert(ctrl.get_state_name() == "WAITING", "Sau khi cast phải là WAITING")
+	_check(ok, "Thả câu phải thành công")
+	_check(ctrl.get_state_name() == "WAITING", "Sau khi cast phải là WAITING")
 	print("PASS: FSM khởi đầu và thả câu.")
 
 
@@ -85,8 +106,8 @@ func _test_strike_early_failure() -> void:
 	ctrl.cast(spot, rod)
 
 	var struck: bool = ctrl.strike()
-	assert(not struck, "Giật cần khi WAITING phải thất bại")
-	assert(ctrl.get_state_name() == "IDLE", "Sau khi thất bại phải về IDLE")
+	_check(not struck, "Giật cần khi WAITING phải thất bại")
+	_check(ctrl.get_state_name() == "IDLE", "Sau khi thất bại phải về IDLE")
 	print("PASS: Giật cần sớm (early) thất bại chính xác.")
 
 
@@ -96,13 +117,12 @@ func _test_strike_late_escaped() -> void:
 	var rod := _create_mock_rod()
 	ctrl.cast(spot, rod)
 
-	# Chờ cá cắn câu
-	ctrl.tick(0.3)
-	assert(ctrl.get_state_name() == "BITE", "Cá phải cắn câu")
+	_wait_for_bite(ctrl)
+	_check(ctrl.get_state_name() == "BITE", "Cá phải cắn câu")
 
 	# Bỏ qua không giật trong 1.5 giây (cửa sổ 0.85s)
 	ctrl.tick(1.5)
-	assert(ctrl.get_state_name() == "IDLE", "Cá phải trốn thoát và về IDLE")
+	_check(ctrl.get_state_name() == "IDLE", "Cá phải trốn thoát và về IDLE")
 	print("PASS: Giật cần trễ (late) cá trốn thoát chính xác.")
 
 
@@ -110,26 +130,31 @@ func _test_successful_catch_flow() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
-	var caught_payload: Dictionary = {}
-	ctrl.on_fish_caught = func(p: Dictionary) -> void: caught_payload = p
+	var rec: Dictionary = {"caught": {}}
+	ctrl.on_fish_caught = func(p: Dictionary) -> void: rec["caught"] = p
 
 	ctrl.cast(spot, rod)
-	ctrl.tick(0.3)
-	assert(ctrl.get_state_name() == "BITE", "Phải ở BITE")
+	_wait_for_bite(ctrl)
+	_check(ctrl.get_state_name() == "BITE", "Phải ở BITE")
 
 	var struck: bool = ctrl.strike()
-	assert(struck, "Giật cần phải trúng")
-	assert(ctrl.get_state_name() == "FIGHT", "Phải chuyển sang FIGHT")
+	_check(struck, "Giật cần phải trúng")
+	_check(ctrl.get_state_name() == "FIGHT", "Phải chuyển sang FIGHT")
 
 	# Mô phỏng giữ dây trong vùng an toàn cho cá mệt
-	for i in range(30):
+	# (bot giữ lực căng trong vùng an toàn: kéo khi dưới ngưỡng giữa, xả khi trên)
+	for i in range(300):
+		var mid: float = (ctrl.battle.tension_system.safe_min + ctrl.battle.tension_system.safe_max) * 0.5
+		ctrl.reel(ctrl.battle.tension_system.current_tension < mid)
+		ctrl.release(ctrl.battle.tension_system.current_tension > mid + 8.0)
 		ctrl.tick(0.1)
 		if ctrl.get_state_name() == "IDLE":
 			break
 
-	assert(not caught_payload.is_empty(), "Phải phát payload bắt cá thành công")
-	assert(caught_payload.get("fish_id") == "fish_ca_com", "Đúng loại cá đã câu")
-	assert(caught_payload.has("qi_value"), "Payload phải chứa qi_value")
+	var caught_payload: Dictionary = rec["caught"]
+	_check(not caught_payload.is_empty(), "Phải phát payload bắt cá thành công")
+	_check(caught_payload.get("fish_id") == "fish_ca_com", "Đúng loại cá đã câu")
+	_check(caught_payload.has("qi_value"), "Payload phải chứa qi_value")
 	print("PASS: Luồng câu cá thành công và thu hoạch phần thưởng.")
 
 
@@ -137,11 +162,11 @@ func _test_line_break_condition() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
-	var lost_reason := ""
-	ctrl.on_fish_lost = func(p: Dictionary) -> void: lost_reason = str(p.get("reason"))
+	var rec: Dictionary = {"reason": ""}
+	ctrl.on_fish_lost = func(p: Dictionary) -> void: rec["reason"] = str(p.get("reason"))
 
 	ctrl.cast(spot, rod)
-	ctrl.tick(0.3)
+	_wait_for_bite(ctrl)
 	ctrl.strike()
 
 	# Kéo dây liên tục với lực cực mạnh
@@ -152,7 +177,7 @@ func _test_line_break_condition() -> void:
 		if ctrl.get_state_name() == "IDLE":
 			break
 
-	assert(lost_reason == "line_break", "Lý do thất bại phải là đứt dây (line_break)")
+	_check(rec["reason"] == "line_break", "Lý do thất bại phải là đứt dây (line_break)")
 	print("PASS: Đứt dây khi lực căng vượt ngưỡng max_tension.")
 
 
@@ -160,21 +185,21 @@ func _test_slack_escape_condition() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
-	var lost_reason := ""
-	ctrl.on_fish_lost = func(p: Dictionary) -> void: lost_reason = str(p.get("reason"))
+	var rec: Dictionary = {"reason": ""}
+	ctrl.on_fish_lost = func(p: Dictionary) -> void: rec["reason"] = str(p.get("reason"))
 
 	ctrl.cast(spot, rod)
-	ctrl.tick(0.3)
+	_wait_for_bite(ctrl)
 	ctrl.strike()
 
 	# Xả dây liên tục khiến dây chùng quá 3.5s
 	ctrl.release(true)
-	for i in range(45):
+	for i in range(100):
 		ctrl.tick(0.1)
 		if ctrl.get_state_name() == "IDLE":
 			break
 
-	assert(lost_reason == "slack", "Lý do thất bại phải là tuột lưỡi do chùng dây (slack)")
+	_check(rec["reason"] == "slack", "Lý do thất bại phải là tuột lưỡi do chùng dây (slack)")
 	print("PASS: Cá trốn thoát khi để dây quá chùng.")
 
 
@@ -185,7 +210,7 @@ func _test_equipment_durability() -> void:
 	rod.current_durability = 50
 
 	ctrl.cast(spot, rod)
-	ctrl.tick(0.3)
+	_wait_for_bite(ctrl)
 	ctrl.strike()
 
 	# Giằng co vài giây rồi kiểm tra độ bền có giảm
@@ -196,8 +221,8 @@ func _test_equipment_durability() -> void:
 
 	var line_dur: float = ctrl.battle.line_durability
 	var rod_dur: float = ctrl.battle.rod_durability
-	assert(line_dur < 100.0, "Độ bền dây phải giảm sau giằng co")
-	assert(rod_dur < 50.0, "Độ bền cần phải giảm từ giá trị khởi tạo 50")
+	_check(line_dur < 100.0, "Độ bền dây phải giảm sau giằng co")
+	_check(rod_dur < 50.0, "Độ bền cần phải giảm từ giá trị khởi tạo 50")
 	print("PASS: Độ bền trang bị giảm theo diễn biến giằng co.")
 
 
@@ -212,16 +237,64 @@ func _test_skill_effects() -> void:
 
 	# Kiểm tra giá trị kỹ năng
 	var bite_bonus: float = ctrl.skills.get_bite_window_bonus()
-	assert(bite_bonus > 0.0, "Thính Thủy phải tăng cửa sổ giật cần")
+	_check(bite_bonus > 0.0, "Thính Thủy phải tăng cửa sổ giật cần")
 
 	var safe_bonus: float = ctrl.skills.get_safe_zone_bonus()
-	assert(safe_bonus > 0.0, "Ngự Câu phải mở rộng vùng an toàn")
+	_check(safe_bonus > 0.0, "Ngự Câu phải mở rộng vùng an toàn")
 
 	ctrl.skills.reset_session_skills()
 	var pull_reduce: float = ctrl.skills.get_fish_pull_reduction()
-	assert(pull_reduce < 1.0, "Tỏa Ngư phải giảm lực kéo cá")
+	_check(pull_reduce < 1.0, "Tỏa Ngư phải giảm lực kéo cá")
 
 	var qi_mult: float = ctrl.skills.get_qi_multiplier()
-	assert(qi_mult > 1.0, "Thu Linh phải tăng linh khí nhận được")
+	_check(qi_mult > 1.0, "Thu Linh phải tăng linh khí nhận được")
 
 	print("PASS: Kỹ năng câu cá có tác dụng gameplay cụ thể.")
+
+
+func _make_fish(fish_id: String, tier: int) -> FishSpec:
+	var fish := FishSpec.new()
+	fish.id = fish_id
+	fish.tier = tier as FishSpec.FishTier
+	fish.strength = 20.0
+	return fish
+
+
+func _spot_with(fishes: Array) -> SpotSpec:
+	var spot := SpotSpec.new()
+	spot.id = "spot_tier_test"
+	spot.min_wait_time = 0.1
+	spot.max_wait_time = 0.2
+	for f in fishes:
+		spot.fish_table.append({"fish": f, "weight": 100})
+	return spot
+
+
+func _test_tier_gating() -> void:
+	var spot := _spot_with([_make_fish("fish_pham", 0), _make_fish("fish_tien", 3)])
+	var weak_rod := _create_mock_rod()          # phẩm 0 -> chỉ câu được cá phẩm <= 1
+	var strong_rod := _create_mock_rod()
+	strong_rod.tier = 3 as RodSpec.ArtifactTier # câu được cá phẩm <= 4
+	var weak_got_high: bool = false
+	var strong_got_high: bool = false
+	for seed_val in range(40):
+		var c1: FishingController = FishingControllerScript.new(seed_val)
+		c1.cast(spot, weak_rod)
+		if c1.current_fish != null and c1.current_fish.id == "fish_tien":
+			weak_got_high = true
+		var c2: FishingController = FishingControllerScript.new(seed_val)
+		c2.cast(spot, strong_rod)
+		if c2.current_fish != null and c2.current_fish.id == "fish_tien":
+			strong_got_high = true
+	_check(not weak_got_high, "Cần phẩm thấp không được câu cá Tiên ngư")
+	_check(strong_got_high, "Cần phẩm cao phải câu được cá Tiên ngư")
+	print("PASS: Luật phẩm cấp cần câu và cá.")
+
+
+func _test_no_fish_for_weak_rod() -> void:
+	var spot := _spot_with([_make_fish("fish_than", 4)])
+	var ctrl: FishingController = FishingControllerScript.new(1)
+	var ok: bool = ctrl.cast(spot, _create_mock_rod())
+	_check(not ok, "Không có cá hợp phẩm cấp thì không được thả cần")
+	_check(ctrl.get_state_name() == "IDLE", "Thả cần bị từ chối phải giữ IDLE")
+	print("PASS: Điểm câu chỉ có cá quá phẩm cấp thì từ chối thả cần.")

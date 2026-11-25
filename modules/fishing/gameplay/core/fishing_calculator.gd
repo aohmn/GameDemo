@@ -79,3 +79,8 @@ static func calculate_wait_time(
 	var rarity_delay := float(rarity - 1) * 0.6
 	var attraction_discount := clampf(bait_attraction * 0.2, 0.0, 3.0)
 	return maxf(0.8, base + rarity_delay - attraction_discount)
+
+
+## Phẩm cấp cá cao nhất mà cần câu có thể thu phục: cá hơn cần quá 1 bậc thì cần chịu không nổi.
+static func max_catchable_fish_tier(rod_tier: int) -> int:
+	return rod_tier + 1

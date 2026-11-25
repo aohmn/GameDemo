@@ -70,17 +70,21 @@ func cast(spot: Resource, rod: Resource, line_res: Resource = null) -> bool:
 	fishing_data.line_resource = line_res if line_res != null else FishingLineScript.create_default()
 	fishing_data.spot_id = str(spot.get("id"))
 
+	# Chọn cá mục tiêu theo phẩm cấp cần câu; không có cá phù hợp thì không thả được
+	var bait_pref := bait_system.preferred_tier if bait_system.remaining_uses > 0 else 0
+	var rod_tier: int = int(rod.get("tier")) if "tier" in rod else 0
+	var max_tier: int = FishingCalculatorScript.max_catchable_fish_tier(rod_tier)
+	var fish_res: Resource = FishSpawnerScript.spawn_fish_for_spot(spot, bait_pref, rng, max_tier)
+	if fish_res == null:
+		return false
+	fishing_data.target_fish_resource = fish_res
+	current_fish = FishDataScript.from_resource(fish_res, rng)
+
 	# Reset trạng thái kỹ năng phiên câu
 	skills.reset_session_skills()
 
 	if not _transition_to(FishingStateScript.State.CASTING):
 		return false
-
-	# Sinh cá mục tiêu
-	var bait_pref := bait_system.preferred_tier if bait_system.remaining_uses > 0 else 0
-	var fish_res: Resource = FishSpawnerScript.spawn_fish_for_spot(spot, bait_pref, rng)
-	fishing_data.target_fish_resource = fish_res
-	current_fish = FishDataScript.from_resource(fish_res, rng)
 
 	# Tính thời gian chờ cá cắn
 	var min_w: float = float(spot.get("min_wait_time")) if "min_wait_time" in spot else 2.0

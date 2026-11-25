@@ -7,7 +7,8 @@ extends RefCounted
 static func spawn_fish_for_spot(
 	spot: Resource,
 	bait_pref_tier: int,
-	rng: RandomNumberGenerator
+	rng: RandomNumberGenerator,
+	max_fish_tier: int = 99
 ) -> Resource:
 	if spot == null:
 		return null
@@ -23,8 +24,14 @@ static func spawn_fish_for_spot(
 		var fish_res: Resource = entry.get("fish") as Resource if "fish" in entry else null
 		var weight: int = int(entry["weight"]) if "weight" in entry else 1
 
-		if fish_res != null and bait_pref_tier > 0:
-			var tier: int = int(fish_res.get("tier")) if "tier" in fish_res else 1
+		if fish_res == null:
+			continue
+		var fish_tier: int = int(fish_res.get("tier")) if "tier" in fish_res else 0
+		if fish_tier > max_fish_tier:
+			continue # Cá quá phẩm cấp so với cần câu: không thể mắc câu
+
+		if bait_pref_tier > 0:
+			var tier: int = fish_tier
 			# Nếu mồi phù hợp phẩm cấp cá, tăng gấp đôi tỷ lệ cắn câu
 			if tier == bait_pref_tier:
 				weight *= 2
@@ -32,8 +39,10 @@ static func spawn_fish_for_spot(
 		total_weight += weight
 		weighted_list.append({"fish": fish_res, "weight": weight})
 
+	if weighted_list.is_empty():
+		return null
 	if total_weight <= 0:
-		return table[0].get("fish") as Resource
+		return weighted_list[0]["fish"] as Resource
 
 	var roll: int = rng.randi_range(1, total_weight)
 	var accumulated: int = 0
@@ -42,4 +51,4 @@ static func spawn_fish_for_spot(
 		if roll <= accumulated:
 			return item["fish"] as Resource
 
-	return table[0].get("fish") as Resource
+	return weighted_list[0]["fish"] as Resource

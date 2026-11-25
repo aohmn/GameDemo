@@ -13,6 +13,7 @@ const FISHING_RIG_PATH: String = "res://presentation/fishing_rig/fishing_rig.tsc
 const ECONOMY_API_PATH: String = "res://modules/economy/api/economy_api.gd"
 const SHOP_API_PATH: String = "res://modules/shop/api/shop_api.gd"
 const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
+const CULTIVATION_API_PATH: String = "res://modules/cultivation/api/cultivation_api.gd"
 
 var _map_manager: Node3D
 var _coordinator: RefCounted
@@ -24,6 +25,7 @@ var _inventory_api: RefCounted
 var _economy_api: RefCounted
 var _shop_api: RefCounted
 var _fishing_api: RefCounted
+var _cultivation_api: RefCounted
 var _fishing_inventory_ui: Control
 var _fishing_ui: Control
 var _fishing_rig: Node3D
@@ -208,9 +210,20 @@ func _init_services() -> void:
             if _shop_api.has_method("load_data"):
                 _shop_api.call("load_data")
 
+    if ResourceLoader.exists(CULTIVATION_API_PATH):
+        var cult_s: Script = load(CULTIVATION_API_PATH) as Script
+        if cult_s != null:
+            _cultivation_api = cult_s.new() as RefCounted
+            if _cultivation_api.has_method("load_save"):
+                _cultivation_api.call("load_save")
+
     # Khởi tạo coordinator kết nối atomic
     _coordinator = SERVICE_COORDINATOR_SCRIPT.new()
     _coordinator.call("setup", _inventory_api, _economy_api, _shop_api, _fishing_api)
+    if _cultivation_api != null:
+        _coordinator.call("set_cultivation_api", _cultivation_api)
+        if _fishing_api != null and _fishing_api.has_method("set_realm_provider"):
+            _fishing_api.call("set_realm_provider", Callable(_cultivation_api, "get_current_realm_index"))
 
     var eb: Node = get_node_or_null("/root/EventBus")
     if eb != null and eb.has_method("subscribe"):
