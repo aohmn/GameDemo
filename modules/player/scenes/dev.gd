@@ -44,10 +44,9 @@ func _create_player() -> void:
 
 func _create_camera() -> void:
     var camera := Camera3D.new()
-    camera.position = Vector3(0.0, 4.0, 7.0)
-    camera.look_at(Vector3.ZERO)
-    camera.current = true
     add_child(camera)
+    camera.look_at_from_position(Vector3(0.0, 4.0, 7.0), Vector3.ZERO)
+    camera.current = true
 
 
 func _create_light() -> void:

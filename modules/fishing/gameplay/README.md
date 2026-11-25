@@ -1,4 +1,4 @@
-# Gameplay Fishing Module (`gameplay/fishing/`)
+# Gameplay Fishing Module (`modules/fishing/gameplay/`)
 
 Module gameplay trung tâm của GameDemo: quản lý toàn diện quy trình câu cá tu tiên từ chuẩn bị trang bị, mồi câu, quăng câu, phát hiện cắn câu, đấu sức giằng co đến thu phục cá hoặc cá trốn thoát.
 
@@ -8,7 +8,7 @@ Module gameplay trung tâm của GameDemo: quản lý toàn diện quy trình c�
 Tuân thủ kiến trúc module độc lập và AGENTS.md (mỗi file ≤ 300 dòng, không texture, không phụ thuộc chéo gameplay khác, chỉ giao tiếp qua `core/contracts/fishing_events.gd` và `EventBus`).
 
 ```
-gameplay/fishing/
+modules/fishing/gameplay/
 ├── README.md                      # Tài liệu kiến trúc và API
 ├── ROADMAP.md                     # Lộ trình tính năng đã làm và hướng phát triển
 ├── fishing_controller.gd          # Bộ điều khiển trung tâm FSM và quản lý phiên câu

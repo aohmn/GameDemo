@@ -2,11 +2,11 @@ class_name FishingAPI
 extends RefCounted
 
 ## Giao diện lập trình (API) công khai của module câu cá.
-## Tích hợp động cơ gameplay/fishing/FishingController mới làm lõi xử lý,
+## Tích hợp động cơ modules/fishing/gameplay/FishingController mới làm lõi xử lý,
 ## giữ nguyên vẹn 100% hợp đồng FishingEvents với EventBus và UI hiện hành.
 
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
-const FishingControllerScript: Script = preload("res://gameplay/fishing/fishing_controller.gd")
+const FishingControllerScript: Script = preload("res://modules/fishing/gameplay/fishing_controller.gd")
 
 var _controller: FishingController
 var _spots: Dictionary = {}

@@ -1,20 +1,20 @@
 class_name FishingController
 extends RefCounted
 
-## FishingController — Bộ điều khiển trung tâm của module gameplay/fishing/.
+## FishingController — Bộ điều khiển trung tâm của module modules/fishing/gameplay/.
 ## Quản lý toàn bộ 8 trạng thái FSM, điều phối đấu sức, trang bị, kỹ năng và phát sự kiện.
 
-const FishingStateScript: Script = preload("res://gameplay/fishing/core/fishing_state.gd")
-const FishingDataScript: Script = preload("res://gameplay/fishing/core/fishing_data.gd")
-const FishingCalculatorScript: Script = preload("res://gameplay/fishing/core/fishing_calculator.gd")
-const FishDataScript: Script = preload("res://gameplay/fishing/fish/fish_data.gd")
-const FishSpawnerScript: Script = preload("res://gameplay/fishing/fish/fish_spawner.gd")
-const FishingBattleScript: Script = preload("res://gameplay/fishing/battle/fishing_battle.gd")
-const FishingRodScript: Script = preload("res://gameplay/fishing/equipment/fishing_rod.gd")
-const FishingLineScript: Script = preload("res://gameplay/fishing/equipment/fishing_line.gd")
-const BaitSystemScript: Script = preload("res://gameplay/fishing/equipment/bait_system.gd")
-const FishingSkillScript: Script = preload("res://gameplay/fishing/skills/fishing_skill.gd")
-const FishingRewardScript: Script = preload("res://gameplay/fishing/rewards/fishing_reward.gd")
+const FishingStateScript: Script = preload("res://modules/fishing/gameplay/core/fishing_state.gd")
+const FishingDataScript: Script = preload("res://modules/fishing/gameplay/core/fishing_data.gd")
+const FishingCalculatorScript: Script = preload("res://modules/fishing/gameplay/core/fishing_calculator.gd")
+const FishDataScript: Script = preload("res://modules/fishing/gameplay/fish/fish_data.gd")
+const FishSpawnerScript: Script = preload("res://modules/fishing/gameplay/fish/fish_spawner.gd")
+const FishingBattleScript: Script = preload("res://modules/fishing/gameplay/battle/fishing_battle.gd")
+const FishingRodScript: Script = preload("res://modules/fishing/gameplay/equipment/fishing_rod.gd")
+const FishingLineScript: Script = preload("res://modules/fishing/gameplay/equipment/fishing_line.gd")
+const BaitSystemScript: Script = preload("res://modules/fishing/gameplay/equipment/bait_system.gd")
+const FishingSkillScript: Script = preload("res://modules/fishing/gameplay/skills/fishing_skill.gd")
+const FishingRewardScript: Script = preload("res://modules/fishing/gameplay/rewards/fishing_reward.gd")
 
 # Callbacks xuất tín hiệu
 var on_state_changed: Callable

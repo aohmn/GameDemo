@@ -1,11 +1,11 @@
 extends Node3D
 
-## Scene kiểm thử độc lập cho module gameplay/fishing/.
+## Scene kiểm thử độc lập cho module modules/fishing/gameplay/.
 ## Dùng typed Resources (FishSpec, RodSpec, SpotSpec) thay vì Resource.set() tuỳ ý.
 ## Kiểm tra FSM, giằng co, đứt dây, trốn thoát, thu phục, độ bền trang bị, kỹ năng.
 
-const FishingControllerScript: Script = preload("res://gameplay/fishing/fishing_controller.gd")
-const FishingStateScript: Script = preload("res://gameplay/fishing/core/fishing_state.gd")
+const FishingControllerScript: Script = preload("res://modules/fishing/gameplay/fishing_controller.gd")
+const FishingStateScript: Script = preload("res://modules/fishing/gameplay/core/fishing_state.gd")
 const FishSpecScript: Script = preload("res://modules/fishing/data/fish_spec.gd")
 const RodSpecScript: Script = preload("res://modules/fishing/data/rod_spec.gd")
 const SpotSpecScript: Script = preload("res://modules/fishing/data/spot_spec.gd")
@@ -67,7 +67,7 @@ func _create_mock_rod() -> RodSpec:
 
 
 func _test_fsm_valid_transitions() -> void:
-	var ctrl := FishingControllerScript.new(123)
+	var ctrl: FishingController = FishingControllerScript.new(123)
 	assert(ctrl.get_state_name() == "IDLE", "Phải khởi đầu ở IDLE")
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
@@ -79,7 +79,7 @@ func _test_fsm_valid_transitions() -> void:
 
 
 func _test_strike_early_failure() -> void:
-	var ctrl := FishingControllerScript.new(123)
+	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 	ctrl.cast(spot, rod)
@@ -91,7 +91,7 @@ func _test_strike_early_failure() -> void:
 
 
 func _test_strike_late_escaped() -> void:
-	var ctrl := FishingControllerScript.new(123)
+	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 	ctrl.cast(spot, rod)
@@ -107,7 +107,7 @@ func _test_strike_late_escaped() -> void:
 
 
 func _test_successful_catch_flow() -> void:
-	var ctrl := FishingControllerScript.new(123)
+	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 	var caught_payload: Dictionary = {}
@@ -134,7 +134,7 @@ func _test_successful_catch_flow() -> void:
 
 
 func _test_line_break_condition() -> void:
-	var ctrl := FishingControllerScript.new(123)
+	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 	var lost_reason := ""
@@ -157,7 +157,7 @@ func _test_line_break_condition() -> void:
 
 
 func _test_slack_escape_condition() -> void:
-	var ctrl := FishingControllerScript.new(123)
+	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 	var lost_reason := ""
@@ -179,7 +179,7 @@ func _test_slack_escape_condition() -> void:
 
 
 func _test_equipment_durability() -> void:
-	var ctrl := FishingControllerScript.new(42)
+	var ctrl: FishingController = FishingControllerScript.new(42)
 	var spot := _create_mock_spot()
 	var rod := _create_mock_rod()
 	rod.current_durability = 50
@@ -202,7 +202,7 @@ func _test_equipment_durability() -> void:
 
 
 func _test_skill_effects() -> void:
-	var ctrl := FishingControllerScript.new(99)
+	var ctrl: FishingController = FishingControllerScript.new(99)
 
 	# Mở khóa kỹ năng
 	ctrl.skills.unlock_skill(FishingSkill.SkillType.THINH_THUY)

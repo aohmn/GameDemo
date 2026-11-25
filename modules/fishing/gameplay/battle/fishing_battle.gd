@@ -4,9 +4,9 @@ extends RefCounted
 ## Quản lý quá trình giằng co (Fight FSM):
 ## Đồng bộ giữa TensionSystem, FishAI, sức chịu đựng của cá và độ bền trang bị thực tế.
 
-const TensionSystemScript: Script = preload("res://gameplay/fishing/battle/tension_system.gd")
-const FishAIScript: Script = preload("res://gameplay/fishing/fish/fish_ai.gd")
-const FishingCalculatorScript: Script = preload("res://gameplay/fishing/core/fishing_calculator.gd")
+const TensionSystemScript: Script = preload("res://modules/fishing/gameplay/battle/tension_system.gd")
+const FishAIScript: Script = preload("res://modules/fishing/gameplay/fish/fish_ai.gd")
+const FishingCalculatorScript: Script = preload("res://modules/fishing/gameplay/core/fishing_calculator.gd")
 
 var tension_system: TensionSystem
 var fish_ai: FishAI

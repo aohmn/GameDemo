@@ -155,7 +155,7 @@ func _update_view() -> void:
 			_btn_cast.disabled = not _is_near_spot
 			_btn_cast.text = "Thả Cần" if _is_near_spot else "Đến Gần Nước"
 			_badge_label.text = "SẴN SÀNG"
-			_sub_label.text = "Điểm câu hợp lệ" if _is_near_spot else "Hướng ra mặt nước để câu"
+			_sub_label.text = "Điểm câu hợp lệ" if _is_near_spot else "Ra cuối cầu tàu, quay mặt ra biển để thả cần"
 			_alert_label.text = ""
 
 		"CASTING", "WAITING":

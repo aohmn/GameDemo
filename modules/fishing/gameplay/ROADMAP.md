@@ -1,4 +1,4 @@
-# Lộ Trình Phát Triển Gameplay Fishing (`gameplay/fishing/`)
+# Lộ Trình Phát Triển Gameplay Fishing (`modules/fishing/gameplay/`)
 
 ## 1. Đã Hoàn Thành (TASK 11)
 - [x] Kiến trúc phân tầng độc lập (`core/`, `fish/`, `battle/`, `equipment/`, `skills/`, `rewards/`).

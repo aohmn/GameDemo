@@ -63,6 +63,7 @@ static func _make_pier_boundaries(root_node: Node3D) -> void:
 		{"name": "BoundPierTNorth", "pos": Vector3(-7.5, 2.0, 20.15), "size": Vector3(6.5, wall_h, 0.3)},
 		{"name": "BoundPierTSouth", "pos": Vector3(-6.5, 2.0, 23.85), "size": Vector3(8.5, wall_h, 0.3)},
 		{"name": "BoundPierTWest", "pos": Vector3(-10.6, 2.0, 22.0), "size": Vector3(0.3, wall_h, 4.0)},
+		{"name": "BoundMainPierEnd", "pos": Vector3(-1.0, 2.0, 23.05), "size": Vector3(3.0, wall_h, 0.2)},
 	]
 	for b in bounds:
 		_add_box_collider(root_node, b["name"], b["pos"], b["size"])

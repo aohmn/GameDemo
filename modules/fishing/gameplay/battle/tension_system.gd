@@ -3,7 +3,7 @@ extends RefCounted
 
 ## Quản lý chỉ số lực căng, vùng an toàn, cảnh báo đứt dây hoặc tuột lưỡi.
 
-const FishingCalculatorScript: Script = preload("res://gameplay/fishing/core/fishing_calculator.gd")
+const FishingCalculatorScript: Script = preload("res://modules/fishing/gameplay/core/fishing_calculator.gd")
 
 var current_tension: float = 40.0
 var safe_min: float = 30.0

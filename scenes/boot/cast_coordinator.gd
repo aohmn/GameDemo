@@ -3,7 +3,7 @@ extends RefCounted
 ## Nối Player + Map + Fishing UI + cần câu: tính điểm rơi phao phía trước nhân vật,
 ## hỏi map điểm đó có phải mặt nước không, rồi báo cho UI và cần câu. Hủy câu nếu đi quá xa.
 
-const CAST_DISTANCE: float = 3.2
+const CAST_DISTANCE: float = 4.0
 const MAX_LINE_DISTANCE: float = 8.0
 const SPOT_ID: String = "spot_cau_tau_ben_cang"
 
