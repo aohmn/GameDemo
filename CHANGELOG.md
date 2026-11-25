@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Hấp thu linh khí: HUD tu vi (`presentation/cultivation_ui/`), nút Hấp thu/Bán trong túi cá, nút ĐỘT PHÁ, thông báo khi bị từ chối thả cần; `scenes/boot/ui_action_router.gd` nối UI với logic; cần carbon yêu cầu cảnh giới 1 (Mức 2, chạm mô phỏng; chưa chạy Godot Android).
+- Sửa lỗi nghiêm trọng: inventory, cultivation, crafting, equipment, map_manager gọi `EventBus.emit` (không tồn tại) nên mọi sự kiện của chúng bị nuốt; nay gọi `emit_event`.
 - Sửa lỗi nút "Thả Cần" sáng nhưng chạm không ăn trên điện thoại: UI bị vẽ lại mỗi khung vật lý làm nút ẩn/hiện liên tục và Godot hủy trạng thái nhấn; nay `set_near_fishing_spot` bỏ qua khi không đổi và `_set_visible_widgets` không ẩn rồi hiện lại (Mức 2, tái hiện bằng chạm giữ 0,1 s; chưa chạy Godot Android).
 - Fishing chuẩn thiết kế tu tiên: cần câu phẩm N chỉ câu được cá phẩm ≤ N+1 (`FishingCalculator.max_catchable_fish_tier`); cổng cảnh giới của điểm câu/cần câu qua `FishingAPI.set_realm_provider` + sự kiện `fishing_cast_denied`; Bootstrap tạo Cultivation (trước đó chưa nối vào game); sửa test dev bị sai do lambda bắt biến theo giá trị, thêm test phẩm cấp (Mức 2, 10/10 test xanh; chưa chạy Godot Android).
 - Sửa lỗi khó thả cần: thêm lan can đầu cầu chính (`BoundMainPierEnd`) để nhân vật không đi rơi khỏi cầu rồi bị đưa về điểm xuất phát; tăng tầm thả phao lên 4 m; gợi ý trên UI chỉ rõ cách ra điểm câu (Mức 2, chưa chạy Godot Android).

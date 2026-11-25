@@ -20,3 +20,7 @@ Thuộc tầng Presentation: chỉ giao tiếp qua API của `modules/inventory`
 ## Kiểm tra độc lập
 - Mở scene `presentation/fishing_inventory_ui/scenes/dev.tscn` để kiểm tra trực tiếp giao diện trên Godot hoặc thiết bị.
 - Scene dev tích hợp sẵn các nút giả lập câu cá để kiểm tra việc cập nhật danh sách và trạng thái túi trống.
+
+## Hành động trên cá
+- Mỗi dòng cá có nút Hấp thu và Bán. Nút "Số lượng" ở tiêu đề đổi giữa 1 con và Tất cả.
+- Tín hiệu `fish_action_requested(action, fish_id, count)` với `action` là `absorb` hoặc `sell`; Bootstrap (`scenes/boot/ui_action_router.gd`) xử lý, UI không chứa logic.

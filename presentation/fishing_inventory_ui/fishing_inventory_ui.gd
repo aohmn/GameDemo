@@ -8,6 +8,12 @@ extends Control
 const InventoryEventsContract: Script = preload("res://core/contracts/inventory_events.gd")
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
 
+## Người chơi bấm Hấp thu/Bán trên một loại cá. Bootstrap nối tín hiệu này tới logic nghiệp vụ.
+signal fish_action_requested(action: String, fish_id: String, count: int)
+
+const ACTION_ABSORB: String = "absorb"
+const ACTION_SELL: String = "sell"
+
 const FISH_NAMES: Dictionary = {
 	"fish_ca_com": "Cá Cơm Biển",
 	"fish_ca_doi": "Cá Đối Mục",
@@ -28,6 +34,8 @@ var _scroll_container: ScrollContainer
 var _fish_list_container: VBoxContainer
 var _toggle_button: Button
 var _close_button: Button
+var _mode_button: Button
+var _all_mode: bool = false
 var _is_open: bool = false
 
 
@@ -122,6 +130,11 @@ func _setup_ui() -> void:
 	_title_label.add_theme_font_size_override("font_size", 16)
 	header_hbox.add_child(_title_label)
 
+	_mode_button = Button.new()
+	_mode_button.text = "Số lượng: 1"
+	_mode_button.pressed.connect(_on_mode_pressed)
+	header_hbox.add_child(_mode_button)
+
 	_close_button = Button.new()
 	_close_button.text = " X "
 	_close_button.pressed.connect(func(): set_open(false))
@@ -215,11 +228,30 @@ func _update_view() -> void:
 		var weight_g: int = int(data.get("total_weight_g", 0))
 		var display_name: String = str(FISH_NAMES.get(fish_id, fish_id))
 
-		var item_panel := _create_fish_item_row(display_name, count, weight_g)
+		var item_panel := _create_fish_item_row(str(fish_id), display_name, count, weight_g)
 		_fish_list_container.add_child(item_panel)
 
 
-func _create_fish_item_row(display_name: String, count: int, weight_g: int) -> Control:
+func _on_mode_pressed() -> void:
+	_all_mode = not _all_mode
+	_mode_button.text = "Số lượng: Tất cả" if _all_mode else "Số lượng: 1"
+	_update_view()
+
+
+func _request_action(action: String, fish_id: String, count: int) -> void:
+	fish_action_requested.emit(action, fish_id, count if _all_mode else 1)
+
+
+func _create_action_button(text: String, action: String, fish_id: String, count: int) -> Button:
+	var btn := Button.new()
+	btn.text = text
+	btn.custom_minimum_size = Vector2(72.0, 34.0)
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.pressed.connect(_request_action.bind(action, fish_id, count))
+	return btn
+
+
+func _create_fish_item_row(fish_id: String, display_name: String, count: int, weight_g: int) -> Control:
 	var row_panel := PanelContainer.new()
 	row_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
@@ -257,5 +289,8 @@ func _create_fish_item_row(display_name: String, count: int, weight_g: int) -> C
 	weight_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	weight_lbl.add_theme_font_size_override("font_size", 14)
 	hbox.add_child(weight_lbl)
+
+	hbox.add_child(_create_action_button("Hấp thu", ACTION_ABSORB, fish_id, count))
+	hbox.add_child(_create_action_button("Bán", ACTION_SELL, fish_id, count))
 
 	return row_panel

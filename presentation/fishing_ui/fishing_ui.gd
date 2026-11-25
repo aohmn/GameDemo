@@ -147,6 +147,7 @@ func _connect_events() -> void:
 		eb.call("subscribe", FishingEventsContract.STATE_CHANGED, func(p: Dictionary): _state = str(p.get("to_state", "IDLE")); _update_view())
 		eb.call("subscribe", FishingEventsContract.FISH_BITING, func(p: Dictionary): _state = "BITE"; _alert_label.text = "Cá cắn câu! Giật trong %0.1fs!" % float(p.get("window_seconds", 0.8)); _update_view())
 		eb.call("subscribe", FishingEventsContract.FIGHT_UPDATE, _on_fight_update_evt)
+		eb.call("subscribe", FishingEventsContract.CAST_DENIED, _on_cast_denied_evt)
 		eb.call("subscribe", FishingEventsContract.FISH_CAUGHT, _on_fish_caught_evt)
 		eb.call("subscribe", FishingEventsContract.FISH_ESCAPED, _on_fish_escaped_evt)
 
@@ -263,3 +264,15 @@ func _show_result(title: String, desc: String, bg_col: Color) -> void:
 	_res_desc.text = desc
 	_res_popup.visible = true
 	_res_timer = 3.0
+
+
+func _on_cast_denied_evt(p: Dictionary) -> void:
+	match str(p.get("reason", "")):
+		"spot_realm":
+			_alert_label.text = "Cảnh giới chưa đủ để câu ở vùng này (cần cảnh giới %d)" % (int(p.get("required", 0)) + 1)
+		"rod_realm":
+			_alert_label.text = "Cảnh giới chưa đủ để dùng cần này (cần cảnh giới %d)" % (int(p.get("required", 0)) + 1)
+		"no_fish_for_rod":
+			_alert_label.text = "Cần câu quá yếu, không có linh ngư nào mắc câu ở đây"
+		_:
+			_alert_label.text = "Không thể thả cần lúc này"

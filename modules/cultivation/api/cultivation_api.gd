@@ -105,5 +105,5 @@ func _emit_event(event_name: String, payload: Dictionary) -> void:
 		var st := ml as SceneTree
 		if st.root != null and st.root.has_node("EventBus"):
 			var eb: Node = st.root.get_node("EventBus")
-			if eb != null and eb.has_method("emit"):
-				eb.call("emit", event_name, payload)
+			if eb != null and eb.has_method("emit_event"):
+				eb.call("emit_event", event_name, payload)

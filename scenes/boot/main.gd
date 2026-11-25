@@ -2,6 +2,7 @@ extends Node3D
 
 const MAP_MANAGER_SCRIPT: Script = preload("res://scenes/boot/map_manager.gd")
 const SERVICE_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/service_coordinator.gd")
+const UI_ACTION_ROUTER_SCRIPT: Script = preload("res://scenes/boot/ui_action_router.gd")
 const CAST_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/cast_coordinator.gd")
 const PLAYER_SCENE_PATH: String = "res://modules/player/scenes/player.tscn"
 const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
@@ -26,6 +27,8 @@ var _economy_api: RefCounted
 var _shop_api: RefCounted
 var _fishing_api: RefCounted
 var _cultivation_api: RefCounted
+var _cultivation_ui: Control
+var _ui_router: RefCounted
 var _fishing_inventory_ui: Control
 var _fishing_ui: Control
 var _fishing_rig: Node3D
@@ -43,6 +46,7 @@ func _ready() -> void:
     _create_joystick()
     _init_services()
     _create_inventory_ui()
+    _create_cultivation_ui()
     _create_fishing_ui()
     _create_fishing_rig()
 
@@ -244,6 +248,11 @@ func _create_inventory_ui() -> void:
             _hud.add_child(_fishing_inventory_ui)
             if _inventory_api != null and _fishing_inventory_ui.has_method("set_inventory_api"):
                 _fishing_inventory_ui.call("set_inventory_api", _inventory_api)
+
+
+func _create_cultivation_ui() -> void:
+    _ui_router = UI_ACTION_ROUTER_SCRIPT.new()
+    _cultivation_ui = _ui_router.call("build", _hud, _fishing_inventory_ui, _coordinator, _economy_api, _cultivation_api) as Control
 
 
 func _create_fishing_ui() -> void:
