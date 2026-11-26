@@ -5,7 +5,7 @@ extends Control
 ## Thả cần -> Cắn câu -> Giật cần -> Giằng co lực căng -> Bắt được cá / Thất bại.
 
 const FishingUIScript: Script = preload("res://presentation/fishing_ui/fishing_ui.gd")
-const FishingAPIScript: Script = preload("res://modules/fishing/api/fishing_api.gd")
+const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
 
 var _ui: Control
 var _fishing_api: RefCounted
@@ -21,7 +21,10 @@ func _ready() -> void:
 	bg.anchor_bottom = 1.0
 	add_child(bg)
 
-	_fishing_api = FishingAPIScript.new(12345)
+	if ResourceLoader.exists(FISHING_API_PATH):
+		var api_script := load(FISHING_API_PATH) as Script
+		if api_script != null:
+			_fishing_api = api_script.new(12345)
 
 	_ui = FishingUIScript.new()
 	add_child(_ui)

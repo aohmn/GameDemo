@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Dọn dẹp kỹ thuật & chuẩn hóa độc lập: loại bỏ preload chéo module trong các scene dev (`maps/harbor_island/dev.gd`, `presentation/.../dev.gd`); tối ưu cấu trúc các file chạm trần 300 dòng (`fishing_logic`, `gameplay/dev`, `fishing_inventory_ui`, `main`) xuống <= 283 dòng (Mức 2, toàn bộ 15/15 dev scenes & 10/10 test gameplay đạt; chưa chạy Godot Android).
+
 - Sửa lỗi InventoryAPI thiếu `load_data()` khiến túi cá không tải được khi mở lại game; chỉnh cao nguyên, dốc lối đi, Hồ Linh Ngư và bờ cát vịnh cầu tàu trên `harbor_island` hết bị chìm và thả cần được ở mạn cầu tàu lẫn Hồ Linh Ngư (Mức 2, Godot Android).
 - Đồ họa map procedural (không texture): bộ shader dùng chung `assets/shaders/` (ván sàn, gỗ, ngói, đá lát, bạch ngọc, đá thô, tán lá) chọn theo tên node qua `ProcMaterial`; cát gợn sóng, cỏ có mảng và hoa, vách núi có tầng đá; bỏ tấm `PlateauCenter` thừa gây vệt đen; bóng đổ 2 tầng cho Android (Mức 2, render bằng Mesa; chưa đo FPS trên điện thoại).
 - Popup bắt cá ghi rõ linh khí nằm trong cá và chỉ vào tu vi khi mở Túi bấm Hấp thu (trước đó ghi "+N Linh Khí" khiến người chơi tưởng tu vi tự tăng) (Mức 2; chưa chạy Godot Android).

@@ -1,7 +1,7 @@
 extends Node3D
 
 const MAP_SCENE: PackedScene = preload("res://maps/harbor_island/map.tscn")
-const SKY_DOME_SCENE: PackedScene = preload("res://modules/sky_dome/scenes/sky_dome.tscn")
+const SKY_DOME_SCENE_PATH: String = "res://modules/sky_dome/scenes/sky_dome.tscn"
 
 var _camera: Camera3D
 var _orbit_angle: float = 0.0
@@ -36,13 +36,17 @@ func _create_map() -> void:
 
 
 func _create_sky_dome() -> void:
-    var dome_node: Node = SKY_DOME_SCENE.instantiate()
-    var dome := dome_node as Node3D
-    if dome != null:
-        dome.name = "SkyDome"
-        add_child(dome)
-        if dome.has_method("set_follow_target") and _camera != null:
-            dome.call("set_follow_target", _camera)
+    if not ResourceLoader.exists(SKY_DOME_SCENE_PATH):
+        return
+    var scene := load(SKY_DOME_SCENE_PATH) as PackedScene
+    if scene == null:
+        return
+    var dome_node := scene.instantiate() as Node3D
+    if dome_node != null:
+        dome_node.name = "SkyDome"
+        add_child(dome_node)
+        if dome_node.has_method("set_follow_target") and _camera != null:
+            dome_node.call("set_follow_target", _camera)
 
 
 func _create_dev_camera() -> void:

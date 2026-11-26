@@ -4,7 +4,7 @@ extends Control
 ## Tích hợp mock inventory hoặc InventoryAPI thực để thử nghiệm tương tác UI trên điện thoại.
 
 const FishingInventoryUIScript: Script = preload("res://presentation/fishing_inventory_ui/fishing_inventory_ui.gd")
-const InventoryAPIScript: Script = preload("res://modules/inventory/api/inventory_api.gd")
+const INVENTORY_API_PATH: String = "res://modules/inventory/api/inventory_api.gd"
 const InventoryEventsContract: Script = preload("res://core/contracts/inventory_events.gd")
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
 
@@ -27,9 +27,11 @@ func _setup_mock_environment() -> void:
 	bg.anchor_bottom = 1.0
 	add_child(bg)
 
-	# Khởi tạo Inventory API độc lập
-	if InventoryAPIScript != null:
-		_inventory_api = InventoryAPIScript.new()
+	# Khởi tạo Inventory API độc lập nếu có
+	if ResourceLoader.exists(INVENTORY_API_PATH):
+		var api_script := load(INVENTORY_API_PATH) as Script
+		if api_script != null:
+			_inventory_api = api_script.new()
 
 	# Khởi tạo UI
 	_ui = FishingInventoryUIScript.new()

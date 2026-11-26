@@ -9,20 +9,16 @@ const FishSpecScript: Script = preload("res://modules/fishing/data/fish_spec.gd"
 const RodSpecScript: Script = preload("res://modules/fishing/data/rod_spec.gd")
 const SpotSpecScript: Script = preload("res://modules/fishing/data/spot_spec.gd")
 
-
 func _ready() -> void:
 	print("=== BẮT ĐẦU KIỂM THỬ GAMEPLAY/FISHING ===")
 	_run_all_tests()
 
-
 var _failures: int = 0
-
 
 func _check(condition: bool, message: String) -> void:
 	if not condition:
 		_failures += 1
 		push_error("FAIL: " + message)
-
 
 func _run_all_tests() -> void:
 	_test_fsm_valid_transitions()
@@ -40,14 +36,12 @@ func _run_all_tests() -> void:
 	else:
 		print("=== CÓ %d KIỂM TRA THẤT BẠI ===" % _failures)
 
-
 ## Chờ cá cắn câu (thời gian chờ có sàn 0,8 s nên không thể tick cố định).
 func _wait_for_bite(ctrl: FishingController) -> void:
 	for i in range(200):
 		if ctrl.get_state_name() == "BITE":
 			return
 		ctrl.tick(0.1)
-
 
 func _create_mock_spot() -> SpotSpec:
 	var spot := SpotSpec.new()
@@ -70,7 +64,6 @@ func _create_mock_spot() -> SpotSpec:
 	spot.fish_table = [{"fish": fish, "weight": 100}]
 	return spot
 
-
 func _create_mock_rod() -> RodSpec:
 	var rod := RodSpec.new()
 	rod.id = "rod_test"
@@ -86,7 +79,6 @@ func _create_mock_rod() -> RodSpec:
 	rod.control_power = 1.0
 	return rod
 
-
 func _test_fsm_valid_transitions() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	_check(ctrl.get_state_name() == "IDLE", "Phải khởi đầu ở IDLE")
@@ -98,7 +90,6 @@ func _test_fsm_valid_transitions() -> void:
 	_check(ctrl.get_state_name() == "WAITING", "Sau khi cast phải là WAITING")
 	print("PASS: FSM khởi đầu và thả câu.")
 
-
 func _test_strike_early_failure() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
@@ -109,7 +100,6 @@ func _test_strike_early_failure() -> void:
 	_check(not struck, "Giật cần khi WAITING phải thất bại")
 	_check(ctrl.get_state_name() == "IDLE", "Sau khi thất bại phải về IDLE")
 	print("PASS: Giật cần sớm (early) thất bại chính xác.")
-
 
 func _test_strike_late_escaped() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
@@ -124,7 +114,6 @@ func _test_strike_late_escaped() -> void:
 	ctrl.tick(1.5)
 	_check(ctrl.get_state_name() == "IDLE", "Cá phải trốn thoát và về IDLE")
 	print("PASS: Giật cần trễ (late) cá trốn thoát chính xác.")
-
 
 func _test_successful_catch_flow() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
@@ -157,7 +146,6 @@ func _test_successful_catch_flow() -> void:
 	_check(caught_payload.has("qi_value"), "Payload phải chứa qi_value")
 	print("PASS: Luồng câu cá thành công và thu hoạch phần thưởng.")
 
-
 func _test_line_break_condition() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
@@ -180,7 +168,6 @@ func _test_line_break_condition() -> void:
 	_check(rec["reason"] == "line_break", "Lý do thất bại phải là đứt dây (line_break)")
 	print("PASS: Đứt dây khi lực căng vượt ngưỡng max_tension.")
 
-
 func _test_slack_escape_condition() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(123)
 	var spot := _create_mock_spot()
@@ -201,7 +188,6 @@ func _test_slack_escape_condition() -> void:
 
 	_check(rec["reason"] == "slack", "Lý do thất bại phải là tuột lưỡi do chùng dây (slack)")
 	print("PASS: Cá trốn thoát khi để dây quá chùng.")
-
 
 func _test_equipment_durability() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(42)
@@ -224,7 +210,6 @@ func _test_equipment_durability() -> void:
 	_check(line_dur < 100.0, "Độ bền dây phải giảm sau giằng co")
 	_check(rod_dur < 50.0, "Độ bền cần phải giảm từ giá trị khởi tạo 50")
 	print("PASS: Độ bền trang bị giảm theo diễn biến giằng co.")
-
 
 func _test_skill_effects() -> void:
 	var ctrl: FishingController = FishingControllerScript.new(99)
@@ -251,14 +236,12 @@ func _test_skill_effects() -> void:
 
 	print("PASS: Kỹ năng câu cá có tác dụng gameplay cụ thể.")
 
-
 func _make_fish(fish_id: String, tier: int) -> FishSpec:
 	var fish := FishSpec.new()
 	fish.id = fish_id
 	fish.tier = tier as FishSpec.FishTier
 	fish.strength = 20.0
 	return fish
-
 
 func _spot_with(fishes: Array) -> SpotSpec:
 	var spot := SpotSpec.new()
@@ -268,7 +251,6 @@ func _spot_with(fishes: Array) -> SpotSpec:
 	for f in fishes:
 		spot.fish_table.append({"fish": f, "weight": 100})
 	return spot
-
 
 func _test_tier_gating() -> void:
 	var spot := _spot_with([_make_fish("fish_pham", 0), _make_fish("fish_tien", 3)])
@@ -289,7 +271,6 @@ func _test_tier_gating() -> void:
 	_check(not weak_got_high, "Cần phẩm thấp không được câu cá Tiên ngư")
 	_check(strong_got_high, "Cần phẩm cao phải câu được cá Tiên ngư")
 	print("PASS: Luật phẩm cấp cần câu và cá.")
-
 
 func _test_no_fish_for_weak_rod() -> void:
 	var spot := _spot_with([_make_fish("fish_than", 4)])
