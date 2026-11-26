@@ -7,10 +7,11 @@ render_mode cull_back, depth_draw_opaque;
 
 uniform vec4 sand_color : source_color = vec4(0.94, 0.85, 0.63, 1.0);
 uniform vec4 sand_wet_color : source_color = vec4(0.78, 0.68, 0.48, 1.0);
-uniform vec4 grass_color : source_color = vec4(0.32, 0.72, 0.27, 1.0);
-uniform vec4 grass_bright : source_color = vec4(0.42, 0.82, 0.35, 1.0);
-uniform vec4 rock_color : source_color = vec4(0.42, 0.38, 0.35, 1.0);
-uniform vec4 rock_dark : source_color = vec4(0.28, 0.25, 0.23, 1.0);
+uniform vec4 grass_color : source_color = vec4(0.26, 0.54, 0.22, 1.0);
+uniform vec4 grass_bright : source_color = vec4(0.40, 0.68, 0.28, 1.0);
+uniform vec4 grass_dry : source_color = vec4(0.58, 0.58, 0.28, 1.0);
+uniform vec4 rock_color : source_color = vec4(0.50, 0.43, 0.36, 1.0);
+uniform vec4 rock_dark : source_color = vec4(0.27, 0.23, 0.21, 1.0);
 
 varying vec3 v_world_pos;
 varying vec3 v_world_normal;
@@ -40,19 +41,37 @@ void fragment() {
     vec3 pos = v_world_pos;
     vec3 norm = normalize(v_world_normal);
 
-    // Nhiễu cát: gợn sóng gió nhẹ
+    // Cát: gợn sóng gió, hạt li ti, vài vỏ sò sẫm, ẩm dần về phía nước
     float sand_noise = gnoise(pos.xz * 1.5) * 0.5 + 0.5;
-    vec3 sand_col = mix(sand_color.rgb, sand_color.rgb * 0.92, sand_noise);
-    // Cát ẩm sát nước
+    float ripple = sin((pos.x * 0.8 + pos.z * 0.45) * 6.0 + gnoise(pos.xz * 0.8) * 4.0);
+    float grain = hash2(floor(pos.xz * 36.0)).x * 0.5 + 0.5;
+    vec3 sand_col = mix(sand_color.rgb, sand_color.rgb * 0.9, sand_noise);
+    sand_col *= 1.0 + ripple * 0.04;
+    sand_col *= 0.95 + grain * 0.1;
+    float shell = step(0.992, hash2(floor(pos.xz * 7.0)).y * 0.5 + 0.5) * smoothstep(0.3, 0.15, length(fract(pos.xz * 7.0) - 0.5));
+    sand_col = mix(sand_col, sand_wet_color.rgb * 0.7, shell * 0.8);
     sand_col = mix(sand_wet_color.rgb, sand_col, smoothstep(-0.2, 0.3, pos.y));
 
-    // Nhiễu thảm cỏ: biến thiên sáng tối theo mảng lớn
-    float grass_noise = gnoise(pos.xz * 0.4) * 0.5 + 0.5;
-    vec3 grass_col = mix(grass_color.rgb, grass_bright.rgb, grass_noise);
+    // Cỏ: mảng sáng tối lớn, vùng cỏ khô, sợi cỏ mảnh, lác đác hoa nhỏ
+    float g_big = gnoise(pos.xz * 0.35) * 0.5 + 0.5;
+    float g_mid = gnoise(pos.xz * 1.9) * 0.5 + 0.5;
+    float blades = gnoise(vec2(pos.x * 13.0, pos.z * 2.6)) * 0.5 + 0.5;
+    vec3 grass_col = mix(grass_color.rgb, grass_bright.rgb, g_mid);
+    grass_col = mix(grass_col, grass_dry.rgb, smoothstep(0.62, 0.9, g_big) * 0.65);
+    grass_col *= 0.88 + blades * 0.24;
+    float flower = step(0.985, hash2(floor(pos.xz * 5.0)).x * 0.5 + 0.5) * smoothstep(0.26, 0.14, length(fract(pos.xz * 5.0) - 0.5));
+    grass_col = mix(grass_col, vec3(0.95, 0.88, 0.55), flower * 0.8);
 
-    // Vân vách đá xếp tầng theo trục thẳng đứng
-    float rock_layer = gnoise(vec2(pos.y * 1.8, (pos.x + pos.z) * 0.3)) * 0.5 + 0.5;
+    // Đá: các tầng ngang theo độ cao, vệt xói mòn dọc, rêu mỏng ở chân vách
+    float layer_id = floor(pos.y * 2.4);
+    float layer_tone = hash2(vec2(layer_id, 4.0)).x * 0.5 + 0.5;
+    float erosion = gnoise(vec2((pos.x + pos.z) * 2.2, pos.y * 0.5)) * 0.5 + 0.5;
+    float rock_layer = clamp(layer_tone * 0.7 + erosion * 0.5, 0.0, 1.0);
     vec3 rock_col = mix(rock_color.rgb, rock_dark.rgb, rock_layer);
+    rock_col *= 0.9 + (gnoise(pos.xz * 6.0 + pos.y * 3.0) * 0.5 + 0.5) * 0.2;
+    float band = abs(fract(pos.y * 2.4) - 0.5);
+    rock_col *= 0.82 + 0.18 * smoothstep(0.0, 0.08, 0.5 - band);
+    rock_col = mix(rock_col, grass_color.rgb * 0.7, (1.0 - smoothstep(0.0, 0.6, pos.y)) * 0.25);
 
     // Phân tầng theo độ dốc: vách dốc là đá, mặt phẳng là cỏ/cát
     float slope = clamp(norm.y, 0.0, 1.0);

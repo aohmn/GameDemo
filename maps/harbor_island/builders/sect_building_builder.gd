@@ -1,5 +1,7 @@
 extends RefCounted
 
+const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
+
 ## SectBuildingBuilder — Kiến tạo các kiến trúc môn phái và cơ sở hạ tầng:
 ## 3. Tiên Các (Công trình trên cao, nơi tu luyện và đột phá)
 ## 4. Thương Hội (Kinh doanh cần câu, dây, mồi và pháp bảo)
@@ -175,8 +177,5 @@ static func _mesh(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3
 	node.name = node_name
 	node.mesh = mesh
 	node.position = pos
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = color
-	mat.roughness = 0.75
-	node.material_override = mat
+	node.material_override = ProcMaterial.make(node_name, color)
 	root_node.add_child(node)

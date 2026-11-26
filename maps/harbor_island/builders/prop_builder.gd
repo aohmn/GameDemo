@@ -1,5 +1,7 @@
 extends RefCounted
 
+const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
+
 ## PropBuilder — Bố trí thùng hàng, cảnh vật và cây cỏ nhiệt đới tiên hiệp.
 
 const WOOD_COLOR: Color = Color(0.55, 0.38, 0.24)
@@ -89,8 +91,5 @@ static func _mesh(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3
 	node.name = node_name
 	node.mesh = mesh
 	node.position = pos
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = color
-	mat.roughness = 0.8
-	node.material_override = mat
+	node.material_override = ProcMaterial.make(node_name, color)
 	root_node.add_child(node)

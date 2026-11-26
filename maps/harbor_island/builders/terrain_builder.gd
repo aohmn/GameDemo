@@ -37,6 +37,10 @@ static func _make_environment(root_node: Node3D) -> void:
 	sun.light_color = Color(1.0, 0.96, 0.88)
 	sun.light_energy = 1.35
 	sun.shadow_enabled = true
+	# 2 tầng bóng + làm mờ ranh giới tầng: bỏ vệt đen ngang đảo, nhẹ hơn cho Android
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
+	sun.directional_shadow_blend_splits = true
+	sun.directional_shadow_max_distance = 70.0
 	root_node.add_child(sun)
 
 
@@ -74,7 +78,6 @@ static func _make_island_terrain(root_node: Node3D) -> void:
 
 	# Cao nguyên đồi cỏ tự nhiên (Plateau Layers)
 	var plateaus: Array[Dictionary] = [
-		{"name": "PlateauCenter", "pos": Vector3(0.0, 0.02, 3.0), "size": Vector3(32.0, 0.04, 22.0)},
 		{"name": "PlateauNorth", "pos": Vector3(0.0, 0.35, -7.0), "size": Vector3(22.0, 0.7, 15.0)},
 		{"name": "PlateauWest", "pos": Vector3(-12.5, 0.1, 2.0), "size": Vector3(14.0, 0.2, 18.0)},
 		{"name": "PlateauEast", "pos": Vector3(12.5, 0.1, 2.0), "size": Vector3(14.0, 0.2, 18.0)},

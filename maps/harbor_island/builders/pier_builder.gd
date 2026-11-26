@@ -1,5 +1,7 @@
 extends RefCounted
 
+const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
+
 ## PierBuilder — Cầu tàu bến cảng, thuyền gỗ neo đậu và điểm câu ven biển
 ## Mang phong cách mộc mạc, phóng khoáng của Sea of Thieves.
 
@@ -77,7 +79,7 @@ static func _boat(root_node: Node3D, b_name: String, pos: Vector3, size: Vector3
 	node.mesh = hull
 	node.position = pos
 	node.rotation_degrees.y = rot_y
-	node.material_override = _mat(WOOD_COLOR)
+	node.material_override = ProcMaterial.make(b_name, WOOD_COLOR)
 	root_node.add_child(node)
 
 	# Cột buồm gỗ nhỏ
@@ -89,7 +91,7 @@ static func _boat(root_node: Node3D, b_name: String, pos: Vector3, size: Vector3
 	mast_node.name = b_name + "Mast"
 	mast_node.mesh = mast
 	mast_node.position = pos + Vector3(0.0, 1.2, 0.0)
-	mast_node.material_override = _mat(WOOD_DARK)
+	mast_node.material_override = ProcMaterial.make(mast_node.name, WOOD_DARK)
 	root_node.add_child(mast_node)
 
 	var body := StaticBody3D.new()
@@ -127,12 +129,5 @@ static func _mesh(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3
 	node.name = node_name
 	node.mesh = mesh
 	node.position = pos
-	node.material_override = _mat(color)
+	node.material_override = ProcMaterial.make(node_name, color)
 	root_node.add_child(node)
-
-
-static func _mat(color: Color) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.roughness = 0.85
-	return material

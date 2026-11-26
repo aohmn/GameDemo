@@ -1,5 +1,7 @@
 extends RefCounted
 
+const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
+
 ## PlazaPathBuilder — Kiến tạo Quảng trường trung tâm, Trận pháp truyền tống,
 ## Hồ Linh Ngư cảnh quan và Mạng lưới đường đi kết nối toàn bộ hòn đảo.
 
@@ -115,8 +117,5 @@ static func _mesh(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3
 	node.name = node_name
 	node.mesh = mesh
 	node.position = pos
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = color
-	mat.roughness = 0.8
-	node.material_override = mat
+	node.material_override = ProcMaterial.make(node_name, color)
 	root_node.add_child(node)
