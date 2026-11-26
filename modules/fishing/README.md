@@ -22,9 +22,12 @@ modules/fishing/
 │       ├── fish_ca_mu.tres
 │       ├── fish_ca_thu.tres
 │       ├── fish_ca_ngu_dai_duong.tres
+│       ├── fish_ca_chep_linh.tres
+│       ├── fish_ca_tram_ngoc.tres
 │       ├── rod_truc_nhiem.tres
 │       ├── rod_carbon_bien_sau.tres
-│       └── spot_cau_tau_ben_cang.tres
+│       ├── spot_cau_tau_ben_cang.tres
+│       └── spot_ho_linh_ngu.tres
 └── scenes/
     ├── dev.gd                     # Điều khiển scene thử nghiệm độc lập
     └── dev.tscn                   # Scene dev kiểm tra các nút và log trạng thái

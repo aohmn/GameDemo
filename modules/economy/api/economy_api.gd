@@ -114,7 +114,9 @@ func _load_default_price_resources() -> void:
 		"res://modules/economy/data/resources/price_ca_chem.tres",
 		"res://modules/economy/data/resources/price_ca_mu.tres",
 		"res://modules/economy/data/resources/price_ca_thu.tres",
-		"res://modules/economy/data/resources/price_ca_ngu_dai_duong.tres"
+		"res://modules/economy/data/resources/price_ca_ngu_dai_duong.tres",
+		"res://modules/economy/data/resources/price_ca_chep_linh.tres",
+		"res://modules/economy/data/resources/price_ca_tram_ngoc.tres"
 	]
 	for p in price_files:
 		if ResourceLoader.exists(p):

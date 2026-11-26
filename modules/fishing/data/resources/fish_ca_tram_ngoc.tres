@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/fish_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "fish_ca_tram_ngoc"
+display_name = "Cá Trắm Ngọc"
+description = "Linh ngư thượng phẩm ẩn mình dưới lớp ngọc thạch đáy Hồ Linh Ngư, cực kỳ tinh khôn và dũng mãnh."
+tier = 2
+spirit_qi = 75
+base_value = 850
+element = "thuy"
+min_weight_g = 1200
+max_weight_g = 3800
+strength = 65.0
+rarity = 3
+pull_force = 32.0
+habitat_water_type = "ho"
+weather_condition = "tat_ca"

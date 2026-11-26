@@ -189,7 +189,11 @@ func _load_default_resources() -> void:
 			var r: Resource = load(p)
 			register_rod(r)
 
-	var s_path: String = "res://modules/fishing/data/resources/spot_cau_tau_ben_cang.tres"
-	if ResourceLoader.exists(s_path):
-		var s: Resource = load(s_path)
-		register_spot(s)
+	var s_paths: Array[String] = [
+		"res://modules/fishing/data/resources/spot_cau_tau_ben_cang.tres",
+		"res://modules/fishing/data/resources/spot_ho_linh_ngu.tres"
+	]
+	for p in s_paths:
+		if ResourceLoader.exists(p):
+			var s: Resource = load(p)
+			register_spot(s)

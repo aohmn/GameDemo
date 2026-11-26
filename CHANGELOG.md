@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Điểm câu Hồ Linh Ngư & nhận diện vùng câu động: bổ sung `spot_ho_linh_ngu` với hệ sinh thái cá nước ngọt (Cá Chép Linh, Cá Trắm Ngọc) trên cao nguyên đảo bến cảng; `maps/harbor_island/map.gd` và `CastCoordinator` tự động nhận diện điểm câu theo vị trí rơi phao và hiển thị trực quan trên Fishing UI (Mức 2, kiểm thử nhận diện vùng & nạp cá đạt; chưa chạy Godot Android).
+
 - Dọn dẹp kỹ thuật & chuẩn hóa độc lập: loại bỏ preload chéo module trong các scene dev (`maps/harbor_island/dev.gd`, `presentation/.../dev.gd`); tối ưu cấu trúc các file chạm trần 300 dòng (`fishing_logic`, `gameplay/dev`, `fishing_inventory_ui`, `main`) xuống <= 283 dòng (Mức 2, toàn bộ 15/15 dev scenes & 10/10 test gameplay đạt; chưa chạy Godot Android).
 
 - Sửa lỗi InventoryAPI thiếu `load_data()` khiến túi cá không tải được khi mở lại game; chỉnh cao nguyên, dốc lối đi, Hồ Linh Ngư và bờ cát vịnh cầu tàu trên `harbor_island` hết bị chìm và thả cần được ở mạn cầu tàu lẫn Hồ Linh Ngư (Mức 2, Godot Android).

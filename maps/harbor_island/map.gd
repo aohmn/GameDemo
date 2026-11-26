@@ -40,3 +40,11 @@ func is_water_at(world_pos: Vector3) -> bool:
 	var to_pos := Vector3(world_pos.x, -0.6, world_pos.z)
 	var query := PhysicsRayQueryParameters3D.create(from_pos, to_pos)
 	return space.intersect_ray(query).is_empty()
+
+
+## Trả về ID điểm câu tương ứng với vị trí phao: "spot_ho_linh_ngu" khi ở Hồ Linh Ngư hoặc "spot_cau_tau_ben_cang" khi ở vịnh/biển.
+func get_fishing_spot_at(world_pos: Vector3) -> String:
+	if absf(world_pos.x) <= 4.5 and world_pos.z >= -6.0 and world_pos.z <= -1.0:
+		return "spot_ho_linh_ngu"
+	return "spot_cau_tau_ben_cang"
+

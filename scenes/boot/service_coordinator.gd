@@ -45,6 +45,8 @@ func _load_default_fish_specs() -> void:
 		"res://modules/fishing/data/resources/fish_ca_mu.tres",
 		"res://modules/fishing/data/resources/fish_ca_thu.tres",
 		"res://modules/fishing/data/resources/fish_ca_ngu_dai_duong.tres",
+		"res://modules/fishing/data/resources/fish_ca_chep_linh.tres",
+		"res://modules/fishing/data/resources/fish_ca_tram_ngoc.tres",
 	]
 	for p in paths:
 		if ResourceLoader.exists(p):

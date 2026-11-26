@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="FishPriceSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/economy/data/fish_price_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+fish_id = "fish_ca_chep_linh"
+display_name = "Cá Chép Linh"
+price_per_kg = 200
+base_price = 30

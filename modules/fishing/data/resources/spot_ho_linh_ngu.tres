@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="SpotSpec" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/spot_spec.gd" id="1_spec"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_doi.tres" id="2_doi"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_chem.tres" id="3_chem"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_chep_linh.tres" id="4_chep"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_tram_ngoc.tres" id="5_tram"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "spot_ho_linh_ngu"
+display_name = "Hồ Linh Ngư"
+description = "Hồ nước ngọt tĩnh lặng trên cao nguyên đảo bến cảng, tích tụ linh khí đất trời, quy tụ các loài linh ngư quý hiếm."
+water_type = "ho"
+danger_level = 0
+required_realm_level = 0
+min_wait_time = 1.2
+max_wait_time = 3.2
+time_condition = "tat_ca"
+weather_condition = "tat_ca"
+fish_table = [
+	{"fish": ExtResource("2_doi"), "weight": 20},
+	{"fish": ExtResource("3_chem"), "weight": 30},
+	{"fish": ExtResource("4_chep"), "weight": 35},
+	{"fish": ExtResource("5_tram"), "weight": 15}
+]

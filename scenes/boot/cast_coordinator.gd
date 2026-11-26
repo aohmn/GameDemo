@@ -39,4 +39,7 @@ func update() -> void:
 			if _player.global_position.distance_to(line_end) > MAX_LINE_DISTANCE:
 				_fishing_api.call("cancel")
 	if _ui != null and _ui.has_method("set_near_fishing_spot"):
-		_ui.call("set_near_fishing_spot", valid, SPOT_ID)
+		var spot_id: String = SPOT_ID
+		if _map != null and _map.has_method("get_fishing_spot_at"):
+			spot_id = str(_map.call("get_fishing_spot_at", target))
+		_ui.call("set_near_fishing_spot", valid, spot_id)
