@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Sửa lỗi InventoryAPI thiếu `load_data()` khiến túi cá không tải được khi mở lại game; chỉnh cao nguyên, dốc lối đi, Hồ Linh Ngư và bờ cát vịnh cầu tàu trên `harbor_island` hết bị chìm và thả cần được ở mạn cầu tàu lẫn Hồ Linh Ngư (Mức 2, Godot Android).
 - Đồ họa map procedural (không texture): bộ shader dùng chung `assets/shaders/` (ván sàn, gỗ, ngói, đá lát, bạch ngọc, đá thô, tán lá) chọn theo tên node qua `ProcMaterial`; cát gợn sóng, cỏ có mảng và hoa, vách núi có tầng đá; bỏ tấm `PlateauCenter` thừa gây vệt đen; bóng đổ 2 tầng cho Android (Mức 2, render bằng Mesa; chưa đo FPS trên điện thoại).
 - Popup bắt cá ghi rõ linh khí nằm trong cá và chỉ vào tu vi khi mở Túi bấm Hấp thu (trước đó ghi "+N Linh Khí" khiến người chơi tưởng tu vi tự tăng) (Mức 2; chưa chạy Godot Android).
 - Hấp thu linh khí: HUD tu vi (`presentation/cultivation_ui/`), nút Hấp thu/Bán trong túi cá, nút ĐỘT PHÁ, thông báo khi bị từ chối thả cần; `scenes/boot/ui_action_router.gd` nối UI với logic; cần carbon yêu cầu cảnh giới 1 (Mức 2, chạm mô phỏng; chưa chạy Godot Android).

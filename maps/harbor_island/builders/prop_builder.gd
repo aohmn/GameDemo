@@ -7,7 +7,6 @@ const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
 const WOOD_COLOR: Color = Color(0.55, 0.38, 0.24)
 const WOOD_DARK: Color = Color(0.40, 0.26, 0.16)
 const LEAF_COLOR: Color = Color(0.24, 0.62, 0.28)
-const FLOWER_PINK: Color = Color(0.92, 0.55, 0.68)
 
 
 static func build(root_node: Node3D) -> void:
@@ -16,10 +15,9 @@ static func build(root_node: Node3D) -> void:
 
 
 static func _make_harbor_decorations(root_node: Node3D) -> void:
-	# Thùng hàng và hòm vật tư tập kết ven bến tàu (xếp gọn, không cản lối đi)
 	var crates: Array[Vector3] = [
-		Vector3(2.5, 0.35, 11.5), Vector3(3.5, 0.35, 11.5),
-		Vector3(3.0, 1.05, 11.5), Vector3(-5.2, 0.35, 10.5)
+		Vector3(3.2, 0.35, 11.5), Vector3(4.2, 0.35, 11.5),
+		Vector3(3.7, 1.05, 11.5), Vector3(-5.2, 0.35, 10.5)
 	]
 	var idx := 0
 	for cr in crates:
@@ -30,16 +28,15 @@ static func _make_harbor_decorations(root_node: Node3D) -> void:
 
 
 static func _make_spiritual_trees(root_node: Node3D) -> void:
-	# Bố trí cây linh thụ và cọ tiên đảo quanh các sườn đồi, tạo mảng xanh Genshin
 	var tree_locs: Array[Vector3] = [
-		Vector3(-14.5, 0.2, 12.0),
-		Vector3(-12.0, 0.2, 15.5),
-		Vector3(12.5, 0.2, 13.5),
-		Vector3(15.5, 0.2, 7.5),
-		Vector3(7.5, 0.1, -1.5),
-		Vector3(-7.5, 0.1, -1.5),
-		Vector3(-4.5, 0.7, -11.0),
-		Vector3(4.5, 0.7, -11.0),
+		Vector3(-14.5, 0.0, 12.0),
+		Vector3(-12.0, 0.0, 15.5),
+		Vector3(12.5, 0.0, 13.5),
+		Vector3(15.5, 0.44, 7.5),
+		Vector3(7.8, 0.44, -2.5),
+		Vector3(-7.8, 0.44, -2.5),
+		Vector3(-5.5, 0.70, -11.5),
+		Vector3(5.5, 0.70, -11.5),
 	]
 
 	var t_idx := 0

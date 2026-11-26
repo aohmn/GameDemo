@@ -2,16 +2,16 @@ extends RefCounted
 
 const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
 
-## PlazaPathBuilder — Kiến tạo Quảng trường trung tâm, Trận pháp truyền tống,
-## Hồ Linh Ngư cảnh quan và Mạng lưới đường đi kết nối toàn bộ hòn đảo.
+## PlazaPathBuilder — Quảng trường trung tâm, Trận pháp truyền tống,
+## Hồ Linh Ngư và mạng lưới đường + dốc nối lên các cao nguyên.
 
-const STONE_PATH: Color = Color(0.74, 0.72, 0.67)      # Đá phiến lát đường
-const SQUARE_STONE: Color = Color(0.85, 0.86, 0.83)    # Đá hoa cương quảng trường
-const POND_BORDER: Color = Color(0.48, 0.50, 0.46)     # Kè đá bờ hồ
-const POND_WATER: Color = Color(0.12, 0.55, 0.60)      # Mặt nước hồ linh ngư (xanh ngọc)
-const LOTUS_GREEN: Color = Color(0.28, 0.68, 0.48)     # Đài sen ngọc giữa hồ
-const TELEPORT_RING: Color = Color(0.20, 0.60, 0.65)   # Vòng trận pháp truyền tống
-const TELEPORT_CORE: Color = Color(0.88, 0.75, 0.30)   # Tâm trận hoàng kim
+const STONE_PATH: Color = Color(0.74, 0.72, 0.67)
+const SQUARE_STONE: Color = Color(0.85, 0.86, 0.83)
+const POND_BORDER: Color = Color(0.48, 0.50, 0.46)
+const POND_WATER: Color = Color(0.12, 0.55, 0.60)
+const LOTUS_GREEN: Color = Color(0.28, 0.68, 0.48)
+const TELEPORT_RING: Color = Color(0.20, 0.60, 0.65)
+const TELEPORT_CORE: Color = Color(0.88, 0.75, 0.30)
 
 
 static func build(root_node: Node3D) -> void:
@@ -21,39 +21,31 @@ static func build(root_node: Node3D) -> void:
 	_make_connecting_paths(root_node)
 
 
-## 2. Quảng trường trung tâm: khu sinh hoạt cộng đồng
 static func _make_central_plaza(root_node: Node3D) -> void:
-	var sq_pos := Vector3(0.0, 0.03, 2.5)
-	var sq_size := Vector3(12.0, 0.03, 8.0)
-	_box(root_node, "CentralSquarePlaza", sq_pos, sq_size, SQUARE_STONE)
+	_box(root_node, "CentralSquarePlaza", Vector3(0.0, 0.03, 2.5), Vector3(12.0, 0.03, 8.0), SQUARE_STONE)
 
 
-## Trận pháp truyền tống liên map tại Quảng trường trung tâm
 static func _make_teleport_formation(root_node: Node3D) -> void:
 	var array_center := Vector3(0.0, 0.05, 2.5)
 
-	# Vòng ngoài trận pháp
 	var outer_ring := CylinderMesh.new()
 	outer_ring.top_radius = 2.4
 	outer_ring.bottom_radius = 2.4
 	outer_ring.height = 0.03
 	_mesh(root_node, "TeleportOuterRing", outer_ring, array_center, TELEPORT_RING)
 
-	# Vòng bát quái linh văn bên trong
 	var inner_ring := CylinderMesh.new()
 	inner_ring.top_radius = 1.6
 	inner_ring.bottom_radius = 1.6
 	inner_ring.height = 0.04
 	_mesh(root_node, "TeleportInnerRing", inner_ring, array_center + Vector3(0.0, 0.01, 0.0), SQUARE_STONE)
 
-	# Tâm trận hoàng kim rực sáng
 	var core_circle := CylinderMesh.new()
 	core_circle.top_radius = 0.8
 	core_circle.bottom_radius = 0.8
 	core_circle.height = 0.05
 	_mesh(root_node, "TeleportCore", core_circle, array_center + Vector3(0.0, 0.02, 0.0), TELEPORT_CORE)
 
-	# 4 trụ thạch trận phong tỏa linh lực
 	var pillar_offsets: Array[Vector3] = [
 		Vector3(-2.2, 0.6, -2.2), Vector3(2.2, 0.6, -2.2),
 		Vector3(-2.2, 0.6, 2.2), Vector3(2.2, 0.6, 2.2)
@@ -68,42 +60,81 @@ static func _make_teleport_formation(root_node: Node3D) -> void:
 		_mesh(root_node, "TeleportPillar_" + str(p_id), pillar, array_center + off, TELEPORT_RING)
 
 
-## 6. Hồ Linh Ngư: khu câu cá khởi đầu nước ngọt/linh khí (x=0, z=-3.5)
 static func _make_spiritual_pond(root_node: Node3D) -> void:
-	var pond_pos := Vector3(0.0, 0.03, -3.5)
+	var rims: Array[Dictionary] = [
+		{"name": "PondBorderNorth", "pos": Vector3(0.0, 0.08, -5.75), "size": Vector3(9.0, 0.24, 0.5)},
+		{"name": "PondBorderSouth", "pos": Vector3(0.0, 0.08, -1.25), "size": Vector3(9.0, 0.24, 0.5)},
+		{"name": "PondBorderWest", "pos": Vector3(-4.25, 0.08, -3.5), "size": Vector3(0.5, 0.24, 4.0)},
+		{"name": "PondBorderEast", "pos": Vector3(4.25, 0.08, -3.5), "size": Vector3(0.5, 0.24, 4.0)},
+	]
+	for r in rims:
+		_box(root_node, r["name"], r["pos"], r["size"], POND_BORDER)
+		_add_box_collider(root_node, r["name"] + "Col", r["pos"], r["size"])
 
-	# Kè đá bờ hồ tự nhiên
-	var border_size := Vector3(9.0, 0.15, 5.0)
-	_box(root_node, "PondBorder", pond_pos, border_size, POND_BORDER)
+	# Mặt nước hồ không có collider để is_water_at() trả true khi đứng quanh bờ hồ
+	_box(root_node, "SpiritualPondWater", Vector3(0.0, -0.13, -3.5), Vector3(8.0, 0.04, 4.0), POND_WATER)
 
-	# Mặt nước hồ linh ngư ngọc bích
-	var water_size := Vector3(8.0, 0.16, 4.0)
-	_box(root_node, "SpiritualPondWater", pond_pos + Vector3(0.0, 0.02, 0.0), water_size, POND_WATER)
-
-	# Đài sen tĩnh tâm giữa hồ
 	var lotus := CylinderMesh.new()
 	lotus.top_radius = 0.85
 	lotus.bottom_radius = 0.65
 	lotus.height = 0.3
-	_mesh(root_node, "LotusPlatform", lotus, pond_pos + Vector3(0.0, 0.12, 0.0), LOTUS_GREEN)
+	_mesh(root_node, "LotusPlatform", lotus, Vector3(0.0, -0.05, -3.5), LOTUS_GREEN)
 
 
-## 8. Đường đi bộ kết nối toàn bộ khu vực
 static func _make_connecting_paths(root_node: Node3D) -> void:
-	# Tuyến 1: Bến cảng / Cầu tàu -> Quảng trường trung tâm
-	_box(root_node, "PathPierToSquare", Vector3(-2.0, 0.02, 6.5), Vector3(3.2, 0.02, 6.5), STONE_PATH)
+	# Cầu tàu -> Quảng trường
+	_box(root_node, "PathPierToSquare", Vector3(-2.0, 0.02, 7.6), Vector3(3.2, 0.02, 3.0), STONE_PATH)
 
-	# Tuyến 2: Quảng trường -> Thương Hội (Đông)
-	_box(root_node, "PathSquareToEast", Vector3(4.8, 0.02, 1.0), Vector3(6.5, 0.02, 2.2), STONE_PATH)
+	# Quảng trường -> Thương Hội (dốc lên y = 0.44 tại x = 6.8)
+	_ramp(root_node, "PathRampEast", Vector3(5.7, 0.16, 1.0), Vector3(2.4, 0.16, 2.4), Vector3(0.0, 0.0, 10.3), STONE_PATH)
+	_box(root_node, "PathSquareToEast", Vector3(8.2, 0.45, 1.0), Vector3(2.8, 0.02, 2.2), STONE_PATH)
 
-	# Tuyến 3: Quảng trường -> Lò Chế Tạo & Kho Linh Ngư (Tây)
-	_box(root_node, "PathSquareToWest", Vector3(-4.8, 0.02, 1.0), Vector3(6.5, 0.02, 2.2), STONE_PATH)
+	# Quảng trường -> Lò & Kho (dốc lên y = 0.44 tại x = -6.8)
+	_ramp(root_node, "PathRampWest", Vector3(-5.7, 0.16, 1.0), Vector3(2.4, 0.16, 2.4), Vector3(0.0, 0.0, -10.3), STONE_PATH)
+	_box(root_node, "PathSquareToWest", Vector3(-8.2, 0.45, 1.0), Vector3(2.8, 0.02, 2.2), STONE_PATH)
 
-	# Tuyến 4: Quảng trường -> Bờ Hồ -> Tiên Các trên cao (Bắc)
-	_box(root_node, "PathToTienCac", Vector3(0.0, 0.02, -6.5), Vector3(3.0, 0.02, 3.0), STONE_PATH)
+	# Lối đi ôm hai bên Hồ Linh Ngư tới chân bậc thang Tiên Các
+	_box(root_node, "PathPondWest", Vector3(-5.2, 0.02, -4.1), Vector3(1.2, 0.02, 5.4), STONE_PATH)
+	_box(root_node, "PathPondEast", Vector3(5.2, 0.02, -4.1), Vector3(1.2, 0.02, 5.4), STONE_PATH)
+	_box(root_node, "PathToTienCac", Vector3(0.0, 0.02, -6.5), Vector3(11.6, 0.02, 1.2), STONE_PATH)
 
-	# Tuyến 5: Lối đi sườn đồi từ Tiên Các rẽ sang Đài Quan Hải (Đông Bắc)
-	_box(root_node, "PathToObservationDeck", Vector3(8.5, 0.02, -5.5), Vector3(8.0, 0.02, 1.8), STONE_PATH)
+	# Lối + dốc nhẹ từ đồi Đông (y=0.44) lên Đài Quan Hải (y=0.60)
+	_ramp(root_node, "PathToObservationDeck", Vector3(13.5, 0.44, -7.1), Vector3(2.6, 0.16, 2.0), Vector3(5.0, 0.0, 0.0), STONE_PATH)
+
+
+static func _ramp(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3, rot_deg: Vector3, color: Color) -> void:
+	var node := MeshInstance3D.new()
+	node.name = node_name
+	var mesh := BoxMesh.new()
+	mesh.size = size
+	node.mesh = mesh
+	node.position = pos
+	node.rotation_degrees = rot_deg
+	node.material_override = ProcMaterial.make(node_name, color)
+	root_node.add_child(node)
+
+	var body := StaticBody3D.new()
+	body.name = node_name + "Col"
+	body.position = pos
+	body.rotation_degrees = rot_deg
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	col.shape = shape
+	body.add_child(col)
+	root_node.add_child(body)
+
+
+static func _add_box_collider(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.name = node_name
+	body.position = pos
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	col.shape = shape
+	body.add_child(col)
+	root_node.add_child(body)
 
 
 static func _box(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3, color: Color) -> void:

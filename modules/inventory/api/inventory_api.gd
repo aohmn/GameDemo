@@ -147,6 +147,10 @@ func save(custom_path: String = "") -> bool:
 	return false
 
 
+func load_data(custom_path: String = "") -> bool:
+	return load_save(custom_path)
+
+
 func load_save(custom_path: String = "") -> bool:
 	if _logic != null and _logic.has_method("load_from_disk"):
 		return bool(_logic.call("load_from_disk", custom_path))

@@ -16,9 +16,9 @@ uniform float fade_start = 70.0;
 uniform float fade_end = 240.0;
 
 // Hình học bờ biển đảo harbor_island (50x50m)
-uniform vec2 beach_center = vec2(0.0, 3.5);
-uniform vec2 beach_half = vec2(17.0, 14.0);
-uniform float beach_round = 5.5;
+uniform vec2 beach_center = vec2(0.0, -2.0);
+uniform vec2 beach_half = vec2(15.5, 8.5);
+uniform float beach_round = 4.5;
 uniform vec2 cliff_west = vec2(-17.5, -5.0);
 uniform vec2 cliff_east = vec2(17.5, -5.0);
 uniform float cliff_radius = 6.5;

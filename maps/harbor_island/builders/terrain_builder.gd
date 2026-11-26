@@ -1,8 +1,7 @@
 extends RefCounted
 
 ## TerrainBuilder — Kiến tạo địa hình Đảo Bến Cảng (Genshin x Sea of Thieves):
-## Vịnh biển, bờ cát thoai thoải, cao nguyên trung tâm, vách đá dựng đứng,
-## kết hợp Procedural Terrain Shader và Ocean Shader.
+## Vịnh biển quanh cầu tàu, bờ cát ôm Hồ Linh Ngư, cao nguyên Tây/Đông/Bắc, vách đá dựng đứng.
 
 const WATER_SHADER: Shader = preload("res://maps/harbor_island/water.gdshader")
 const TERRAIN_SHADER: Shader = preload("res://maps/harbor_island/terrain.gdshader")
@@ -23,7 +22,6 @@ static func _make_environment(root_node: Node3D) -> void:
 	settings.sky = Sky.new()
 	settings.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 	settings.ambient_light_energy = 0.88
-	# Sương mù biển nhẹ nhàng thơ mộng phong cách Genshin
 	settings.fog_enabled = true
 	settings.fog_light_color = Color(0.68, 0.85, 0.95)
 	settings.fog_density = 0.003
@@ -37,7 +35,6 @@ static func _make_environment(root_node: Node3D) -> void:
 	sun.light_color = Color(1.0, 0.96, 0.88)
 	sun.light_energy = 1.35
 	sun.shadow_enabled = true
-	# 2 tầng bóng + làm mờ ranh giới tầng: bỏ vệt đen ngang đảo, nhẹ hơn cho Android
 	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
 	sun.directional_shadow_blend_splits = true
 	sun.directional_shadow_max_distance = 70.0
@@ -60,27 +57,31 @@ static func _make_ocean(root_node: Node3D) -> void:
 	water_node.material_override = water_mat
 	root_node.add_child(water_node)
 
-	# Đáy biển sâu
-	var seabed_pos := Vector3(0.0, -4.0, 0.0)
-	var seabed_size := Vector3(80.0, 1.0, 80.0)
-	_box(root_node, "Seabed", seabed_pos, seabed_size, Color(0.12, 0.35, 0.42))
+	_box(root_node, "Seabed", Vector3(0.0, -4.0, 0.0), Vector3(80.0, 1.0, 80.0), Color(0.12, 0.35, 0.42))
 
 
 static func _make_island_terrain(root_node: Node3D) -> void:
 	var terrain_mat := ShaderMaterial.new()
 	terrain_mat.shader = TERRAIN_SHADER
 
-	# Bãi cát thoai thoải bờ biển (Beach Base)
-	var beach_pos := Vector3(0.0, -0.2, 3.5)
-	var beach_size := Vector3(45.0, 0.4, 38.0)
-	_mesh_with_mat(root_node, "SandyBeach", _box_mesh(beach_size), beach_pos, terrain_mat)
-	_add_box_collider(root_node, "BeachCollision", beach_pos, beach_size)
+	# Bờ cát chia quanh lòng Hồ Linh Ngư (X [-4..4], Z [-5.5..-1.5]) và chừa vịnh biển dưới cầu tàu
+	var beaches: Array[Dictionary] = [
+		{"name": "BeachNorthStrip", "pos": Vector3(0.0, -0.2, -10.5), "size": Vector3(45.0, 0.4, 10.0)},
+		{"name": "BeachSouthStrip", "pos": Vector3(0.0, -0.2, 4.5), "size": Vector3(45.0, 0.4, 12.0)},
+		{"name": "BeachPondWest", "pos": Vector3(-13.25, -0.2, -3.5), "size": Vector3(18.5, 0.4, 4.0)},
+		{"name": "BeachPondEast", "pos": Vector3(13.25, -0.2, -3.5), "size": Vector3(18.5, 0.4, 4.0)},
+		{"name": "BeachBayWest", "pos": Vector3(-13.5, -0.2, 14.0), "size": Vector3(18.0, 0.4, 7.0)},
+		{"name": "BeachBayEast", "pos": Vector3(12.5, -0.2, 13.0), "size": Vector3(20.0, 0.4, 5.0)},
+	]
+	for b in beaches:
+		_mesh_with_mat(root_node, b["name"], _box_mesh(b["size"]), b["pos"], terrain_mat)
+		_add_box_collider(root_node, b["name"] + "Col", b["pos"], b["size"])
 
-	# Cao nguyên đồi cỏ tự nhiên (Plateau Layers)
+	# Cao nguyên đồi cỏ tách khỏi Quảng trường và Hồ Linh Ngư
 	var plateaus: Array[Dictionary] = [
-		{"name": "PlateauNorth", "pos": Vector3(0.0, 0.35, -7.0), "size": Vector3(22.0, 0.7, 15.0)},
-		{"name": "PlateauWest", "pos": Vector3(-12.5, 0.1, 2.0), "size": Vector3(14.0, 0.2, 18.0)},
-		{"name": "PlateauEast", "pos": Vector3(12.5, 0.1, 2.0), "size": Vector3(14.0, 0.2, 18.0)},
+		{"name": "PlateauNorth", "pos": Vector3(0.0, 0.35, -11.5), "size": Vector3(22.0, 0.7, 8.0)},
+		{"name": "PlateauWest", "pos": Vector3(-13.0, 0.22, 2.0), "size": Vector3(12.4, 0.44, 18.0)},
+		{"name": "PlateauEast", "pos": Vector3(13.0, 0.22, 2.0), "size": Vector3(12.4, 0.44, 18.0)},
 	]
 	for p in plateaus:
 		_mesh_with_mat(root_node, p["name"], _box_mesh(p["size"]), p["pos"], terrain_mat)
@@ -127,14 +128,13 @@ static func _make_mountains(root_node: Node3D) -> void:
 static func _make_island_boundaries(root_node: Node3D) -> void:
 	var wall_h := 5.0
 	var bounds: Array[Dictionary] = [
-		{"name": "BoundWest", "pos": Vector3(-24.0, 2.5, 3.0), "size": Vector3(1.0, wall_h, 44.0)},
-		{"name": "BoundEast", "pos": Vector3(24.0, 2.5, 3.0), "size": Vector3(1.0, wall_h, 44.0)},
-		{"name": "BoundSouthLeft", "pos": Vector3(-16.0, 2.5, 23.5), "size": Vector3(14.0, wall_h, 1.0)},
-		{"name": "BoundSouthMidLeft", "pos": Vector3(-6.75, 2.5, 10.5), "size": Vector3(4.5, wall_h, 1.0)},
-		{"name": "BoundSouthRight", "pos": Vector3(11.0, 2.5, 23.5), "size": Vector3(24.0, wall_h, 1.0)},
-		{"name": "BoundCoastNorthL", "pos": Vector3(-10.0, 2.5, -16.5), "size": Vector3(7.0, wall_h, 1.0)},
-		{"name": "BoundCoastNorthR", "pos": Vector3(10.0, 2.5, -16.5), "size": Vector3(7.0, wall_h, 1.0)},
-		{"name": "BoundBayNorthWall", "pos": Vector3(0.0, 2.5, -18.5), "size": Vector3(16.0, wall_h, 1.0)},
+		{"name": "BoundWest", "pos": Vector3(-22.8, 2.5, 1.0), "size": Vector3(0.8, wall_h, 34.0)},
+		{"name": "BoundEast", "pos": Vector3(22.8, 2.5, 0.0), "size": Vector3(0.8, wall_h, 32.0)},
+		{"name": "BoundNorthWall", "pos": Vector3(0.0, 2.5, -15.8), "size": Vector3(46.0, wall_h, 0.8)},
+		{"name": "BoundSouthWestShore", "pos": Vector3(-13.5, 2.5, 17.7), "size": Vector3(18.4, wall_h, 0.6)},
+		{"name": "BoundSouthEastShore", "pos": Vector3(12.5, 2.5, 15.7), "size": Vector3(20.4, wall_h, 0.6)},
+		{"name": "BoundBayEastEdge", "pos": Vector3(2.4, 2.5, 13.0), "size": Vector3(0.4, wall_h, 5.2)},
+		{"name": "BoundSouthBayCenterEast", "pos": Vector3(1.45, 2.5, 10.6), "size": Vector3(2.3, wall_h, 0.4)},
 	]
 	for b in bounds:
 		_add_box_collider(root_node, b["name"], b["pos"], b["size"])
