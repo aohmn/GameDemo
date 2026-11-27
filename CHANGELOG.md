@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Dựng lại map harbor_island theo phong cách tiên hiệp: đảo ba bậc (bến cảng, ao sen, Tiên Các), bài phường, tháp ba tầng mái cong, đình, cầu đá vòm, ao sen Hồ Linh Ngư, núi đá vôi mờ sương, thác, tùng/trúc/đào; thêm shader lacquer/karst/glow/waterfall/mist/pond và `is_water_at`, `get_water_height_at` cho ao (Mức 2, render Mesa; chưa chạy Android).
 - Hiệu ứng trang bị lên câu cá: `FishingAPI.set_equipment_stats_provider` nhận chỉ số tổng hợp từ `EquipmentAPI.calculate_total_stats` qua Bootstrap; `FishingController` và `FishingBattle` áp dụng `max_tension_bonus`, `fatigue_rate_bonus`, `control_power_bonus` và `qi_absorption_bonus` trực tiếp vào giằng co và linh khí cá (Mức 2, test trang bị + giằng co & boot đạt Player y=0.050; chưa chạy Godot Android).
 
 - Tích hợp Pháp Bảo & Trang Bị vào game chính: thêm 3 trang bị mới (Cước Bạch Liên, Mồi Linh Trùng, Định Hải Châu); giao diện trang bị `presentation/equipment_ui/` với 5 slot (cần/dây/mồi/pháp bảo/di vật), nối qua `ui_action_router` → `service_coordinator` → `EquipmentAPI`; Bootstrap tải EquipmentAPI và EquipmentUI tự động khi module tồn tại; refactor `_init_services()` dùng helper `_load_api()` giữ main.gd 289 dòng (Mức 2, boot đạt Player y=0.050, HUD 5 children; chưa chạy Godot Android).

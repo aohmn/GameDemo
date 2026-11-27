@@ -63,3 +63,8 @@ Tài liệu quy định phong cách đồ họa chính thức cho toàn bộ d�
 2. **Khử hàm đắt tiền**: Tuyệt đối không dùng Ray-marching 3D trong shader nước/địa hình.
 3. **Tái sử dụng Mesh & Material**: Các chi tiết lặp lại (cọc gỗ cầu tàu, lan can đá, cây cảnh) dùng chung MeshInstance3D và ShaderMaterial.
 4. **Collision tinh giản**: Dùng `BoxShape3D` và `CylinderShape3D`, tuyệt đối không dùng `ConcavePolygonShape3D` cho địa hình động.
+
+## Phong cách tiên hiệp (map harbor_island)
+- Bố cục bậc thang đi lên Tiên Các, trục giữa bến cảng - quảng trường - cầu vòm - bài phường - tháp.
+- Bảng màu: ngọc bích (mái, nước), bạch ngọc (bệ, lan can), sơn son (cột), vàng (đỉnh, biển), hồng đào, xanh tùng; nền sương mờ trắng ngọc.
+- Mái cong vút dựng bằng `arch_kit`, vật liệu qua `assets/shaders/proc_material.gd`; không dùng texture.

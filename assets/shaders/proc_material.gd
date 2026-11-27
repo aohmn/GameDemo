@@ -31,9 +31,8 @@ static func kind_for_name(n: String) -> String:
 	return "plain"
 
 
-static func make(node_name: String, color: Color) -> Material:
-	var kind: String = kind_for_name(node_name)
-	var radial: bool = node_name.contains("Observation") and node_name.contains("Roof")
+## Vật liệu theo loại bề mặt chỉ định rõ (planks, wood, roof, paving, marble, rough, foliage, lacquer, karst, glow, plain).
+static func of_kind(kind: String, color: Color, radial: bool = false) -> Material:
 	var key: String = "%s|%s|%s" % [kind, color.to_html(), str(radial)]
 	if _cache.has(key):
 		return _cache[key]
@@ -44,9 +43,8 @@ static func make(node_name: String, color: Color) -> Material:
 		std.roughness = 0.8
 		mat = std
 	else:
-		var shader: Shader = load(SHADER_DIR + "proc_%s.gdshader" % kind) as Shader
 		var sm := ShaderMaterial.new()
-		sm.shader = shader
+		sm.shader = load(SHADER_DIR + "proc_%s.gdshader" % kind) as Shader
 		sm.set_shader_parameter("base_color", color)
 		sm.set_shader_parameter("dark_color", color.darkened(0.38))
 		if kind == "roof":
@@ -54,3 +52,8 @@ static func make(node_name: String, color: Color) -> Material:
 		mat = sm
 	_cache[key] = mat
 	return mat
+
+
+static func make(node_name: String, color: Color) -> Material:
+	var radial: bool = node_name.contains("Observation") and node_name.contains("Roof")
+	return of_kind(kind_for_name(node_name), color, radial)

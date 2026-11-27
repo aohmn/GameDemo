@@ -78,7 +78,7 @@ void fragment() {
     float is_rock = 1.0 - smoothstep(0.55, 0.75, slope);
 
     // Phân tầng theo độ cao: bờ cát ven biển chuyển dần lên đồi cỏ
-    float is_grass = smoothstep(0.15, 0.55, pos.y);
+    float is_grass = smoothstep(-0.3, -0.08, pos.y);
 
     vec3 ground_col = mix(sand_col, grass_col, is_grass);
     vec3 final_col = mix(ground_col, rock_col, is_rock);

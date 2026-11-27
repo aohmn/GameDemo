@@ -5,24 +5,21 @@ render_mode cull_back, depth_draw_opaque;
 // Dải màu 3 tầng độ sâu, sóng cuộn gợn nhấp nhô vertex, bọt ven bờ tự nhiên,
 // vòng bọt sóng vỗ bờ, phản xạ lấp lánh cel-glint ánh mặt trời và mờ dần chân trời.
 
-uniform vec4 water_shallow : source_color = vec4(0.36, 0.88, 0.82, 0.95);
-uniform vec4 water_mid : source_color = vec4(0.12, 0.56, 0.76, 1.0);
-uniform vec4 water_deep : source_color = vec4(0.05, 0.27, 0.47, 1.0);
+uniform vec4 water_shallow : source_color = vec4(0.50, 0.90, 0.82, 0.95);
+uniform vec4 water_mid : source_color = vec4(0.16, 0.62, 0.70, 1.0);
+uniform vec4 water_deep : source_color = vec4(0.07, 0.34, 0.50, 1.0);
 uniform vec4 foam_color : source_color = vec4(0.97, 0.99, 1.0, 1.0);
-uniform vec4 far_color : source_color = vec4(0.44, 0.70, 0.84, 1.0);
+uniform vec4 far_color : source_color = vec4(0.80, 0.91, 0.93, 1.0);
 uniform vec3 sun_dir = vec3(-0.368688, 0.766044, 0.526541);
 uniform float wave_speed = 0.55;
 uniform float fade_start = 70.0;
 uniform float fade_end = 240.0;
 
-// Hình học bờ biển đảo harbor_island (50x50m)
-uniform vec2 beach_center = vec2(0.0, -2.0);
-uniform vec2 beach_half = vec2(15.5, 8.5);
-uniform float beach_round = 4.5;
-uniform vec2 cliff_west = vec2(-17.5, -5.0);
-uniform vec2 cliff_east = vec2(17.5, -5.0);
-uniform float cliff_radius = 6.5;
-uniform vec2 pier_center = vec2(-2.0, 16.5);
+// Hình học bờ đảo: hợp các elip (tâm x, z; bán kính x, z) xấp xỉ nền đảo bậc thang.
+uniform vec4 blob_a = vec4(0.0, 3.0, 20.5, 10.0);
+uniform vec4 blob_b = vec4(0.0, -11.0, 16.5, 8.0);
+uniform vec4 blob_c = vec4(0.0, -22.0, 11.5, 6.5);
+uniform vec2 pier_center = vec2(-2.0, 17.0);
 uniform vec2 pier_half = vec2(2.5, 6.5);
 
 varying vec3 v_world;
@@ -48,10 +45,14 @@ float sd_box(vec2 p, vec2 b) {
     return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0);
 }
 
+float blob_dist(vec2 p, vec4 b) {
+    vec2 q = (p - b.xy) / b.zw;
+    return (length(q) - 1.0) * min(b.z, b.w);
+}
+
 float coast_dist(vec2 p) {
-    float d = sd_box(p - beach_center, beach_half) - beach_round;
-    d = min(d, length(p - cliff_west) - cliff_radius);
-    d = min(d, length(p - cliff_east) - cliff_radius);
+    float d = min(blob_dist(p, blob_a), blob_dist(p, blob_b));
+    d = min(d, blob_dist(p, blob_c));
     return min(d, sd_box(p - pier_center, pier_half));
 }
 
@@ -75,9 +76,9 @@ void fragment() {
     col = mix(col, water_deep.rgb, smoothstep(0.40, 0.52, d));
 
     // Bọt sát mép bờ và vòng bọt vỗ bờ
-    float edge_foam = 1.0 - smoothstep(0.3, 1.1 + n2 * 0.5, coast);
+    float edge_foam = 1.0 - smoothstep(0.2, 0.75 + n2 * 0.35, coast);
     float ring = smoothstep(0.86, 0.96, 0.5 + 0.5 * sin((coast * 0.32 - t * 0.38) * 6.28318));
-    ring *= (1.0 - smoothstep(4.0, 12.0, coast)) * smoothstep(1.0, 2.2, coast);
+    ring *= (1.0 - smoothstep(3.0, 7.0, coast)) * smoothstep(1.0, 2.2, coast) * 0.6;
     ring *= smoothstep(-0.25, 0.25, n1 + n2 * 0.5);
     float foam = clamp(edge_foam + ring, 0.0, 1.0);
     col = mix(col, foam_color.rgb, foam);

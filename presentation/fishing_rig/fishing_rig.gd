@@ -5,7 +5,6 @@ extends Node3D
 
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
 
-const WATER_Y: float = -0.15
 const HAND_HEIGHT: float = 0.95
 const HAND_FORWARD: float = 0.25
 const ROD_LENGTH: float = 2.2
@@ -145,7 +144,7 @@ func _update_bobber(delta: float) -> void:
 
 
 func _resting_bobber() -> Vector3:
-	var p: Vector3 = Vector3(_cast_target.x, WATER_Y + 0.02, _cast_target.z)
+	var p: Vector3 = Vector3(_cast_target.x, _cast_target.y + 0.02, _cast_target.z)
 	match _state:
 		"BITE":
 			p.y -= 0.10 + sin(_clock * 28.0) * 0.04
@@ -188,7 +187,7 @@ func _update_marker() -> void:
 	_marker.visible = _aim_valid and not _line_out and idle_like
 	if _marker.visible:
 		var pulse: float = 1.0 + 0.12 * sin(_clock * 4.0)
-		_marker.global_position = Vector3(_aim_target.x, WATER_Y + 0.03, _aim_target.z)
+		_marker.global_position = Vector3(_aim_target.x, _aim_target.y + 0.03, _aim_target.z)
 		_marker.scale = Vector3(pulse, 0.05, pulse)
 
 
@@ -271,7 +270,7 @@ func _connect_events() -> void:
 
 
 func _on_cast_started(_payload: Dictionary) -> void:
-	_cast_target = Vector3(_aim_target.x, WATER_Y, _aim_target.z)
+	_cast_target = Vector3(_aim_target.x, _aim_target.y, _aim_target.z)
 	_bobber_pos = _tip_pos
 	_flight_t = 0.0
 	_line_out = true

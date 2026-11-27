@@ -29,6 +29,7 @@ func update() -> void:
 	if _player.has_method("get_facing_vector"):
 		facing = _player.call("get_facing_vector")
 	var target: Vector3 = _player.global_position + facing * CAST_DISTANCE
+	target.y = _map.call("get_water_height_at", target) if _map != null and _map.has_method("get_water_height_at") else -0.15
 	var valid: bool = false
 	if _map != null and _map.has_method("is_water_at"):
 		valid = bool(_map.call("is_water_at", target))

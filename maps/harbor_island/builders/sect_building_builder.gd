@@ -1,183 +1,72 @@
 extends RefCounted
 
-const ProcMaterial: Script = preload("res://assets/shaders/proc_material.gd")
+## SectBuildingBuilder — Thương Hội (đông), Lò Luyện đan (tây) trên bậc ao sen, Đài Quan Hải ở mũi đông bến cảng.
 
-## SectBuildingBuilder — Kiến tạo Tiên Các, Thương Hội, Lò Chế Tạo, Kho và Đài Quan Hải
-## căn đúng cao độ từng cao nguyên để nhân vật đi bộ tới được mọi công trình.
+const Util: Script = preload("res://maps/harbor_island/builders/util.gd")
+const Parts: Script = preload("res://maps/harbor_island/builders/parts.gd")
 
-const JADE_WHITE: Color = Color(0.92, 0.96, 0.94)
-const JADE_ROOF: Color = Color(0.18, 0.45, 0.40)
-const GOLD_ACCENT: Color = Color(0.85, 0.70, 0.28)
-const WOOD_RED: Color = Color(0.55, 0.22, 0.18)
-const ROOF_TILES: Color = Color(0.25, 0.30, 0.38)
-const FURNACE_STONE: Color = Color(0.35, 0.32, 0.30)
-const FURNACE_FIRE: Color = Color(0.95, 0.45, 0.15)
-const WAREHOUSE_WOOD: Color = Color(0.48, 0.35, 0.24)
-const OBSERVATION_STONE: Color = Color(0.80, 0.82, 0.85)
+const POND_Y: float = 1.0
+const Island: Script = preload("res://maps/harbor_island/builders/island_builder.gd")
 
 
 static func build(root_node: Node3D) -> void:
-	_make_tien_cac(root_node)
-	_make_thuong_hoi(root_node)
-	_make_crafting_furnace_and_warehouse(root_node)
-	_make_observation_deck(root_node)
+	_make_merchant_hall(root_node, Vector3(9.8, POND_Y, -11.0))
+	_make_alchemy_furnace(root_node, Vector3(-9.8, POND_Y, -11.0))
+	_make_observation(root_node, Vector3(14.2, 0.0, 3.2))
 
 
-## 3. Tiên Các trên PlateauNorth (y = 0.70)
-static func _make_tien_cac(root_node: Node3D) -> void:
-	# Dốc bậc thềm đi lên từ lối sau Hồ Linh Ngư (z=-6.0, y=0.02) lên cao nguyên (z=-7.6, y=0.70)
-	var stairs_pos := Vector3(0.0, 0.28, -6.8)
-	var stairs_size := Vector3(4.0, 0.16, 1.85)
-	_ramp(root_node, "TienCacStairs", stairs_pos, stairs_size, Vector3(23.0, 0.0, 0.0), JADE_WHITE)
-
-	# Nền đài sen (cao 0.08m trên mặt cao nguyên 0.70 để bước lên mượt)
-	var base_pos := Vector3(0.0, 0.74, -11.2)
-	var platform_size := Vector3(9.5, 0.08, 7.0)
-	_box(root_node, "TienCacPlatform", base_pos, platform_size, JADE_WHITE)
-	_add_box_collider(root_node, "TienCacPlatformCol", base_pos, platform_size)
-
-	var hall_pos := base_pos + Vector3(0.0, 1.74, 0.0)
-	var hall_size := Vector3(6.5, 3.4, 5.5)
-	_box(root_node, "TienCacHall", hall_pos, hall_size, JADE_WHITE)
-	_add_box_collider(root_node, "TienCacHallCol", hall_pos, hall_size)
-
-	var roof1 := PrismMesh.new()
-	roof1.size = Vector3(8.2, 1.3, 7.2)
-	_mesh(root_node, "TienCacRoof1", roof1, hall_pos + Vector3(0.0, 2.2, 0.0), JADE_ROOF)
-
-	var tower_pos := hall_pos + Vector3(0.0, 3.2, 0.0)
-	_box(root_node, "TienCacTower", tower_pos, Vector3(4.0, 2.0, 3.5), JADE_WHITE)
-
-	var roof2 := PrismMesh.new()
-	roof2.size = Vector3(5.4, 1.1, 4.8)
-	_mesh(root_node, "TienCacRoof2", roof2, tower_pos + Vector3(0.0, 1.4, 0.0), GOLD_ACCENT)
-
-	var pinnacle := SphereMesh.new()
-	pinnacle.radius = 0.4
-	pinnacle.height = 0.8
-	_mesh(root_node, "TienCacPinnacle", pinnacle, tower_pos + Vector3(0.0, 2.2, 0.0), GOLD_ACCENT)
+## Thương Hội: lầu gỗ hai tầng, cột sơn son, mái ngói mực cong, biển vàng, đèn lồng đỏ.
+static func _make_merchant_hall(root_node: Node3D, c: Vector3) -> void:
+	Util.box(root_node, "ThuongHoiBase", c + Vector3(0.0, 0.2, 0.0), Vector3(7.4, 0.4, 5.6), "paving", Parts.STONE)
+	Util.collide_box(root_node, "ThuongHoiBaseCol", c + Vector3(0.0, 0.2, 0.0), Vector3(7.4, 0.4, 5.6))
+	var y: float = c.y + 0.4
+	Util.box(root_node, "ThuongHoiHall", c + Vector3(0.0, 0.4 + 1.3, 0.0), Vector3(6.0, 2.6, 4.2), "wood", Color(0.58, 0.20, 0.15))
+	Util.collide_box(root_node, "ThuongHoiHallCol", c + Vector3(0.0, 1.7, 0.0), Vector3(6.0, 2.6, 4.2))
+	for sx in [-1.0, 1.0, 0.0]:
+		for sz in [-1.0, 1.0]:
+			Parts.pillar(root_node, "ThuongHoiPillar_%d_%d" % [int(sx), int(sz)], Vector3(c.x + sx * 3.1, y, c.z + sz * 2.2), 2.6, 0.17)
+	Util.box(root_node, "ThuongHoiDoor", c + Vector3(0.0, 1.3, 2.13), Vector3(1.6, 1.9, 0.1), "plain", Color(0.2, 0.1, 0.07))
+	Parts.roof(root_node, "ThuongHoiLow", Vector3(c.x, y + 2.7, c.z), 4.6, 3.4, 1.0, Parts.INK_ROOF, 0.5)
+	Util.box(root_node, "ThuongHoiUpper", Vector3(c.x, y + 3.7 + 0.8, c.z), Vector3(3.4, 1.6, 2.6), "wood", Color(0.58, 0.20, 0.15))
+	Parts.roof(root_node, "ThuongHoiTop", Vector3(c.x, y + 5.4, c.z), 3.3, 2.5, 1.2, Parts.INK_ROOF, 0.6)
+	Util.box(root_node, "ThuongHoiSign", Vector3(c.x, y + 2.95, c.z + 2.45), Vector3(2.4, 0.5, 0.1), "glow", Parts.GOLD)
+	for i in range(4):
+		var lx: float = c.x - 2.7 + float(i) * 1.8
+		Parts.hanging_lantern(root_node, "ThuongHoiLantern_%d" % i, Vector3(lx, y + 2.4, c.z + 2.6))
 
 
-## 4. Thương Hội trên PlateauEast (y = 0.44)
-static func _make_thuong_hoi(root_node: Node3D) -> void:
-	var base_pos := Vector3(12.5, 0.48, 0.5)
-	var base_size := Vector3(7.0, 0.08, 7.0)
-	_box(root_node, "ThuongHoiBase", base_pos, base_size, WOOD_RED)
-	_add_box_collider(root_node, "ThuongHoiBaseCol", base_pos, base_size)
-
-	var hall_pos := base_pos + Vector3(0.0, 1.44, 0.0)
-	var hall_size := Vector3(5.6, 2.8, 5.6)
-	_box(root_node, "ThuongHoiHall", hall_pos, hall_size, WOOD_RED)
-	_add_box_collider(root_node, "ThuongHoiHallCol", hall_pos, hall_size)
-
-	var roof := PrismMesh.new()
-	roof.size = Vector3(7.2, 1.5, 7.2)
-	_mesh(root_node, "ThuongHoiRoof", roof, hall_pos + Vector3(0.0, 1.9, 0.0), ROOF_TILES)
-
-	_box(root_node, "ThuongHoiSign", hall_pos + Vector3(-2.9, 0.8, 0.0), Vector3(0.15, 0.7, 2.4), GOLD_ACCENT)
-
-
-## 5. Lò Chế Tạo và Kho Linh Ngư trên PlateauWest (y = 0.44)
-static func _make_crafting_furnace_and_warehouse(root_node: Node3D) -> void:
-	var furnace_pos := Vector3(-11.0, 1.34, -2.5)
-	var furnace_body := CylinderMesh.new()
-	furnace_body.top_radius = 1.3
-	furnace_body.bottom_radius = 1.7
-	furnace_body.height = 1.8
-	_mesh(root_node, "FurnaceBody", furnace_body, furnace_pos, FURNACE_STONE)
-
-	var fire_mesh := CylinderMesh.new()
-	fire_mesh.top_radius = 0.9
-	fire_mesh.bottom_radius = 0.9
-	fire_mesh.height = 0.2
-	_mesh(root_node, "FurnaceFire", fire_mesh, furnace_pos + Vector3(0.0, 0.95, 0.0), FURNACE_FIRE)
-
-	_add_box_collider(root_node, "FurnaceCol", furnace_pos, Vector3(3.4, 2.0, 3.4))
-
-	var wh_pos := Vector3(-12.0, 1.84, 3.5)
-	var wh_size := Vector3(5.5, 2.8, 5.5)
-	_box(root_node, "WarehouseBody", wh_pos, wh_size, WAREHOUSE_WOOD)
-	_add_box_collider(root_node, "WarehouseCol", wh_pos, wh_size)
-
-	var wh_roof := PrismMesh.new()
-	wh_roof.size = Vector3(6.8, 1.2, 6.8)
-	_mesh(root_node, "WarehouseRoof", wh_roof, wh_pos + Vector3(0.0, 1.8, 0.0), ROOF_TILES)
+## Lò Luyện: đan lô đá ba chân giữa đình tròn mái ngọc, lửa chân hỏa cam, nhà kho gỗ bên cạnh.
+static func _make_alchemy_furnace(root_node: Node3D, c: Vector3) -> void:
+	Util.cylinder(root_node, "FurnacePlatform", c + Vector3(0.0, 0.2, 0.0), 3.4, 3.6, 0.4, "paving", Parts.STONE, 16)
+	Util.collide_box(root_node, "FurnacePlatformCol", c + Vector3(0.0, 0.2, 0.0), Vector3(6.4, 0.4, 6.4))
+	var y: float = c.y + 0.4
+	for k in range(3):
+		var a: float = float(k) / 3.0 * TAU
+		Util.cylinder(root_node, "FurnaceLeg_%d" % k, Vector3(c.x + cos(a) * 0.9, y + 0.35, c.z + sin(a) * 0.9), 0.14, 0.2, 0.7, "rough", Color(0.22, 0.2, 0.19), 8)
+	Util.cylinder(root_node, "FurnaceBody", Vector3(c.x, y + 1.35, c.z), 1.15, 1.0, 1.3, "rough", Color(0.28, 0.25, 0.23), 14)
+	Util.cylinder(root_node, "FurnaceBand", Vector3(c.x, y + 1.45, c.z), 1.2, 1.2, 0.14, "glow", Parts.GOLD, 14)
+	Util.cylinder(root_node, "FurnaceLid", Vector3(c.x, y + 2.25, c.z), 0.55, 1.05, 0.6, "rough", Color(0.3, 0.27, 0.25), 14)
+	Util.sphere(root_node, "FurnaceKnob", Vector3(c.x, y + 2.7, c.z), 0.2, "glow", Parts.GOLD)
+	Util.sphere(root_node, "FurnaceFire", Vector3(c.x, y + 0.95, c.z + 1.0), 0.3, "glow", Color(1.0, 0.55, 0.15), 1.2)
+	Util.collide_box(root_node, "FurnaceCol", Vector3(c.x, y + 1.3, c.z), Vector3(2.2, 2.6, 2.2))
+	for k in range(4):
+		var a: float = float(k) / 4.0 * TAU + PI * 0.25
+		Parts.pillar(root_node, "FurnacePillar_%d" % k, Vector3(c.x + cos(a) * 3.0, y, c.z + sin(a) * 3.0), 3.4, 0.14)
+	Parts.round_roof(root_node, "Furnace", Vector3(c.x, y + 3.5, c.z), 3.5, 1.7, Parts.JADE_ROOF)
+	var hut: Vector3 = Vector3(c.x - 0.5, c.y, c.z - 5.6 + 1.4)
+	Util.box(root_node, "WarehouseBody", hut + Vector3(0.0, 1.0, 0.0), Vector3(3.6, 2.0, 2.4), "wood", Color(0.52, 0.36, 0.24))
+	Util.collide_box(root_node, "WarehouseCol", hut + Vector3(0.0, 1.0, 0.0), Vector3(3.6, 2.0, 2.4))
+	Parts.roof(root_node, "Warehouse", hut + Vector3(0.0, 2.0, 0.0), 2.5, 1.7, 0.9, Parts.INK_ROOF, 0.4)
 
 
-## 7. Đài Quan Hải (mặt đài y = 0.60, nối từ đồi Đông)
-static func _make_observation_deck(root_node: Node3D) -> void:
-	var deck_pos := Vector3(14.0, 0.25, -8.5)
-	var platform := CylinderMesh.new()
-	platform.top_radius = 3.6
-	platform.bottom_radius = 4.0
-	platform.height = 0.7
-	_mesh(root_node, "ObservationPlatform", platform, deck_pos, OBSERVATION_STONE)
-	_add_box_collider(root_node, "ObservationDeckCol", deck_pos, Vector3(7.2, 0.7, 7.2))
-
-	var top_y := 0.35
-	var pavilion_roof := CylinderMesh.new()
-	pavilion_roof.top_radius = 0.2
-	pavilion_roof.bottom_radius = 3.8
-	pavilion_roof.height = 1.4
-	_mesh(root_node, "ObservationRoof", pavilion_roof, deck_pos + Vector3(0.0, top_y + 2.6, 0.0), JADE_ROOF)
-
-	var pillar_angles: Array[float] = [0.0, 1.5708, 3.14159, 4.71239]
-	var p_id := 0
-	for ang in pillar_angles:
-		p_id += 1
-		var col_mesh := CylinderMesh.new()
-		col_mesh.top_radius = 0.15
-		col_mesh.bottom_radius = 0.15
-		col_mesh.height = 2.4
-		var p_offset := Vector3(cos(ang) * 2.8, top_y + 1.2, sin(ang) * 2.8)
-		_mesh(root_node, "PavilionPillar_" + str(p_id), col_mesh, deck_pos + p_offset, JADE_WHITE)
-
-
-static func _ramp(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3, rot_deg: Vector3, color: Color) -> void:
-	var node := MeshInstance3D.new()
-	node.name = node_name
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	node.mesh = mesh
-	node.position = pos
-	node.rotation_degrees = rot_deg
-	node.material_override = ProcMaterial.make(node_name, color)
-	root_node.add_child(node)
-
-	var body := StaticBody3D.new()
-	body.name = node_name + "Col"
-	body.position = pos
-	body.rotation_degrees = rot_deg
-	var col := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = size
-	col.shape = shape
-	body.add_child(col)
-	root_node.add_child(body)
-
-
-static func _add_box_collider(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3) -> void:
-	var body := StaticBody3D.new()
-	body.name = node_name
-	body.position = pos
-	var collision := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = size
-	collision.shape = shape
-	body.add_child(collision)
-	root_node.add_child(body)
-
-
-static func _box(root_node: Node3D, node_name: String, pos: Vector3, size: Vector3, color: Color) -> void:
-	var mesh := BoxMesh.new()
-	mesh.size = size
-	_mesh(root_node, node_name, mesh, pos, color)
-
-
-static func _mesh(root_node: Node3D, node_name: String, mesh: Mesh, pos: Vector3, color: Color) -> void:
-	var node := MeshInstance3D.new()
-	node.name = node_name
-	node.mesh = mesh
-	node.position = pos
-	node.material_override = ProcMaterial.make(node_name, color)
-	root_node.add_child(node)
+## Đài Quan Hải: đình sáu cột mái tròn ngọc bích nhô ra mũi đông, nhìn ra biển.
+static func _make_observation(root_node: Node3D, c: Vector3) -> void:
+	Util.cylinder(root_node, "ObservationPlatform", c + Vector3(0.0, 0.25, 0.0), 2.9, 3.1, 0.5, "paving", Parts.STONE, 16)
+	Util.collide_box(root_node, "ObservationPlatformCol", c + Vector3(0.0, 0.25, 0.0), Vector3(5.6, 0.5, 5.6))
+	Island.add_stairs(root_node, "StairsObservation", c.x, c.z + 5.4, c.z + 2.8, c.y, c.y + 0.5, 2.4, 4)
+	for k in range(6):
+		var a: float = float(k) / 6.0 * TAU
+		Parts.pillar(root_node, "ObservationPillar_%d" % k, Vector3(c.x + cos(a) * 2.3, c.y + 0.5, c.z + sin(a) * 2.3), 3.0, 0.14)
+	Parts.round_roof(root_node, "Observation", Vector3(c.x, c.y + 3.6, c.z), 3.3, 1.6, Parts.JADE_ROOF)
+	Util.sphere(root_node, "ObservationFinial", Vector3(c.x, c.y + 4.95, c.z), 0.2, "glow", Parts.GOLD)
+	Parts.hanging_lantern(root_node, "ObservationLantern", Vector3(c.x, c.y + 3.2, c.z), Color(1.0, 0.8, 0.35))
