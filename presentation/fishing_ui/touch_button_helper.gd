@@ -29,7 +29,7 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 		if touch.pressed and btn.is_visible_in_tree() and not btn.disabled:
-			if btn.get_global_rect().has_point(touch.position):
+			if btn.get_global_rect().has_point(touch.position) and not _is_covered_by_overlay(btn, touch.position):
 				if entry["mode"] == "hold":
 					entry["touch_idx"] = touch.index
 				var down_cb: Callable = entry["down"] as Callable
@@ -37,3 +37,20 @@ func _input(event: InputEvent) -> void:
 					down_cb.call()
 				get_viewport().set_input_as_handled()
 				return
+
+
+func _is_covered_by_overlay(btn: Control, pos: Vector2) -> bool:
+	var cur: Node = btn
+	while cur != null and cur.get_parent() != null:
+		var parent: Node = cur.get_parent()
+		if parent is Window:
+			break
+		var my_idx: int = cur.get_index()
+		for i in range(my_idx + 1, parent.get_child_count()):
+			var sib: Node = parent.get_child(i)
+			if sib is Control:
+				var ctrl := sib as Control
+				if ctrl.is_visible_in_tree() and ctrl.mouse_filter == Control.MOUSE_FILTER_STOP and ctrl.get_global_rect().has_point(pos):
+					return true
+		cur = parent
+	return false

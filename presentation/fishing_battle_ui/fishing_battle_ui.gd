@@ -37,6 +37,7 @@ func _build_ui() -> void:
 
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.offset_top = 88.0
 	root.add_theme_constant_override("separation", 6)
 	add_child(root)
 

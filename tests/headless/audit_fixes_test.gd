@@ -26,6 +26,7 @@ func _initialize() -> void:
 	_test_battle_skills()
 	_test_battle_hp_stamina_qi()
 	_test_battle_skill_integration()
+	_test_battle_ui_touch_isolation()
 	print("=== KẾT QUẢ: %d passed, %d failed ===" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -298,3 +299,34 @@ func _test_battle_skill_integration() -> void:
 	# Có thể fail vì cooldown chưa hết hoặc hết qi
 	var reason: String = str(r3.get("reason", ""))
 	_assert_true("Skill bị từ chối khi thiếu linh lực hoặc cooldown", not bool(r3.get("ok", true)) and (reason == "no_qi" or reason == "cooldown"))
+
+
+func _test_battle_ui_touch_isolation() -> void:
+	var hud := Control.new()
+	hud.size = Vector2(1280.0, 720.0)
+	get_root().add_child(hud)
+
+	var old_btn := Button.new()
+	old_btn.position = Vector2(900.0, 100.0)
+	old_btn.size = Vector2(200.0, 80.0)
+	hud.add_child(old_btn)
+
+	var helper := preload("res://presentation/fishing_ui/touch_button_helper.gd").new()
+	hud.add_child(helper)
+	var called: Array[bool] = [false]
+	helper.bind_hold(old_btn, func() -> void: called[0] = true, func() -> void: pass)
+
+	# Khi FishingBattleUI phủ lên, nút cũ bị che không được kích hoạt
+	var overlay := ColorRect.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	overlay.size = Vector2(1280.0, 720.0)
+	overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+	hud.add_child(overlay)
+
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.index = 0
+	touch.position = Vector2(950.0, 130.0)
+	helper._input(touch)
+	_assert_true("Nút bị lớp khác phủ lên KHÔNG gọi reel/release", not called[0])
+	hud.free()

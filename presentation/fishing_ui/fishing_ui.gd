@@ -185,7 +185,7 @@ func _update_view() -> void:
 			_alert_label.text = "BẤM GIẬT CẦN NGAY LẬP TỨC!"
 
 		"FIGHT":
-			_set_visible_widgets(true)
+			_set_visible_widgets(false)
 			_badge_label.text = "ĐẤU SỨC"
 			_sub_label.text = "Giữ lực căng trong vùng an toàn"
 
@@ -203,7 +203,7 @@ func _set_visible_widgets(in_fight: bool, show_cast: bool = false, show_strike: 
 
 func _on_fight_update_evt(payload: Dictionary) -> void:
 	_state = "FIGHT"
-	_set_visible_widgets(true)
+	_set_visible_widgets(false)
 
 	var cur_t: float = float(payload.get("line_tension", 0.0))
 	var s_min: float = float(payload.get("safe_min", 30.0))
