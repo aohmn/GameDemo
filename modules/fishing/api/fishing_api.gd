@@ -57,17 +57,10 @@ func set_realm_provider(provider: Callable) -> void:
 	_realm_provider = provider
 
 
-## Bootstrap gắn nguồn chỉ số trang bị (EquipmentAPI.calculate_total_stats). Chưa gắn = không bonus.
 func set_equipment_stats_provider(provider: Callable) -> void:
 	_equipment_stats_provider = provider
-
-
-## Bootstrap gắn nguồn dây câu đang trang bị (trả về Resource hoặc null).
 func set_equipped_line_provider(provider: Callable) -> void:
 	_equipped_line_provider = provider
-
-
-## Bootstrap gắn callback tiêu hao độ bền dây câu (nhận float lượng độ bền mất đi).
 func set_line_durability_consumer(consumer: Callable) -> void:
 	_line_durability_consumer = consumer
 
@@ -291,31 +284,12 @@ func _on_fish_lost(payload: Dictionary) -> void:
 	_emit_event(FishingEventsContract.FISH_ESCAPED, payload)
 
 
+const ResourceLoaderScript: Script = preload("res://modules/fishing/api/fishing_resource_loader.gd")
+
+
 func _emit_event(event_name: String, payload: Dictionary) -> void:
-	var main_loop: MainLoop = Engine.get_main_loop()
-	if main_loop is SceneTree:
-		var st := main_loop as SceneTree
-		if st.root != null and st.root.has_node("EventBus"):
-			var eb: Node = st.root.get_node("EventBus")
-			if eb != null and eb.has_method("emit_event"):
-				eb.call("emit_event", event_name, payload)
+	ResourceLoaderScript.emit_event(event_name, payload)
 
 
 func _load_default_resources() -> void:
-	var r_paths: Array[String] = [
-		"res://modules/fishing/data/resources/rod_truc_nhiem.tres",
-		"res://modules/fishing/data/resources/rod_carbon_bien_sau.tres"
-	]
-	for p in r_paths:
-		if ResourceLoader.exists(p):
-			var r: Resource = load(p)
-			register_rod(r)
-
-	var s_paths: Array[String] = [
-		"res://modules/fishing/data/resources/spot_cau_tau_ben_cang.tres",
-		"res://modules/fishing/data/resources/spot_ho_linh_ngu.tres"
-	]
-	for p in s_paths:
-		if ResourceLoader.exists(p):
-			var s: Resource = load(p)
-			register_spot(s)
+	ResourceLoaderScript.load_defaults(self)

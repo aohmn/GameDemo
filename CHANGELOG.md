@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Tách helper cho `main.gd`, `service_coordinator.gd`, `fishing_controller.gd`, `fishing_api.gd` xuống `<= 300` dòng và hoàn thiện Fishing Battle UI / ReelDragSystem / FishAI / BattleSkillRunner (Mức 2, Godot 4.7.2 headless `tests/headless` đạt; chưa chạy Godot Android).
 - Giai đoạn 4 — Hoàn thiện trang bị: thêm nâng cấp trang bị (`upgrade_item`, tối đa cấp 5, +15% chỉ số/cấp) và tiêu hao/sửa độ bền (`consume_durability`, `repair_item`) vào `equipment_logic.gd` + `equipment_api.gd`, lưu/tải `levels` & `durability` vào `user://equipment.cfg` (Mức 2, `tests/headless` đạt; chưa chạy Godot Android).
 - Giai đoạn 3 — Hoàn thiện kinh tế & tu luyện: nạp `CraftingAPI` trong `main.gd` + lưu qua `save_manager.gd`, áp dụng `total_qi_absorption_bonus` từ trang bị vào `absorb_fish_qi()`, giữ nguyên rollback atomic cho bán cá/mua đồ/chế tạo (Mức 2, `tests/headless` đạt; chưa chạy Godot Android).
 - Giai đoạn 2 — Hoàn thiện câu cá: lưu độ bền cần câu thực tế sau mỗi lần giằng co, chặn thả cần khi `current_durability <= 0` (`rod_broken`), thêm `repair_rod()`, giảm hệ số mòn cần (`0.4 -> 0.25`) và giữ nguyên lọc cá theo thời gian/thời tiết + chỉ số dây/mồi từ `EquipmentAPI` (Mức 2, `tests/headless` đạt; chưa chạy Godot Android).

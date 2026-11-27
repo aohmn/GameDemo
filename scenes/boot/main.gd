@@ -5,6 +5,7 @@ const SERVICE_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/service_co
 const UI_ACTION_ROUTER_SCRIPT: Script = preload("res://scenes/boot/ui_action_router.gd")
 const CAST_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/cast_coordinator.gd")
 const SAVE_MANAGER_SCRIPT: Script = preload("res://scenes/boot/save_manager.gd")
+const BOOT_HELPERS_SCRIPT: Script = preload("res://scenes/boot/boot_helpers.gd")
 
 const PLAYER_SCENE_PATH: String = "res://modules/player/scenes/player.tscn"
 const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
@@ -157,18 +158,7 @@ func _create_map_manager() -> void:
 
 
 func _sync_sun_direction() -> void:
-	if _map_manager == null:
-		return
-	var current_map: Node = _map_manager.call("get_current_map") as Node
-	if current_map == null or not current_map.has_method("get_sun_direction"):
-		return
-	var sun_dir: Vector3 = current_map.call("get_sun_direction")
-	if _sky_dome != null and _sky_dome.has_method("set_sun_direction"):
-		_sky_dome.call("set_sun_direction", sun_dir)
-	if current_map.has_method("get_water_material"):
-		var water_mat: ShaderMaterial = current_map.call("get_water_material") as ShaderMaterial
-		if water_mat != null:
-			water_mat.set_shader_parameter("sun_dir", sun_dir)
+	BOOT_HELPERS_SCRIPT.sync_sun_direction(_sky_dome, _map_manager)
 
 
 func _create_player() -> void:
@@ -264,13 +254,7 @@ func _create_fishing_ui() -> void:
 	_fishing_ui = _instantiate_ui(FISHING_UI_PATH)
 	if _fishing_ui != null and _fishing_api != null and _fishing_ui.has_method("set_fishing_api"):
 		_fishing_ui.call("set_fishing_api", _fishing_api)
-	var battle_ui_script: Script = load("res://presentation/fishing_battle_ui/fishing_battle_ui.gd") as Script
-	if battle_ui_script != null and _hud != null:
-		var battle_ui := battle_ui_script.new() as Control
-		if battle_ui != null:
-			_hud.add_child(battle_ui)
-			if _fishing_api != null and battle_ui.has_method("set_fishing_api"):
-				battle_ui.call("set_fishing_api", _fishing_api)
+	BOOT_HELPERS_SCRIPT.mount_battle_ui(_hud, _fishing_api)
 
 
 func sell_fish(fish_id: String, count: int) -> bool:
@@ -281,15 +265,7 @@ func buy_shop_item(item_id: String) -> bool:
 
 
 func _instantiate_ui(path: String) -> Control:
-	if not ResourceLoader.exists(path):
-		return null
-	var scene := load(path) as PackedScene
-	if scene == null:
-		return null
-	var ui := scene.instantiate() as Control
-	if ui != null:
-		_hud.add_child(ui)
-	return ui
+	return BOOT_HELPERS_SCRIPT.instantiate_ui(_hud, path)
 
 
 func _create_fishing_rig() -> void:
@@ -305,35 +281,12 @@ func _create_fishing_rig() -> void:
 
 
 func _instantiate_scene(path: String) -> Node:
-	if not ResourceLoader.exists(path):
-		return null
-	var scene := load(path) as PackedScene
-	if scene == null:
-		return null
-	var node := scene.instantiate()
-	if node != null:
-		add_child(node)
-	return node
+	return BOOT_HELPERS_SCRIPT.instantiate_scene(self, path)
 
 
 func _get_equipped_line_resource() -> Resource:
-	if _equipment_api == null:
-		return null
-	var line_id: String = str(_equipment_api.call("get_equipped_item_id", "line"))
-	if line_id.is_empty():
-		return null
-	var spec: Resource = _equipment_api.call("get_item_spec", line_id) as Resource
-	if spec == null:
-		return null
-	var res: Resource = spec.duplicate()
-	var cur_dur: float = float(_equipment_api.call("get_item_durability", line_id))
-	if "current_durability" in res:
-		res.set("current_durability", cur_dur)
-	elif "durability" in res:
-		res.set("durability", cur_dur)
-	return res
+	return BOOT_HELPERS_SCRIPT.get_equipped_line(_equipment_api)
 
 
 func _consume_equipped_line_durability(used: float) -> void:
-	if _equipment_api != null and used > 0.0:
-		_equipment_api.call("consume_durability", "line", used)
+	BOOT_HELPERS_SCRIPT.consume_line_durability(_equipment_api, used)

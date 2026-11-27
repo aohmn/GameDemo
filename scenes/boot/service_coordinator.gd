@@ -248,62 +248,11 @@ func unequip_item(slot: String) -> bool:
 	return ok
 
 
+const CRAFT_TX_SCRIPT: Script = preload("res://scenes/boot/craft_transaction.gd")
+
+
 ## Thực hiện chế tạo vật phẩm (Atomic transaction giữa Crafting, Inventory và Cultivation).
 ## Trả về Dictionary: { "success": bool, "recipe_id": String, "reason": String }
 func execute_craft(recipe_id: String) -> Dictionary:
-	if _crafting_api == null or _inventory_api == null:
-		return {"success": false, "recipe_id": recipe_id, "reason": "uninitialized"}
-
-	var recipe: Resource = _crafting_api.call("get_recipe", recipe_id) as Resource
-	if recipe == null:
-		return {"success": false, "recipe_id": recipe_id, "reason": "recipe_not_found"}
-
-	# 1. Kiểm tra cảnh giới từ Cultivation
-	var current_realm: int = 0
-	if _cultivation_api != null and _cultivation_api.has_method("get_current_realm_index"):
-		current_realm = int(_cultivation_api.call("get_current_realm_index"))
-
-	var check_res: Dictionary = _crafting_api.call("can_craft_recipe", recipe_id, current_realm) as Dictionary
-	if not bool(check_res.get("can_craft", false)):
-		return {"success": false, "recipe_id": recipe_id, "reason": str(check_res.get("reason"))}
-
-	# 2. Kiểm tra đủ nguyên liệu trong Inventory
-	var ingredients: Array = recipe.get("ingredients") as Array
-	for ing in ingredients:
-		var item_id: String = str(ing.get("item_id", ""))
-		var count: int = int(ing.get("count", 1))
-		if not bool(_inventory_api.call("has_item", item_id, count)):
-			return {"success": false, "recipe_id": recipe_id, "reason": "insufficient_ingredient_" + item_id}
-
-	# 3. Trừ nguyên liệu (lưu lại danh sách đã trừ để rollback nếu có lỗi)
-	var deducted: Array[Dictionary] = []
-	for ing in ingredients:
-		var item_id: String = str(ing.get("item_id", ""))
-		var count: int = int(ing.get("count", 1))
-		var rem_res: Dictionary = _inventory_api.call("remove_item", item_id, count) as Dictionary
-		if not bool(rem_res.get("success", false)):
-			# Rollback toàn bộ nguyên liệu đã trừ trước đó
-			for d in deducted:
-				_inventory_api.call("add_item", str(d["item_id"]), int(d["count"]))
-			return {"success": false, "recipe_id": recipe_id, "reason": "deduct_failed"}
-		deducted.append({"item_id": item_id, "count": count})
-
-	# 4. Kích hoạt Crafting
-	var craft_res: Dictionary = _crafting_api.call("start_craft", recipe_id, current_realm) as Dictionary
-	if not bool(craft_res.get("success", false)):
-		# Rollback hoàn nguyên nguyên liệu
-		for d in deducted:
-			_inventory_api.call("add_item", str(d["item_id"]), int(d["count"]))
-		return {"success": false, "recipe_id": recipe_id, "reason": "craft_start_failed"}
-
-	# Nếu chế tạo tức thì, nhận ngay thành phẩm vào Inventory
-	if bool(craft_res.get("completed_now", false)):
-		var out_id: String = str(craft_res.get("output_item_id"))
-		var out_c: int = int(craft_res.get("output_count", 1))
-		_inventory_api.call("add_item", out_id, out_c)
-
-	_inventory_api.call("save")
-	_crafting_api.call("save")
-
-	return {"success": true, "recipe_id": recipe_id, "reason": "ok"}
+	return CRAFT_TX_SCRIPT.execute_craft(_crafting_api, _inventory_api, _cultivation_api, recipe_id)
 
