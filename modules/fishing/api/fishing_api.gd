@@ -41,6 +41,13 @@ func register_rod(rod: Resource) -> void:
 			_rods[r_id] = rod
 
 
+func get_all_rods() -> Array[Resource]:
+	var out: Array[Resource] = []
+	for r in _rods.values():
+		out.append(r as Resource)
+	return out
+
+
 ## Bootstrap gắn nguồn cảnh giới (ví dụ Cultivation.get_current_realm_index). Chưa gắn = cảnh giới 0.
 func set_realm_provider(provider: Callable) -> void:
 	_realm_provider = provider

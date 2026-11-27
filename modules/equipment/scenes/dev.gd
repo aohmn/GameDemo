@@ -3,6 +3,7 @@ extends Control
 ## Scene kiểm tra độc lập cho module Equipment.
 
 const EquipmentAPIScript: Script = preload("res://modules/equipment/api/equipment_api.gd")
+const EquipmentItemSpecScript: Script = preload("res://modules/equipment/data/equipment_item_spec.gd")
 const EquipmentEventsContract: Script = preload("res://core/contracts/equipment_events.gd")
 
 var _api: RefCounted
@@ -12,9 +13,24 @@ var _log_label: RichTextLabel
 
 func _ready() -> void:
 	_api = EquipmentAPIScript.new()
+	_register_dev_rods()
 	_setup_ui()
 	_subscribe_events()
 	_update_display()
+
+
+func _register_dev_rods() -> void:
+	for entry in [
+		{"id": "rod_truc_nhiem", "name": "Cần Trúc (Dev)", "tension": 0.0, "fatigue": 0.0},
+		{"id": "rod_carbon_bien_sau", "name": "Cần Carbon (Dev)", "tension": 25.0, "fatigue": 6.0},
+	]:
+		var spec: Resource = EquipmentItemSpecScript.new()
+		spec.set("id", entry["id"])
+		spec.set("display_name", entry["name"])
+		spec.set("slot_type", "rod")
+		spec.set("max_tension_bonus", entry["tension"])
+		spec.set("fatigue_rate_bonus", entry["fatigue"])
+		_api.call("register_item_spec", spec)
 
 
 func _setup_ui() -> void:

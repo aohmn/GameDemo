@@ -206,6 +206,9 @@ func _init_services() -> void:
 			_fishing_api.call("set_realm_provider", Callable(_cultivation_api, "get_current_realm_index"))
 	if _equipment_api != null:
 		_coordinator.call("set_equipment_api", _equipment_api)
+		if _fishing_api != null and _fishing_api.has_method("get_all_rods"):
+			for rod in (_fishing_api.call("get_all_rods") as Array):
+				_equipment_api.call("register_item_spec", rod)
 		if _fishing_api != null and _fishing_api.has_method("set_equipment_stats_provider"):
 			_fishing_api.call("set_equipment_stats_provider", Callable(_equipment_api, "calculate_total_stats"))
 	var eb: Node = get_node_or_null("/root/EventBus")
@@ -243,7 +246,6 @@ func _create_inventory_ui() -> void:
 func _create_cultivation_ui() -> void:
 	_ui_router = UI_ACTION_ROUTER_SCRIPT.new()
 	_cultivation_ui = _ui_router.call("build", _hud, _fishing_inventory_ui, _coordinator, _economy_api, _cultivation_api) as Control
-
 
 func _create_equipment_ui() -> void:
 	if _equipment_api == null or not ResourceLoader.exists(EQUIPMENT_UI_PATH):

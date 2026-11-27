@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Gỡ đường dẫn cứng `modules/fishing` khỏi `equipment_logic.gd`: Bootstrap đăng ký các `RodSpec` sang `EquipmentAPI` qua `register_item_spec`, `modules/equipment/scenes/dev.gd` tự đăng ký spec thử nghiệm độc lập (Mức 2, `dev.tscn` + 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - UI Shop Thương Hội (`presentation/shop_ui/`): hiện nút mở khi lại gần Thương Hội, mua cần câu bằng Linh Thạch qua `ServiceCoordinator` (atomic), kiểm tra cảnh giới (`required_realm_level = 1` cho Cần Carbon) và đổi cần đang dùng (Mức 2, test chạm Shop + 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - Cân bằng tu vi đầu game: giảm tổng tu vi Luyện Thể từ 5.750 xuống 2.100 (tầng 1 cần 50), tăng linh khí Cá Cơm (5→10) và Cá Đối (10→15), ghi bảng cân bằng tại `docs/design/cultivation_balance.md` (Mức 2, 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - Thêm bộ kiểm tra `tests/headless/` (7 kịch bản đi bộ, mép đảo, mặt nước, chạm câu/giật/hấp thu/bán/đột phá) và lưu kết quả chạy tại `docs/headless_test_report.md` (Mức 2, 7/7 đạt; chưa chạy Godot Android).

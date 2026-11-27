@@ -35,8 +35,6 @@ func _init() -> void:
 
 func _load_default_specs() -> void:
 	var paths: Array[String] = [
-		"res://modules/fishing/data/resources/rod_truc_nhiem.tres",
-		"res://modules/fishing/data/resources/rod_carbon_bien_sau.tres",
 		"res://modules/equipment/data/resources/line_cuoc_bach_lien.tres",
 		"res://modules/equipment/data/resources/bait_linh_trung.tres",
 		"res://modules/equipment/data/resources/relic_dinh_hai_chau.tres"
