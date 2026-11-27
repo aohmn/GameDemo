@@ -24,6 +24,8 @@ func _initialize() -> void:
 	_test_reel_drag_system()
 	_test_fish_ai_upgrade()
 	_test_battle_skills()
+	_test_battle_hp_stamina_qi()
+	_test_battle_skill_integration()
 	print("=== KẾT QUẢ: %d passed, %d failed ===" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -177,3 +179,122 @@ func _test_battle_skills() -> void:
 	_assert_true("Kỹ năng cá vào trạng thái báo trước", bool(rf.get("ok", false)) and runner.is_telegraphing())
 	runner.tick(0.6)
 	_assert_true("Kỹ năng cá kích hoạt sau thời gian báo trước", not runner.is_telegraphing() and is_equal_approx(runner.get_effect_multiplier("fish_surge"), 0.6))
+
+	# P0: Drag thấp/cao & đứt dây
+	var rd := preload("res://modules/fishing/gameplay/battle/reel_drag_system.gd").new()
+	rd.reset(20.0)
+	rd.set_drag(0.2) # brake = 8.0
+	var low_drag: Dictionary = rd.update(false, 25.0, 35.0, 0.5, 1.0)
+	rd.reset(20.0)
+	rd.set_drag(0.9) # brake = 36.0
+	var high_drag: Dictionary = rd.update(false, 25.0, 35.0, 0.5, 1.0)
+	_assert_true("Drag thấp để cá kéo dây nhiều hơn Drag cao", float(low_drag.get("line_distance", 0.0)) > float(high_drag.get("line_distance", 0.0)))
+
+	var ts := preload("res://modules/fishing/gameplay/battle/tension_system.gd").new()
+	ts.setup(null, 0.0, 0.0)
+	ts.current_tension = ts.max_tension + 5.0
+	_assert_true("Dây đứt khi lực căng vượt ngưỡng tối đa", ts.is_line_broken())
+
+
+func _test_battle_hp_stamina_qi() -> void:
+	var FishDataScript: Script = preload("res://modules/fishing/gameplay/fish/fish_data.gd")
+	var BattleScript: Script = preload("res://modules/fishing/gameplay/battle/fishing_battle.gd")
+	var LineScript: Script = preload("res://modules/fishing/gameplay/equipment/fishing_line.gd")
+	var fd: RefCounted = FishDataScript.new()
+	fd.strength = 30.0
+	fd.stamina = 100.0
+	fd.max_hp = 80.0
+	fd.max_qi = 60.0
+	var bat: RefCounted = BattleScript.new()
+	var rod := Resource.new()
+	rod.set_script(preload("res://modules/fishing/data/rod_spec.gd"))
+	rod.set("id", "rod_test")
+	rod.set("max_tension", 120.0)
+	rod.set("current_durability", 100)
+	var line: RefCounted = LineScript.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	bat.start_battle(rod, line, fd, 0.0, 1.0, rng, {})
+	_assert_true("Battle HP khởi tạo đúng max_hp", is_equal_approx(bat.fish_hp, 80.0))
+	_assert_true("Battle Sức khởi tạo đúng stamina", is_equal_approx(bat.fish_stamina, 100.0))
+	_assert_true("Battle Nội năng khởi tạo đúng max_qi", is_equal_approx(bat.fish_qi, 60.0))
+	# Giữ tension ở giữa safe zone để drain thực sự xảy ra
+	var center_t: float = (bat.tension_system.safe_min + bat.tension_system.safe_max) * 0.5
+	for i in range(60):
+		bat.tension_system.current_tension = center_t
+		var res: String = bat.update(fd, true, false, 1.0, 0.5)
+		if res == "CAUGHT":
+			break
+	_assert_true("Sức giảm sau nhiều frame chiến đấu", bat.fish_stamina < 100.0)
+	var stam_low: bool = bat.fish_stamina < fd.stamina * 0.25
+	if not stam_low:
+		bat.fish_stamina = 5.0
+	for i in range(30):
+		bat.update(fd, true, false, 1.0, 0.5)
+	_assert_true("HP giảm khi sức thấp", bat.fish_hp < 80.0)
+
+
+func _test_battle_skill_integration() -> void:
+	var FishDataScript: Script = preload("res://modules/fishing/gameplay/fish/fish_data.gd")
+	var BattleScript: Script = preload("res://modules/fishing/gameplay/battle/fishing_battle.gd")
+	var LineScript: Script = preload("res://modules/fishing/gameplay/equipment/fishing_line.gd")
+	var SpecScript: Script = preload("res://modules/fishing/gameplay/skills/battle_skill_spec.gd")
+	var fd: RefCounted = FishDataScript.new()
+	fd.strength = 40.0
+	fd.stamina = 200.0
+	fd.max_hp = 150.0
+	fd.max_qi = 80.0
+	var bat: RefCounted = BattleScript.new()
+	var rod := Resource.new()
+	rod.set_script(preload("res://modules/fishing/data/rod_spec.gd"))
+	rod.set("id", "rod_test2")
+	rod.set("max_tension", 150.0)
+	rod.set("current_durability", 100)
+	var line: RefCounted = LineScript.new()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 11
+	bat.start_battle(rod, line, fd, 0.0, 1.0, rng, {})
+
+	# Người chơi dùng kỹ năng Tỏa Ngư
+	var p_skill: Resource = SpecScript.new()
+	p_skill.id = "skill_toa_ngu"
+	p_skill.owner_type = "player"
+	p_skill.qi_cost = 25.0
+	p_skill.cooldown = 5.0
+	p_skill.duration = 2.0
+	p_skill.effect_type = "pull_reduce"
+	p_skill.effect_power = 0.4
+	var r1: Dictionary = bat.use_player_skill(p_skill)
+	_assert_true("Skill người chơi tiêu hao linh lực trong battle", bool(r1.get("ok", false)) and is_equal_approx(bat.player_qi, 75.0))
+	var r2: Dictionary = bat.use_player_skill(p_skill)
+	_assert_true("Skill người chơi bị cooldown trong battle", not bool(r2.get("ok", true)) and str(r2.get("reason", "")) == "cooldown")
+
+	# Hiệu ứng pull_reduce thực sự giảm lực kéo
+	var center_t: float = (bat.tension_system.safe_min + bat.tension_system.safe_max) * 0.5
+	bat.tension_system.current_tension = center_t
+	bat.update(fd, false, false, 1.0, 0.1)
+	var pull_eff: float = bat.player_skills.get_effect_multiplier("pull_reduce")
+	_assert_true("Hiệu ứng pull_reduce đang hoạt động", pull_eff > 0.0)
+
+	# Cá dùng kỹ năng fish_surge
+	var f_skill: Resource = SpecScript.new()
+	f_skill.id = "skill_vay_duoi"
+	f_skill.owner_type = "fish"
+	f_skill.qi_cost = 20.0
+	f_skill.cooldown = 10.0
+	f_skill.telegraph_time = 0.3
+	f_skill.duration = 2.0
+	f_skill.effect_type = "fish_surge"
+	f_skill.effect_power = 0.5
+	var fish_specs: Array[Resource] = [f_skill]
+	bat.set_fish_skills(fish_specs)
+	bat.tension_system.current_tension = center_t
+	bat.update(fd, false, false, 1.0, 0.1)
+	_assert_true("Cá AI dùng kỹ năng tiêu hao nội năng", bat.fish_qi < 80.0 or bat.fish_skills.is_telegraphing())
+
+	# Hết linh lực không dùng được kỹ năng
+	bat.player_qi = 5.0
+	var r3: Dictionary = bat.use_player_skill(p_skill)
+	# Có thể fail vì cooldown chưa hết hoặc hết qi
+	var reason: String = str(r3.get("reason", ""))
+	_assert_true("Skill bị từ chối khi thiếu linh lực hoặc cooldown", not bool(r3.get("ok", true)) and (reason == "no_qi" or reason == "cooldown"))

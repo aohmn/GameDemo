@@ -212,6 +212,16 @@ func set_drag(level: float) -> void:
 	_controller.set_drag(level)
 
 
+## Sử dụng kỹ năng tu tiên trong trận (Resource BattleSkillSpec)
+func use_battle_skill(spec: Resource) -> Dictionary:
+	return _controller.use_battle_skill(spec)
+
+
+## Gán danh sách kỹ năng cá cho trận đấu
+func set_fish_skills(specs: Array[Resource]) -> void:
+	_controller.set_fish_skills(specs)
+
+
 ## Xả dây cước (giữ release)
 func release(held: bool) -> void:
 	_controller.release(held)

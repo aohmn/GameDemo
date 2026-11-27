@@ -8,15 +8,22 @@ const TensionSystemScript: Script = preload("res://modules/fishing/gameplay/batt
 const ReelDragSystemScript: Script = preload("res://modules/fishing/gameplay/battle/reel_drag_system.gd")
 const FishAIScript: Script = preload("res://modules/fishing/gameplay/fish/fish_ai.gd")
 const FishingCalculatorScript: Script = preload("res://modules/fishing/gameplay/core/fishing_calculator.gd")
+const BattleSkillRunnerScript: Script = preload("res://modules/fishing/gameplay/skills/battle_skill_runner.gd")
 
 var tension_system: TensionSystem
 var reel_drag: ReelDragSystem = ReelDragSystemScript.new()
+var player_skills: BattleSkillRunner = BattleSkillRunnerScript.new()
+var fish_skills: BattleSkillRunner = BattleSkillRunnerScript.new()
+var fish_skill_specs: Array[Resource] = []
 var fish_ai: FishAI
 var fight_time: float = 0.0
 var rod_steer: float = 0.0
 var rod_bend: float = 0.0
+var player_qi: float = 100.0
 
+var fish_hp: float = 100.0
 var fish_stamina: float = 100.0
+var fish_qi: float = 100.0
 var line_durability: float = 100.0
 var rod_durability: float = 100.0
 
@@ -42,10 +49,16 @@ func start_battle(
 
 	fish_ai = FishAIScript.new(rng)
 	reel_drag.reset(15.0)
+	player_skills.reset()
+	fish_skills.reset()
+	fish_skill_specs.clear()
+	player_qi = 100.0
 	rod_steer = 0.0
 	rod_bend = 0.0
 	fight_time = 0.0
+	fish_hp = fish_data.max_hp
 	fish_stamina = fish_data.stamina
+	fish_qi = fish_data.max_qi
 	pull_reduction = fish_pull_modifier
 
 	# Khởi tạo độ bền thực tế từ trang bị thay vì mặc định 100
@@ -83,8 +96,31 @@ func update(
 ) -> String:
 	fight_time += delta
 
-	# Lấy lực kéo từ AI cá và áp dụng hệ số Tỏa Ngư
-	var fish_pull: float = fish_ai.update_pull_force(fish_data, fight_time, delta) * pull_reduction
+	# Lấy lực kéo từ AI cá (truyền HP, Sức, Nội năng thực tế)
+	var ai_res: Dictionary = fish_ai.update_behavior(fish_data, fight_time, fish_hp, fish_stamina, fish_qi, delta)
+	var fish_pull: float = float(ai_res.get("pull_force", 0.0)) * pull_reduction
+
+	# Áp dụng hiệu ứng kỹ năng vào lực kéo và lực căng
+	player_skills.tick(delta)
+	var fs_tick: Dictionary = fish_skills.tick(delta)
+	var pull_reduce_mod: float = player_skills.get_effect_multiplier("pull_reduce")
+	if pull_reduce_mod > 0.0:
+		fish_pull *= maxf(0.1, 1.0 - pull_reduce_mod)
+	var fish_surge_mod: float = fish_skills.get_effect_multiplier("fish_surge")
+	if fish_surge_mod > 0.0:
+		fish_pull *= (1.0 + fish_surge_mod)
+	var hp_dmg_mod: float = player_skills.get_effect_multiplier("hp_damage")
+	if hp_dmg_mod > 0.0:
+		fish_hp = maxf(0.0, fish_hp - hp_dmg_mod * delta * 15.0)
+	var line_shock_mod: float = fish_skills.get_effect_multiplier("line_shock")
+	if line_shock_mod > 0.0:
+		line_durability = maxf(0.0, line_durability - line_shock_mod * delta * 5.0)
+	var tension_damp_mod: float = player_skills.get_effect_multiplier("tension_damp")
+	if tension_damp_mod > 0.0:
+		tension_system.current_tension *= maxf(0.3, 1.0 - tension_damp_mod * 0.5)
+
+	# Cá AI tự dùng kỹ năng khi có đủ nội năng
+	_fish_try_skill()
 
 	# Cập nhật lực căng
 	tension_system.update(
@@ -104,7 +140,10 @@ func update(
 	var t_ratio: float = clampf(tension_system.current_tension / maxf(1.0, tension_system.max_tension), 0.0, 1.0)
 	rod_bend = t_ratio
 	if reel_drag != null:
-		reel_drag.update(is_reeling, fish_pull, reel_speed, t_ratio, delta)
+		var rd_res: Dictionary = reel_drag.update(is_reeling, fish_pull, reel_speed, t_ratio, delta)
+		var slip: float = float(rd_res.get("slip_speed", 0.0))
+		if slip > 0.0:
+			tension_system.current_tension = maxf(0.0, tension_system.current_tension - slip * 0.5 * delta)
 
 	# Kiểm tra cá tuột lưỡi do chùng dây quá lâu
 	if tension_system.is_fish_slack_escaped():
@@ -121,6 +160,15 @@ func update(
 	)
 	fish_stamina = clampf(fish_stamina - drain, 0.0, fish_data.stamina)
 
+	# HP giảm khi cá kiệt sức (sức < 25% -> HP bị hao)
+	if fish_stamina < fish_data.stamina * 0.25:
+		var hp_drain: float = (1.0 - fish_stamina / maxf(1.0, fish_data.stamina * 0.25)) * 8.0 * delta
+		fish_hp = maxf(0.0, fish_hp - hp_drain)
+
+	# Nội năng hồi phục chậm khi cá còn sức
+	if fish_stamina > fish_data.stamina * 0.3:
+		fish_qi = minf(fish_data.max_qi, fish_qi + 3.0 * delta)
+
 	# Hao mòn độ bền dây và cần câu hợp lý theo diễn biến
 	var line_wear: float = FishingCalculatorScript.calculate_line_wear(
 		tension_system.current_tension,
@@ -136,8 +184,29 @@ func update(
 	if rod_durability <= 0.0:
 		return "ROD_BROKEN"
 
-	# Thắng cuộc khi cá kiệt sức
-	if fish_stamina <= 0.0:
+	# Thắng cuộc khi cá mất khả năng chiến đấu (HP hoặc Sức về 0)
+	if fish_hp <= 0.0 or fish_stamina <= 0.0:
 		return "CAUGHT"
 
 	return "CONTINUE"
+
+
+func use_player_skill(spec: Resource) -> Dictionary:
+	var res: Dictionary = player_skills.try_cast(spec, player_qi)
+	if bool(res.get("ok", false)):
+		player_qi = float(res.get("qi_left", player_qi))
+	return res
+
+
+func set_fish_skills(specs: Array[Resource]) -> void:
+	fish_skill_specs = specs
+
+
+func _fish_try_skill() -> void:
+	for spec in fish_skill_specs:
+		if fish_qi < float(spec.get("qi_cost")) if "qi_cost" in spec else 0.0:
+			continue
+		var res: Dictionary = fish_skills.try_cast(spec, fish_qi)
+		if bool(res.get("ok", false)):
+			fish_qi = maxf(0.0, float(res.get("qi_left", fish_qi)))
+			break

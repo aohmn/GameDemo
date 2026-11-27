@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BattleSkillSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/gameplay/skills/battle_skill_spec.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "skill_ca_vay_duoi"
+display_name = "Vẫy Đuôi Cuồng Phong"
+owner_type = "fish"
+min_tier = 2
+qi_cost = 30.0
+cooldown = 10.0
+telegraph_time = 0.6
+duration = 2.5
+effect_type = "fish_surge"
+effect_power = 0.6

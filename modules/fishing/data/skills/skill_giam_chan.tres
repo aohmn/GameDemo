@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="BattleSkillSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/gameplay/skills/battle_skill_spec.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "skill_giam_chan"
+display_name = "Giảm Chấn Linh Khí"
+owner_type = "player"
+min_tier = 1
+qi_cost = 15.0
+cooldown = 6.0
+telegraph_time = 0.0
+duration = 2.0
+effect_type = "tension_damp"
+effect_power = 0.35

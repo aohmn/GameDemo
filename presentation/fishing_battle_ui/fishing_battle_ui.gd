@@ -1,5 +1,5 @@
 extends Control
-## Màn hình đấu cá riêng (Presentation thuần: nghe EventBus và gọi FishingAPI).
+## Màn hình đấu cá (Presentation thuần: nghe EventBus và gọi FishingAPI).
 
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
 const ArenaViewScript: Script = preload("res://presentation/fishing_battle_ui/battle_arena_view.gd")
@@ -10,10 +10,12 @@ var _hp_bar: ProgressBar
 var _stamina_bar: ProgressBar
 var _qi_bar: ProgressBar
 var _tension_bar: ProgressBar
+var _durability_bar: ProgressBar
 var _drag_slider: HSlider
 var _drag_label: Label
 var _dir_label: Label
-var _steer_val: float = 0.0
+var _skill_container: HBoxContainer
+var _fish_skill_label: Label
 
 
 func _ready() -> void:
@@ -30,43 +32,58 @@ func set_fishing_api(api: RefCounted) -> void:
 func _build_ui() -> void:
 	var bg := ColorRect.new()
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.03, 0.07, 0.12, 0.82)
+	bg.color = Color(0.02, 0.05, 0.10, 0.88)
 	add_child(bg)
 
-	var root_vbox := VBoxContainer.new()
-	root_vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	root_vbox.add_theme_constant_override("separation", 10)
-	add_child(root_vbox)
+	var root := VBoxContainer.new()
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.add_theme_constant_override("separation", 6)
+	add_child(root)
 
-	# HUD cá: HP, Sức, Nội năng
-	var hud_row := HBoxContainer.new()
-	hud_row.add_theme_constant_override("separation", 12)
-	root_vbox.add_child(hud_row)
-	_hp_bar = _make_bar(hud_row, "HP Cá", Color(0.9, 0.25, 0.25))
-	_stamina_bar = _make_bar(hud_row, "Sức", Color(0.95, 0.72, 0.2))
-	_qi_bar = _make_bar(hud_row, "Nội Năng", Color(0.3, 0.78, 0.95))
+	_build_fish_hud(root)
+	_build_arena(root)
+	_build_mech_hud(root)
+	_build_controls(root)
+
+
+func _build_fish_hud(parent: Control) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	parent.add_child(row)
+	_hp_bar = _bar(row, "HP", Color(0.90, 0.22, 0.22))
+	_stamina_bar = _bar(row, "Sức", Color(0.95, 0.72, 0.18))
+	_qi_bar = _bar(row, "Nội Năng", Color(0.25, 0.75, 0.95))
+
+	_fish_skill_label = Label.new()
+	_fish_skill_label.text = ""
+	_fish_skill_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_fish_skill_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.2))
+	parent.add_child(_fish_skill_label)
 
 	_dir_label = Label.new()
 	_dir_label.text = "Hướng cá: Đứng yên"
 	_dir_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	root_vbox.add_child(_dir_label)
+	parent.add_child(_dir_label)
 
-	# Vùng nước mô phỏng cá, cần, dây
+
+func _build_arena(parent: Control) -> void:
 	_arena = ArenaViewScript.new()
 	_arena.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root_vbox.add_child(_arena)
+	parent.add_child(_arena)
 
-	# Thanh lực căng + Drag máy câu
-	var mech_row := HBoxContainer.new()
-	mech_row.add_theme_constant_override("separation", 16)
-	root_vbox.add_child(mech_row)
-	_tension_bar = _make_bar(mech_row, "Lực Căng Dây", Color(0.95, 0.45, 0.2))
+
+func _build_mech_hud(parent: Control) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	parent.add_child(row)
+	_tension_bar = _bar(row, "Lực Căng", Color(0.95, 0.42, 0.18))
+	_durability_bar = _bar(row, "Độ Bền Dây", Color(0.55, 0.80, 0.55))
 
 	var drag_box := VBoxContainer.new()
 	drag_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	mech_row.add_child(drag_box)
+	row.add_child(drag_box)
 	_drag_label = Label.new()
-	_drag_label.text = "Lực cản máy câu (Drag): 50%"
+	_drag_label.text = "Drag: 50%"
 	drag_box.add_child(_drag_label)
 	_drag_slider = HSlider.new()
 	_drag_slider.min_value = 0.0
@@ -75,51 +92,68 @@ func _build_ui() -> void:
 	_drag_slider.value_changed.connect(_on_drag_changed)
 	drag_box.add_child(_drag_slider)
 
-	# Điều khiển cảm ứng: Trái / Phải + Giữ Thu Dây
-	var ctrl_row := HBoxContainer.new()
-	ctrl_row.add_theme_constant_override("separation", 16)
-	ctrl_row.custom_minimum_size = Vector2(0.0, 76.0)
-	root_vbox.add_child(ctrl_row)
-
-	var left_btn := _make_touch_btn(ctrl_row, "◀ Nghiêng Trái")
-	left_btn.button_down.connect(func() -> void: _set_steer(-1.0))
-	left_btn.button_up.connect(func() -> void: _set_steer(0.0))
-
-	var reel_btn := _make_touch_btn(ctrl_row, "GIỮ THU DÂY")
-	reel_btn.button_down.connect(func() -> void: _set_reel(true))
-	reel_btn.button_up.connect(func() -> void: _set_reel(false))
-
-	var right_btn := _make_touch_btn(ctrl_row, "Nghiêng Phải ▶")
-	right_btn.button_down.connect(func() -> void: _set_steer(1.0))
-	right_btn.button_up.connect(func() -> void: _set_steer(0.0))
+	# Nút kỹ năng người chơi
+	_skill_container = HBoxContainer.new()
+	_skill_container.add_theme_constant_override("separation", 8)
+	parent.add_child(_skill_container)
+	_add_skill_button("res://modules/fishing/data/skills/skill_toa_ngu.tres", "Tỏa Ngư")
+	_add_skill_button("res://modules/fishing/data/skills/skill_giam_chan.tres", "Giảm Chấn")
 
 
-func _make_bar(parent: Control, title: String, col: Color) -> ProgressBar:
+func _add_skill_button(spec_path: String, fallback_name: String) -> void:
+	var btn := Button.new()
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var spec: Resource = load(spec_path) if ResourceLoader.exists(spec_path) else null
+	btn.text = str(spec.get("display_name")) if spec != null and "display_name" in spec else fallback_name
+	btn.pressed.connect(func() -> void:
+		if _fishing_api != null and _fishing_api.has_method("use_battle_skill") and spec != null:
+			_fishing_api.call("use_battle_skill", spec)
+	)
+	_skill_container.add_child(btn)
+
+
+func _build_controls(parent: Control) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	row.custom_minimum_size = Vector2(0.0, 72.0)
+	parent.add_child(row)
+	var lb := _touch_btn(row, "◀ Trái")
+	lb.button_down.connect(func() -> void: _set_steer(-1.0))
+	lb.button_up.connect(func() -> void: _set_steer(0.0))
+	var rb := _touch_btn(row, "GIỮ THU DÂY")
+	rb.button_down.connect(func() -> void: _set_reel(true))
+	rb.button_up.connect(func() -> void: _set_reel(false))
+	var rrb := _touch_btn(row, "Phải ▶")
+	rrb.button_down.connect(func() -> void: _set_steer(1.0))
+	rrb.button_up.connect(func() -> void: _set_steer(0.0))
+
+
+func _bar(p: Control, title: String, col: Color) -> ProgressBar:
 	var box := VBoxContainer.new()
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	parent.add_child(box)
+	p.add_child(box)
 	var lbl := Label.new()
 	lbl.text = title
 	box.add_child(lbl)
 	var bar := ProgressBar.new()
 	bar.max_value = 100.0
 	bar.value = 100.0
+	bar.show_percentage = false
 	bar.modulate = col
 	box.add_child(bar)
 	return bar
 
 
-func _make_touch_btn(parent: Control, text: String) -> Button:
+func _touch_btn(p: Control, text: String) -> Button:
 	var btn := Button.new()
 	btn.text = text
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	parent.add_child(btn)
+	p.add_child(btn)
 	return btn
 
 
 func _set_steer(val: float) -> void:
-	_steer_val = val
 	if _arena != null:
 		_arena.set("rod_steer", val)
 		_arena.queue_redraw()
@@ -133,7 +167,7 @@ func _set_reel(held: bool) -> void:
 
 
 func _on_drag_changed(val: float) -> void:
-	_drag_label.text = "Lực cản máy câu (Drag): %d%%" % int(roundf(val))
+	_drag_label.text = "Drag: %d%%" % int(roundf(val))
 	if _fishing_api != null and _fishing_api.has_method("set_drag"):
 		_fishing_api.call("set_drag", val / 100.0)
 
@@ -149,10 +183,10 @@ func _subscribe_events() -> void:
 
 
 func _on_state_changed(payload: Dictionary) -> void:
-	var to_state: String = str(payload.get("to_state", ""))
-	if to_state == "FIGHT":
+	var to: String = str(payload.get("to_state", ""))
+	if to == "FIGHT":
 		visible = true
-	elif to_state in ["IDLE", "CAUGHT", "FAILED", "ESCAPED"]:
+	elif to in ["IDLE", "CAUGHT", "FAILED", "ESCAPED"]:
 		visible = false
 
 
@@ -160,30 +194,34 @@ func _on_battle_ended(_payload: Dictionary) -> void:
 	visible = false
 
 
-func _on_fight_update(payload: Dictionary) -> void:
-	var max_stam: float = maxf(1.0, float(payload.get("fish_max_stamina", 100.0)))
-	var cur_stam: float = float(payload.get("fish_strength", max_stam))
-	var max_hp: float = maxf(1.0, float(payload.get("fish_max_hp", max_stam)))
-	var cur_hp: float = float(payload.get("fish_hp", cur_stam))
-	var max_qi: float = maxf(1.0, float(payload.get("fish_max_qi", 100.0)))
-	var cur_qi: float = float(payload.get("fish_qi", 0.0))
+func _on_fight_update(p: Dictionary) -> void:
+	var mhp: float = maxf(1.0, float(p.get("fish_max_hp", 100.0)))
+	_hp_bar.max_value = mhp
+	_hp_bar.value = float(p.get("fish_hp", mhp))
+	var ms: float = maxf(1.0, float(p.get("fish_max_stamina", 100.0)))
+	_stamina_bar.max_value = ms
+	_stamina_bar.value = float(p.get("fish_strength", ms))
+	var mq: float = maxf(1.0, float(p.get("fish_max_qi", 100.0)))
+	_qi_bar.max_value = mq
+	_qi_bar.value = float(p.get("fish_qi", 0.0))
 
-	_hp_bar.max_value = max_hp
-	_hp_bar.value = cur_hp
-	_stamina_bar.max_value = max_stam
-	_stamina_bar.value = cur_stam
-	_qi_bar.max_value = max_qi
-	_qi_bar.value = cur_qi
+	var mt: float = maxf(1.0, float(p.get("max_tension", 100.0)))
+	var ct: float = float(p.get("line_tension", 0.0))
+	_tension_bar.max_value = mt
+	_tension_bar.value = ct
+	_durability_bar.value = float(p.get("line_durability", 100.0))
 
-	var max_t: float = maxf(1.0, float(payload.get("max_tension", 100.0)))
-	var cur_t: float = float(payload.get("line_tension", 0.0))
-	_tension_bar.max_value = max_t
-	_tension_bar.value = cur_t
+	var sd: int = int(p.get("fish_swim_dir", 0))
+	_dir_label.text = "◀ Bơi Trái" if sd < 0 else ("Bơi Phải ▶" if sd > 0 else "Đứng yên")
 
-	var swim_dir: int = int(payload.get("fish_swim_dir", 1))
-	_dir_label.text = "Hướng cá: %s" % ("◀ Bơi Trái" if swim_dir < 0 else ("Bơi Phải ▶" if swim_dir > 0 else "Đứng yên"))
+	var tele: bool = bool(p.get("fish_telegraphing", false))
+	_fish_skill_label.text = "⚠ Cá đang thi triển kỹ năng!" if tele else ""
+
 	if _arena != null:
-		_arena.set("fish_swim_dir", swim_dir)
-		_arena.set("fish_pos_norm", float(payload.get("fish_pos_norm", 0.5)))
-		_arena.set("tension_ratio", clampf(cur_t / max_t, 0.0, 1.0))
+		_arena.set("fish_swim_dir", sd)
+		_arena.set("fish_pos_norm", float(p.get("fish_pos_norm", 0.5)))
+		_arena.set("fish_depth_norm", float(p.get("fish_depth_norm", 0.45)))
+		_arena.set("rod_bend", float(p.get("rod_bend", 0.0)))
+		_arena.set("tension_ratio", clampf(ct / mt, 0.0, 1.0))
+		_arena.set("fish_telegraphing", tele)
 		_arena.queue_redraw()
