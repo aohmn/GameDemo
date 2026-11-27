@@ -99,6 +99,17 @@ func set_default_rod(rod_id: String) -> void:
 		_default_rod_id = rod_id
 
 
+func repair_rod(rod_id: String = "") -> bool:
+	var target_id: String = _default_rod_id if rod_id.is_empty() else rod_id
+	var rod: Resource = _rods.get(target_id, null)
+	if rod == null:
+		return false
+	if "max_durability" in rod and "current_durability" in rod:
+		rod.set("current_durability", int(rod.get("max_durability")))
+		return true
+	return false
+
+
 func get_state() -> String:
 	if _controller != null:
 		return _controller.get_state_name()
@@ -127,6 +138,8 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 	var rod_req: int = int(rod.get("required_realm_level")) if "required_realm_level" in rod else 0
 	if realm < rod_req:
 		return _deny_cast("rod_realm", rod_req, realm)
+	if "current_durability" in rod and int(rod.get("current_durability")) <= 0:
+		return _deny_cast("rod_broken", 1, 0)
 
 	var cur_time: String = _current_time_period()
 	var spot_time: String = str(spot.get("time_condition")) if "time_condition" in spot else "tat_ca"

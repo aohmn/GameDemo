@@ -199,6 +199,8 @@ func _process_fighting(delta: float) -> void:
 	# Cập nhật độ bền vào data
 	fishing_data.line_durability = battle.line_durability
 	fishing_data.rod_durability = battle.rod_durability
+	if result != "CONTINUE" and fishing_data.rod_spec != null and "current_durability" in fishing_data.rod_spec:
+		fishing_data.rod_spec.set("current_durability", int(roundf(battle.rod_durability)))
 
 	# Phát cập nhật lực căng & thể lực
 	if on_fight_update.is_valid():

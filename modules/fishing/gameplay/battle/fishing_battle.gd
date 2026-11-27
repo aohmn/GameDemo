@@ -117,7 +117,7 @@ func update(
 		delta
 	)
 	line_durability = maxf(0.0, line_durability - line_wear)
-	rod_durability = maxf(0.0, rod_durability - line_wear * 0.4)
+	rod_durability = maxf(0.0, rod_durability - line_wear * 0.25)
 
 	if line_durability <= 0.0:
 		return "LINE_BREAK"
