@@ -5,12 +5,16 @@ extends RefCounted
 ## Đồng bộ giữa TensionSystem, FishAI, sức chịu đựng của cá và độ bền trang bị thực tế.
 
 const TensionSystemScript: Script = preload("res://modules/fishing/gameplay/battle/tension_system.gd")
+const ReelDragSystemScript: Script = preload("res://modules/fishing/gameplay/battle/reel_drag_system.gd")
 const FishAIScript: Script = preload("res://modules/fishing/gameplay/fish/fish_ai.gd")
 const FishingCalculatorScript: Script = preload("res://modules/fishing/gameplay/core/fishing_calculator.gd")
 
 var tension_system: TensionSystem
+var reel_drag: ReelDragSystem = ReelDragSystemScript.new()
 var fish_ai: FishAI
 var fight_time: float = 0.0
+var rod_steer: float = 0.0
+var rod_bend: float = 0.0
 
 var fish_stamina: float = 100.0
 var line_durability: float = 100.0
@@ -37,6 +41,9 @@ func start_battle(
 	tension_system.setup(rod_spec, line_bonus, safe_zone_bonus)
 
 	fish_ai = FishAIScript.new(rng)
+	reel_drag.reset(15.0)
+	rod_steer = 0.0
+	rod_bend = 0.0
 	fight_time = 0.0
 	fish_stamina = fish_data.stamina
 	pull_reduction = fish_pull_modifier
@@ -93,6 +100,11 @@ func update(
 	# Kiểm tra đứt dây do vượt ngưỡng căng tối đa
 	if tension_system.is_line_broken():
 		return "LINE_BREAK"
+
+	var t_ratio: float = clampf(tension_system.current_tension / maxf(1.0, tension_system.max_tension), 0.0, 1.0)
+	rod_bend = t_ratio
+	if reel_drag != null:
+		reel_drag.update(is_reeling, fish_pull, reel_speed, t_ratio, delta)
 
 	# Kiểm tra cá tuột lưỡi do chùng dây quá lâu
 	if tension_system.is_fish_slack_escaped():

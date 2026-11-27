@@ -15,6 +15,8 @@ var resistance: float = 1.0   # Khả năng phản kháng (biên độ giật)
 var tenacity: float = 1.0     # Độ lì lợm (chống mệt mỏi)
 var qi_value: int = 10        # Linh khí / tu vi chứa trong cá
 var weight_g: int = 150       # Khối lượng thực tế cá câu được
+var max_hp: float = 100.0     # Sinh lực tối đa trong trận
+var max_qi: float = 100.0     # Nội năng tối đa dùng cho kỹ năng
 
 
 static func from_resource(spec: Resource, rng: RandomNumberGenerator) -> FishData:
@@ -36,4 +38,6 @@ static func from_resource(spec: Resource, rng: RandomNumberGenerator) -> FishDat
 	var w_min: int = int(spec.get("min_weight_g")) if "min_weight_g" in spec else 100
 	var w_max: int = int(spec.get("max_weight_g")) if "max_weight_g" in spec else 300
 	data.weight_g = rng.randi_range(w_min, w_max)
+	data.max_hp = float(spec.get("max_hp")) if "max_hp" in spec else (data.stamina * 1.2 + float(data.weight_g) * 0.05)
+	data.max_qi = float(spec.get("max_qi")) if "max_qi" in spec else (float(data.tier) * 30.0 + float(data.qi_value) * 0.5)
 	return data

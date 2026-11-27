@@ -21,6 +21,9 @@ func _initialize() -> void:
 	_test_crafting_active_save()
 	_test_map_manager_lock()
 	_test_fishing_line_and_durability()
+	_test_reel_drag_system()
+	_test_fish_ai_upgrade()
+	_test_battle_skills()
 	print("=== KẾT QUẢ: %d passed, %d failed ===" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -115,3 +118,62 @@ func _test_fishing_line_and_durability() -> void:
 	var eq2 := preload("res://modules/equipment/logic/equipment_logic.gd").new()
 	eq2.register_item_spec(spec)
 	_assert_true("EquipmentLogic tải lại giữ đúng độ bền", eq2.load_from_disk(eq_path) and is_equal_approx(eq2.get_item_durability("line_vip_001"), 27.5))
+
+
+func _test_reel_drag_system() -> void:
+	var rd := preload("res://modules/fishing/gameplay/battle/reel_drag_system.gd").new()
+	rd.reset(15.0)
+	rd.set_drag(0.5) # brake_force = 20.0
+	var slip_res: Dictionary = rd.update(false, 32.0, 35.0, 0.7, 1.0)
+	_assert_true("Cá kéo vượt lực hãm -> dây bị kéo ra", float(slip_res.get("line_distance", 0.0)) > 15.0)
+	var dist_before: float = float(slip_res.get("line_distance", 0.0))
+	var reel_res: Dictionary = rd.update(true, 10.0, 35.0, 0.3, 1.0)
+	_assert_true("Giữ thu dây khi lực kéo < lực hãm -> thu dây vào", float(reel_res.get("line_distance", 99.0)) < dist_before)
+	_assert_true("Độ giãn dây > 0 khi có lực căng", float(reel_res.get("line_stretch", 0.0)) > 0.0)
+
+
+func _test_fish_ai_upgrade() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 42
+	var fd := preload("res://modules/fishing/gameplay/fish/fish_data.gd").new()
+	fd.strength = 40.0
+	fd.stamina = 100.0
+	fd.max_hp = 120.0
+	var ai := preload("res://modules/fishing/gameplay/fish/fish_ai.gd").new(rng)
+	var normal_res: Dictionary = ai.update_behavior(fd, 0.5, 120.0, 100.0, 50.0, 0.2)
+	var tired_res: Dictionary = ai.update_behavior(fd, 0.5, 120.0, 10.0, 50.0, 0.2)
+	_assert_true("Sức thấp làm cá yếu đi", float(tired_res.get("pull_force", 999.0)) < float(normal_res.get("pull_force", 0.0)))
+	var ko_res: Dictionary = ai.update_behavior(fd, 0.5, 0.0, 10.0, 50.0, 0.2)
+	_assert_true("HP về 0 cá mất khả năng chiến đấu", is_zero_approx(float(ko_res.get("pull_force", 1.0))) and int(ko_res.get("swim_dir", 1)) == 0)
+
+
+func _test_battle_skills() -> void:
+	var spec_script := preload("res://modules/fishing/gameplay/skills/battle_skill_spec.gd")
+	var runner := preload("res://modules/fishing/gameplay/skills/battle_skill_runner.gd").new()
+
+	var p_skill := spec_script.new()
+	p_skill.id = "skill_toa_ngu"
+	p_skill.owner_type = "player"
+	p_skill.qi_cost = 25.0
+	p_skill.cooldown = 5.0
+	p_skill.duration = 2.0
+	p_skill.effect_type = "pull_reduce"
+	p_skill.effect_power = 0.4
+
+	var r1: Dictionary = runner.try_cast(p_skill, 60.0)
+	_assert_true("Kỹ năng người chơi tiêu hao linh lực", bool(r1.get("ok", false)) and is_equal_approx(float(r1.get("qi_left", 0.0)), 35.0))
+	_assert_true("Kỹ năng người chơi áp dụng hiệu ứng", is_equal_approx(runner.get_effect_multiplier("pull_reduce"), 0.4))
+	var r2: Dictionary = runner.try_cast(p_skill, 35.0)
+	_assert_true("Kỹ năng đang hồi chiêu không thể dùng lại", not bool(r2.get("ok", true)) and str(r2.get("reason", "")) == "cooldown")
+
+	var f_skill := spec_script.new()
+	f_skill.id = "skill_ca_vay_duoi"
+	f_skill.owner_type = "fish"
+	f_skill.qi_cost = 30.0
+	f_skill.telegraph_time = 0.5
+	f_skill.effect_type = "fish_surge"
+	f_skill.effect_power = 0.6
+	var rf: Dictionary = runner.try_cast(f_skill, 40.0)
+	_assert_true("Kỹ năng cá vào trạng thái báo trước", bool(rf.get("ok", false)) and runner.is_telegraphing())
+	runner.tick(0.6)
+	_assert_true("Kỹ năng cá kích hoạt sau thời gian báo trước", not runner.is_telegraphing() and is_equal_approx(runner.get_effect_multiplier("fish_surge"), 0.6))

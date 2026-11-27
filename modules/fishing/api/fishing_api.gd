@@ -202,6 +202,16 @@ func reel(held: bool) -> void:
 	_controller.reel(held)
 
 
+## Điều hướng cần câu trái/phải (-1.0 -> 1.0)
+func set_rod_steer(dir: float) -> void:
+	_controller.set_rod_steer(dir)
+
+
+## Điều chỉnh lực cản máy câu (0.0 -> 1.0)
+func set_drag(level: float) -> void:
+	_controller.set_drag(level)
+
+
 ## Xả dây cước (giữ release)
 func release(held: bool) -> void:
 	_controller.release(held)

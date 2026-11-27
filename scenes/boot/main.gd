@@ -264,6 +264,13 @@ func _create_fishing_ui() -> void:
 	_fishing_ui = _instantiate_ui(FISHING_UI_PATH)
 	if _fishing_ui != null and _fishing_api != null and _fishing_ui.has_method("set_fishing_api"):
 		_fishing_ui.call("set_fishing_api", _fishing_api)
+	var battle_ui_script: Script = load("res://presentation/fishing_battle_ui/fishing_battle_ui.gd") as Script
+	if battle_ui_script != null and _hud != null:
+		var battle_ui := battle_ui_script.new() as Control
+		if battle_ui != null:
+			_hud.add_child(battle_ui)
+			if _fishing_api != null and battle_ui.has_method("set_fishing_api"):
+				battle_ui.call("set_fishing_api", _fishing_api)
 
 
 func sell_fish(fish_id: String, count: int) -> bool:

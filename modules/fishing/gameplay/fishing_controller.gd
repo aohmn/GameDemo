@@ -138,6 +138,16 @@ func reel(held: bool) -> void:
 	fishing_data.is_reeling = held
 
 
+func set_rod_steer(dir: float) -> void:
+	if battle != null:
+		battle.rod_steer = clampf(dir, -1.0, 1.0)
+
+
+func set_drag(level: float) -> void:
+	if battle != null and battle.reel_drag != null:
+		battle.reel_drag.set_drag(level)
+
+
 func release(held: bool) -> void:
 	fishing_data.is_releasing = held
 
