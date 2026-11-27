@@ -58,6 +58,7 @@ func _ready() -> void:
 	_create_equipment_ui()
 	_shop_ui = _ui_router.call("build_shop_ui", _hud, _shop_api, _economy_api, _cultivation_api) as Control
 	_ui_router.call("build_skill_ui", _hud, _fishing_api)
+	_ui_router.call("build_settings_ui", _hud, self)
 	_create_fishing_ui()
 	_create_fishing_rig()
 	_setup_save_manager()

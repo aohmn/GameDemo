@@ -6,6 +6,7 @@ extends RefCounted
 const CULTIVATION_UI_PATH: String = "res://presentation/cultivation_ui/cultivation_ui.tscn"
 const SHOP_UI_PATH: String = "res://presentation/shop_ui/shop_ui.tscn"
 const SKILL_UI_PATH: String = "res://presentation/fishing_skill_ui/fishing_skill_ui.tscn"
+const SETTINGS_UI_PATH: String = "res://presentation/settings_ui/settings_ui.tscn"
 
 var _coordinator: RefCounted
 var _economy_api: RefCounted
@@ -149,3 +150,18 @@ func _absorb_fail_text(reason: String) -> String:
 		"insufficient_fish":
 			return "Không đủ cá để hấp thu"
 	return "Không thể hấp thu"
+
+
+func build_settings_ui(hud: Node, target_root: Node) -> Control:
+	if hud == null or not ResourceLoader.exists(SETTINGS_UI_PATH):
+		return null
+	var scene := load(SETTINGS_UI_PATH) as PackedScene
+	if scene == null:
+		return null
+	var ui := scene.instantiate() as Control
+	if ui == null:
+		return null
+	hud.add_child(ui)
+	if ui.has_method("set_target_root"):
+		ui.call("set_target_root", target_root)
+	return ui
