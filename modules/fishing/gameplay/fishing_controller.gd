@@ -33,6 +33,7 @@ var current_fish: FishData
 var rng: RandomNumberGenerator
 var _wait_timer: float = 0.0
 var _bite_timer: float = 0.0
+var _equipment_stats: Dictionary = {}
 const BASE_BITE_WINDOW: float = 0.85
 
 
@@ -58,7 +59,7 @@ func get_state_name() -> String:
 
 
 ## Thả câu (IDLE -> CASTING -> WAITING)
-func cast(spot: Resource, rod: Resource, line_res: Resource = null) -> bool:
+func cast(spot: Resource, rod: Resource, line_res: Resource = null, equipment_stats: Dictionary = {}) -> bool:
 	if not FishingStateScript.can_transition(current_state, FishingStateScript.State.CASTING):
 		return false
 	if spot == null or rod == null:
@@ -69,6 +70,7 @@ func cast(spot: Resource, rod: Resource, line_res: Resource = null) -> bool:
 	fishing_data.rod_resource = rod
 	fishing_data.line_resource = line_res if line_res != null else FishingLineScript.create_default()
 	fishing_data.spot_id = str(spot.get("id"))
+	_equipment_stats = equipment_stats
 
 	# Chọn cá mục tiêu theo phẩm cấp cần câu; không có cá phù hợp thì không thả được
 	var bait_pref := bait_system.preferred_tier if bait_system.remaining_uses > 0 else 0
@@ -121,7 +123,8 @@ func strike() -> bool:
 			current_fish,
 			skills.get_safe_zone_bonus(),
 			skills.get_fish_pull_reduction(),
-			rng
+			rng,
+			_equipment_stats
 		)
 		# Tiêu hao 1 lần mồi câu
 		bait_system.consume_bait()
@@ -223,6 +226,8 @@ func _catch_success() -> void:
 	if not _transition_to(FishingStateScript.State.CAUGHT):
 		return
 	var qi_mult: float = skills.get_qi_multiplier()
+	var eq_qi: float = float(_equipment_stats.get("total_qi_absorption_bonus", 0.0))
+	qi_mult *= (1.0 + eq_qi / 100.0)
 	var payload: Dictionary = FishingRewardScript.create_reward_payload(current_fish, qi_mult)
 
 	if on_fish_caught.is_valid():

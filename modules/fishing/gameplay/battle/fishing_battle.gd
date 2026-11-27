@@ -28,10 +28,12 @@ func start_battle(
 	fish_data: FishData,
 	safe_zone_bonus: float,
 	fish_pull_modifier: float,
-	rng: RandomNumberGenerator
+	rng: RandomNumberGenerator,
+	equipment_stats: Dictionary = {}
 ) -> void:
 	tension_system = TensionSystemScript.new()
 	var line_bonus := line_item.max_tension_bonus if line_item != null else 0.0
+	line_bonus += float(equipment_stats.get("total_max_tension_bonus", 0.0))
 	tension_system.setup(rod_spec, line_bonus, safe_zone_bonus)
 
 	fish_ai = FishAIScript.new(rng)
@@ -54,6 +56,13 @@ func start_battle(
 		reel_speed = float(rod_spec.get("reel_speed")) if "reel_speed" in rod_spec else 35.0
 		release_speed = float(rod_spec.get("release_speed")) if "release_speed" in rod_spec else 25.0
 		fatigue_rate = float(rod_spec.get("fatigue_rate")) if "fatigue_rate" in rod_spec else 12.0
+
+	# Áp dụng bonus từ trang bị pháp bảo
+	fatigue_rate += float(equipment_stats.get("total_fatigue_rate_bonus", 0.0))
+	var ctrl_bonus: float = float(equipment_stats.get("total_control_power_bonus", 0.0))
+	if ctrl_bonus > 0.0:
+		reel_speed *= (1.0 + ctrl_bonus * 0.1)
+		release_speed *= (1.0 + ctrl_bonus * 0.1)
 
 
 ## Cập nhật 1 frame chiến đấu, trả về mã trạng thái:

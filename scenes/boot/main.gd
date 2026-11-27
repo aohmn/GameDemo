@@ -200,6 +200,8 @@ func _init_services() -> void:
 			_fishing_api.call("set_realm_provider", Callable(_cultivation_api, "get_current_realm_index"))
 	if _equipment_api != null:
 		_coordinator.call("set_equipment_api", _equipment_api)
+		if _fishing_api != null and _fishing_api.has_method("set_equipment_stats_provider"):
+			_fishing_api.call("set_equipment_stats_provider", Callable(_equipment_api, "calculate_total_stats"))
 	var eb: Node = get_node_or_null("/root/EventBus")
 	if eb != null and eb.has_method("subscribe"):
 		eb.call("subscribe", "shop_rod_equipped", Callable(_coordinator, "on_shop_rod_equipped"))

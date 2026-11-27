@@ -13,6 +13,7 @@ var _spots: Dictionary = {}
 var _rods: Dictionary = {}
 var _default_rod_id: String = "rod_truc_nhiem"
 var _realm_provider: Callable = Callable() # trả về chỉ số cảnh giới hiện tại (int), do Bootstrap gắn
+var _equipment_stats_provider: Callable = Callable() # trả về Dictionary stats từ EquipmentAPI
 
 
 func _init(seed_val: int = -1) -> void:
@@ -43,6 +44,17 @@ func register_rod(rod: Resource) -> void:
 ## Bootstrap gắn nguồn cảnh giới (ví dụ Cultivation.get_current_realm_index). Chưa gắn = cảnh giới 0.
 func set_realm_provider(provider: Callable) -> void:
 	_realm_provider = provider
+
+
+## Bootstrap gắn nguồn chỉ số trang bị (EquipmentAPI.calculate_total_stats). Chưa gắn = không bonus.
+func set_equipment_stats_provider(provider: Callable) -> void:
+	_equipment_stats_provider = provider
+
+
+func _get_equipment_stats() -> Dictionary:
+	if _equipment_stats_provider.is_valid():
+		return _equipment_stats_provider.call() as Dictionary
+	return {}
 
 
 func _current_realm() -> int:
@@ -90,7 +102,8 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 	if realm < rod_req:
 		return _deny_cast("rod_realm", rod_req, realm)
 
-	var success: bool = _controller.cast(spot, rod, null)
+	var eq_stats: Dictionary = _get_equipment_stats()
+	var success: bool = _controller.cast(spot, rod, null, eq_stats)
 	if not success and _controller.get_state_name() == "IDLE":
 		return _deny_cast("no_fish_for_rod", 0, realm)
 	if success:
