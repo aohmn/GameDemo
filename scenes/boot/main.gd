@@ -33,6 +33,7 @@ var _cultivation_api: RefCounted
 var _equipment_api: RefCounted
 var _cultivation_ui: Control
 var _equipment_ui: Control
+var _shop_ui: Control
 var _ui_router: RefCounted
 var _fishing_inventory_ui: Control
 var _fishing_ui: Control
@@ -53,6 +54,7 @@ func _ready() -> void:
 	_create_inventory_ui()
 	_create_cultivation_ui()
 	_create_equipment_ui()
+	_shop_ui = _ui_router.call("build_shop_ui", _hud, _shop_api, _economy_api, _cultivation_api) as Control
 	_create_fishing_ui()
 	_create_fishing_rig()
 
@@ -90,6 +92,10 @@ func change_map(target_map_id: String) -> bool:
 func _physics_process(_delta: float) -> void:
 	if _cast_coordinator != null:
 		_cast_coordinator.call("update")
+	if _shop_ui != null and _player != null and _map_manager != null:
+		var m: Node = _map_manager.call("get_current_map") as Node
+		var near_shop: bool = bool(m.call("is_near_shop", _player.global_position)) if m != null and m.has_method("is_near_shop") else false
+		_shop_ui.call("set_near_shop", near_shop)
 
 
 func _process(delta: float) -> void:

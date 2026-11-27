@@ -10,6 +10,7 @@ description = "Pháp bảo cần câu cấp Linh tôi luyện từ hắc thạch
 price_spirit_stone = 1500
 price_vnd = 1500000
 category = "rod"
+required_realm_level = 1
 rod_id = "rod_carbon_bien_sau"
 safe_tension_min = 35.0
 safe_tension_max = 75.0

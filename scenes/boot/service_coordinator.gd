@@ -149,13 +149,18 @@ func sell_fish(fish_id: String, count: int) -> bool:
 	return true
 
 
-## Mua vật phẩm từ Shop sử dụng số dư từ Economy (atomic).
+## Mua vật phẩm từ Shop sử dụng số dư từ Economy (atomic) và kiểm tra cảnh giới.
 func buy_shop_item(item_id: String) -> bool:
 	if _shop_api == null or _economy_api == null:
 		return false
 
 	var item: Resource = _shop_api.call("get_item", item_id) as Resource
 	if item == null:
+		return false
+
+	var current_realm: int = int(_cultivation_api.call("get_current_realm_index")) if _cultivation_api != null and _cultivation_api.has_method("get_current_realm_index") else 0
+	var req_realm: int = int(item.get("required_realm_level")) if "required_realm_level" in item else 0
+	if current_realm < req_realm:
 		return false
 
 	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
@@ -168,7 +173,7 @@ func buy_shop_item(item_id: String) -> bool:
 	if not deduct_ok:
 		return false
 
-	var buy_res: Dictionary = _shop_api.call("buy_item", item_id, current_bal) as Dictionary
+	var buy_res: Dictionary = _shop_api.call("buy_item", item_id, current_bal, current_realm) as Dictionary
 	if not bool(buy_res.get("success", false)):
 		_economy_api.call("add_funds", price, "refund_" + item_id)
 		return false
@@ -176,6 +181,18 @@ func buy_shop_item(item_id: String) -> bool:
 	_economy_api.call("save")
 	_shop_api.call("save")
 	return true
+
+
+## Trang bị cần câu đã mua từ Shop và đồng bộ lưu trữ.
+func equip_shop_rod(shop_item_id: String) -> bool:
+	if _shop_api == null:
+		return false
+	var ok: bool = bool(_shop_api.call("equip_rod", shop_item_id))
+	if ok:
+		_shop_api.call("save")
+		if _equipment_api != null:
+			_equipment_api.call("save")
+	return ok
 
 
 ## Xử lý khi cần câu được trang bị từ Shop hoặc Equipment module.

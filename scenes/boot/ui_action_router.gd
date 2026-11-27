@@ -4,6 +4,7 @@ extends RefCounted
 ## Bootstrap nối tín hiệu UI vào đây; UI không biết logic nghiệp vụ.
 
 const CULTIVATION_UI_PATH: String = "res://presentation/cultivation_ui/cultivation_ui.tscn"
+const SHOP_UI_PATH: String = "res://presentation/shop_ui/shop_ui.tscn"
 
 var _coordinator: RefCounted
 var _economy_api: RefCounted
@@ -58,6 +59,43 @@ func on_breakthrough_requested() -> void:
 func connect_equipment_ui(eq_ui: Control) -> void:
 	_connect(eq_ui, "equip_requested", on_equip_requested)
 	_connect(eq_ui, "unequip_requested", on_unequip_requested)
+
+
+## Tạo Shop UI (nếu có ShopAPI), nối tín hiệu mua và đổi cần. Trả về Shop UI hoặc null.
+func build_shop_ui(hud: Node, shop_api: RefCounted, economy_api: RefCounted, cultivation_api: RefCounted) -> Control:
+	if shop_api == null or not ResourceLoader.exists(SHOP_UI_PATH):
+		return null
+	var scene := load(SHOP_UI_PATH) as PackedScene
+	if scene == null:
+		return null
+	var shop_ui := scene.instantiate() as Control
+	if shop_ui == null:
+		return null
+	hud.add_child(shop_ui)
+	if shop_ui.has_method("setup"):
+		shop_ui.call("setup", shop_api, economy_api, cultivation_api)
+	_connect(shop_ui, "buy_requested", on_shop_buy_requested)
+	_connect(shop_ui, "equip_requested", on_shop_equip_requested)
+	return shop_ui
+
+
+func on_shop_buy_requested(item_id: String) -> void:
+	if _coordinator == null:
+		return
+	var ok: bool = bool(_coordinator.call("buy_shop_item", item_id))
+	if ok:
+		_toast("Mua pháp bảo thành công!")
+	else:
+		_toast("Không thể mua: thiếu Linh Thạch hoặc chưa đủ cảnh giới")
+
+
+func on_shop_equip_requested(shop_item_id: String) -> void:
+	if _coordinator == null:
+		return
+	if bool(_coordinator.call("equip_shop_rod", shop_item_id)):
+		_toast("Đã đổi cần câu!")
+	else:
+		_toast("Không thể đổi cần câu này")
 
 
 func on_equip_requested(slot: String, item_id: String) -> void:

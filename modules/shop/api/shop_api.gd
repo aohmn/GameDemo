@@ -62,9 +62,9 @@ func get_equipped_rod_id() -> String:
 
 
 ## Thực hiện mua vật phẩm.
-func buy_item(item_id: String, current_balance: int) -> Dictionary:
+func buy_item(item_id: String, current_balance: int, current_realm_level: int = 0) -> Dictionary:
 	if _logic != null and _logic.has_method("buy_item"):
-		return _logic.call("buy_item", item_id, current_balance) as Dictionary
+		return _logic.call("buy_item", item_id, current_balance, current_realm_level) as Dictionary
 	return {"success": false, "price": 0, "reason": "uninitialized"}
 
 

@@ -72,3 +72,12 @@ func get_fishing_spot_at(world_pos: Vector3) -> String:
 ## Cao độ mặt nước tại điểm (ao sen cao hơn biển) để phao/dây đặt đúng mặt nước.
 func get_water_height_at(world_pos: Vector3) -> float:
 	return POND_WATER_Y if _in_pond(world_pos) else SEA_WATER_Y
+
+
+## Vị trí trước cửa Thương Hội (đông ao sen) và bán kính tương tác mở cửa hàng.
+const THUONG_HOI_POS: Vector2 = Vector2(9.8, -8.2)
+const THUONG_HOI_RADIUS: float = 4.5
+
+
+func is_near_shop(world_pos: Vector3) -> bool:
+	return (Vector2(world_pos.x, world_pos.z) - THUONG_HOI_POS).length() <= THUONG_HOI_RADIUS

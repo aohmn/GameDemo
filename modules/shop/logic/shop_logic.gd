@@ -49,9 +49,9 @@ func get_equipped_rod_id() -> String:
 	return _equipped_rod_id
 
 
-## Thực hiện mua vật phẩm với số dư được cung cấp.
+## Thực hiện mua vật phẩm với số dư và cảnh giới được cung cấp.
 ## Trả về Dictionary: { "success": bool, "price": int, "item_id": String, "reason": String }
-func buy_item(item_id: String, current_balance: int) -> Dictionary:
+func buy_item(item_id: String, current_balance: int, current_realm_level: int = 0) -> Dictionary:
 	if not _items.has(item_id):
 		_fail_purchase(item_id, "Vật phẩm không tồn tại trong cửa hàng")
 		return {"success": false, "price": 0, "item_id": item_id, "reason": "item_not_found"}
@@ -61,6 +61,11 @@ func buy_item(item_id: String, current_balance: int) -> Dictionary:
 		return {"success": false, "price": 0, "item_id": item_id, "reason": "already_owned"}
 
 	var item: Resource = _items[item_id] as Resource
+	var req_realm: int = int(item.get("required_realm_level")) if "required_realm_level" in item else 0
+	if current_realm_level < req_realm:
+		_fail_purchase(item_id, "Chưa đủ cảnh giới (yêu cầu cảnh giới %d)" % req_realm)
+		return {"success": false, "price": 0, "item_id": item_id, "reason": "insufficient_realm", "required_realm": req_realm}
+
 	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
 
 	if current_balance < price:
