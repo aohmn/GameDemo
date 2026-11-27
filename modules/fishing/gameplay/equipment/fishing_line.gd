@@ -22,7 +22,7 @@ static func from_resource(spec: Resource) -> FishingLine:
 	line.tier = int(spec.get("tier")) if "tier" in spec else 0
 	line.max_durability = float(spec.get("max_durability")) if "max_durability" in spec else (float(spec.get("durability")) if "durability" in spec else 100.0)
 	line.current_durability = float(spec.get("current_durability")) if "current_durability" in spec else (float(spec.get("durability")) if "durability" in spec else line.max_durability)
-	line.max_tension_bonus = float(spec.get("tension_bonus")) if "tension_bonus" in spec else float(line.tier * 10.0)
+	line.max_tension_bonus = float(spec.get("max_tension_bonus")) if "max_tension_bonus" in spec else (float(spec.get("tension_bonus")) if "tension_bonus" in spec else float(line.tier * 10.0))
 	line.tension_damping = float(spec.get("tension_damping")) if "tension_damping" in spec else (1.0 + float(line.tier) * 0.1)
 	return line
 

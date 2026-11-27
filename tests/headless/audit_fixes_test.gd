@@ -99,8 +99,10 @@ func _test_fishing_line_and_durability() -> void:
 	spec.set("slot_type", "line")
 	spec.set("tier", 3)
 	spec.set("durability", 40.0)
+	spec.set("max_tension_bonus", 15.0)
 	var line_obj = line_script.from_resource(spec)
 	_assert_true("FishingLine.from_resource giữ đúng tier", line_obj.tier == 3)
+	_assert_true("FishingLine.from_resource giữ đúng max_tension_bonus = 15", is_equal_approx(line_obj.max_tension_bonus, 15.0))
 	_assert_true("FishingLine.from_resource giữ đúng độ bền 40", is_equal_approx(line_obj.current_durability, 40.0))
 
 	var eq := preload("res://modules/equipment/logic/equipment_logic.gd").new()
