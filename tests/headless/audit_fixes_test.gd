@@ -20,6 +20,7 @@ func _initialize() -> void:
 	_test_equipment_slot_type()
 	_test_crafting_active_save()
 	_test_map_manager_lock()
+	_test_fishing_line_and_durability()
 	print("=== KẾT QUẢ: %d passed, %d failed ===" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -87,3 +88,28 @@ func _test_map_manager_lock() -> void:
 	mm.register_map_definition(mdef)
 	_assert_true("MapManager chặn chuyển map khi chưa mở khóa / thiếu cảnh giới", not mm.load_map("locked_map", 0))
 	mm.free()
+
+
+func _test_fishing_line_and_durability() -> void:
+	var line_script := preload("res://modules/fishing/gameplay/equipment/fishing_line.gd")
+	var spec := Resource.new()
+	spec.set_script(preload("res://modules/equipment/data/equipment_item_spec.gd"))
+	spec.set("id", "line_vip_001")
+	spec.set("display_name", "Dây Huyền Thiết")
+	spec.set("slot_type", "line")
+	spec.set("tier", 3)
+	spec.set("durability", 40.0)
+	var line_obj = line_script.from_resource(spec)
+	_assert_true("FishingLine.from_resource giữ đúng tier", line_obj.tier == 3)
+	_assert_true("FishingLine.from_resource giữ đúng độ bền 40", is_equal_approx(line_obj.current_durability, 40.0))
+
+	var eq := preload("res://modules/equipment/logic/equipment_logic.gd").new()
+	eq.register_item_spec(spec)
+	eq.equip_item("line", "line_vip_001", 5)
+	eq.consume_durability("line", 12.5)
+	_assert_true("EquipmentLogic giảm độ bền đúng lượng", is_equal_approx(eq.get_item_durability("line_vip_001"), 27.5))
+	var eq_path: String = "user://test_eq_line_durability.cfg"
+	_assert_true("EquipmentLogic lưu được độ bền", eq.save_to_disk(eq_path))
+	var eq2 := preload("res://modules/equipment/logic/equipment_logic.gd").new()
+	eq2.register_item_spec(spec)
+	_assert_true("EquipmentLogic tải lại giữ đúng độ bền", eq2.load_from_disk(eq_path) and is_equal_approx(eq2.get_item_durability("line_vip_001"), 27.5))

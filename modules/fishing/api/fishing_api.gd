@@ -179,7 +179,7 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 
 	var eq_stats: Dictionary = _get_equipment_stats()
 	var line_res: Resource = _get_equipped_line()
-	_last_cast_line_durability = float(line_res.get("current_durability")) if line_res != null and "current_durability" in line_res else -1.0
+	_last_cast_line_durability = float(line_res.get("current_durability")) if line_res != null and "current_durability" in line_res else (float(line_res.get("durability")) if line_res != null and "durability" in line_res else -1.0)
 	_controller.skills.sync_with_realm(realm)
 	var success: bool = _controller.cast(spot, rod, line_res, eq_stats, cur_time, cur_weather)
 	if not success and _controller.get_state_name() == "IDLE":

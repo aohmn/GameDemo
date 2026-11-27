@@ -68,7 +68,7 @@ func cast(spot: Resource, rod: Resource, line_res: Resource = null, equipment_st
 	fishing_data.reset()
 	fishing_data.spot_resource = spot
 	fishing_data.rod_resource = rod
-	fishing_data.line_resource = line_res if line_res != null else FishingLineScript.create_default()
+	fishing_data.line_resource = FishingLineScript.from_resource(line_res) if line_res != null else FishingLineScript.create_default()
 	fishing_data.spot_id = str(spot.get("id"))
 	_equipment_stats = equipment_stats
 

@@ -319,8 +319,11 @@ func _get_equipped_line_resource() -> Resource:
 	if spec == null:
 		return null
 	var res: Resource = spec.duplicate()
+	var cur_dur: float = float(_equipment_api.call("get_item_durability", line_id))
 	if "current_durability" in res:
-		res.set("current_durability", float(_equipment_api.call("get_item_durability", line_id)))
+		res.set("current_durability", cur_dur)
+	elif "durability" in res:
+		res.set("durability", cur_dur)
 	return res
 
 
