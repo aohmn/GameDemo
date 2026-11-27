@@ -81,11 +81,16 @@ func can_travel_to(map_id: String, current_realm_level: int = 0) -> Dictionary:
 
 ## Nạp hoặc chuyển đổi sang map_id mới.
 ## Trả về true nếu nạp thành công.
-func load_map(map_id: String) -> bool:
+func load_map(map_id: String, current_realm_level: int = 0) -> bool:
 	if map_id == current_map_id and is_instance_valid(_current_map):
 		return true
 
 	var def: Resource = get_map_definition(map_id)
+	if def != null:
+		var check: Dictionary = can_travel_to(map_id, current_realm_level)
+		if not bool(check.get("can_travel", false)):
+			push_warning("Không đủ điều kiện chuyển bản đồ %s: %s" % [map_id, str(check.get("reason", ""))])
+			return false
 	var path: String = ""
 	if def != null:
 		path = str(def.get("scene_path"))

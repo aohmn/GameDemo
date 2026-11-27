@@ -81,6 +81,12 @@ func can_equip(item_id: String, slot: String, current_realm_level: int = 0) -> b
 
 	var spec: Resource = get_item_spec(item_id)
 	if spec != null and spec.has_method("get"):
+		var item_slot: String = str(spec.get("slot_type")) if "slot_type" in spec else "rod"
+		if slot.begins_with("relic"):
+			if item_slot != "relic" and item_slot != slot:
+				return false
+		elif item_slot != slot:
+			return false
 		var req_realm: int = int(spec.get("required_realm_level"))
 		if current_realm_level < req_realm:
 			return false

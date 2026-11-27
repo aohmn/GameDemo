@@ -92,7 +92,8 @@ func _on_map_change_requested(payload: Dictionary) -> void:
 func change_map(target_map_id: String) -> bool:
 	if _map_manager == null:
 		return false
-	var ok: bool = bool(_map_manager.call("load_map", target_map_id))
+	var realm: int = int(_cultivation_api.call("get_current_realm_index")) if _cultivation_api != null and _cultivation_api.has_method("get_current_realm_index") else 0
+	var ok: bool = bool(_map_manager.call("load_map", target_map_id, realm))
 	if not ok:
 		return false
 
@@ -120,6 +121,8 @@ func _physics_process(_delta: float) -> void:
 func _process(delta: float) -> void:
 	if _fishing_api != null and _fishing_api.has_method("tick"):
 		_fishing_api.call("tick", delta)
+	if _crafting_api != null and _crafting_api.has_method("process_craft"):
+		_crafting_api.call("process_craft", delta)
 	if _camera == null or _player == null:
 		return
 	var target := _player.global_position

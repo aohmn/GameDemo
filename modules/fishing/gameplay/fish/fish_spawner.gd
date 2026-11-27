@@ -29,6 +29,7 @@ static func spawn_fish_for_spot(
 
 	var weighted_list: Array[Dictionary] = []
 	var total_weight: int = 0
+	var spot_water: String = str(spot.get("water_type")) if "water_type" in spot else ""
 
 	for entry in table:
 		var fish_res: Resource = entry.get("fish") as Resource if "fish" in entry else null
@@ -36,6 +37,10 @@ static func spawn_fish_for_spot(
 
 		if fish_res == null:
 			continue
+		if not spot_water.is_empty() and "habitat_water_type" in fish_res:
+			var f_water: String = str(fish_res.get("habitat_water_type"))
+			if not f_water.is_empty() and f_water != "tat_ca" and f_water != spot_water:
+				continue
 		var fish_tier: int = int(fish_res.get("tier")) if "tier" in fish_res else 0
 		if fish_tier > max_fish_tier:
 			continue # Cá quá phẩm cấp so với cần câu: không thể mắc câu

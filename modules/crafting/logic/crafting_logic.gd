@@ -201,6 +201,9 @@ func save_to_disk(custom_path: String = "") -> bool:
 
 	for r_id in _unlocked_recipe_ids.keys():
 		config.set_value(SECTION_UNLOCKED, r_id, bool(_unlocked_recipe_ids[r_id]))
+	if not _active_craft.is_empty():
+		for k in _active_craft.keys():
+			config.set_value("active_craft", str(k), _active_craft[k])
 
 	var err: Error = config.save(path)
 	if err != OK:
@@ -225,4 +228,8 @@ func load_from_disk(custom_path: String = "") -> bool:
 		var keys: PackedStringArray = config.get_section_keys(SECTION_UNLOCKED)
 		for k in keys:
 			_unlocked_recipe_ids[k] = bool(config.get_value(SECTION_UNLOCKED, k, false))
+	_active_craft.clear()
+	if config.has_section("active_craft"):
+		for k in config.get_section_keys("active_craft"):
+			_active_craft[str(k)] = config.get_value("active_craft", k)
 	return true
