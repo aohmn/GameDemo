@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Chạm nhiều ngón (`presentation/fishing_ui/touch_button_helper.gd`): nút Thả Cần, GIẬT CẦN!, Kéo Dây, Xả Dây nhận trực tiếp `InputEventScreenTouch` theo `touch.index`, vừa giữ joystick vừa bấm/giữ nút câu cá được (Mức 2, `tests/headless` đạt; chạm nhiều ngón thật trên Android chưa đo).
 - Hiệu năng Android (`presentation/settings_ui/`): thêm bộ đếm FPS (bật/tắt trong Cài Đặt) và 3 mức đồ họa Thấp/Vừa/Cao (tắt bóng, giảm sương/mist, giảm MultiMesh rừng trúc), lưu vào `user://settings.cfg` (Mức 2, `tests/headless` đạt; FPS thật trên Android chưa đo).
 - Save/Load toàn diện: tách `save_manager.gd`, lưu tự động khi thoát/pause, khôi phục tiền/cá/tu vi/vị trí khi mở lại; mọi module kiểm tra `version` khi load; thêm `tests/headless/save_roundtrip.gd` (Mức 2, 8/8 `tests/headless` đạt; chưa chạy Godot Android).
 - Kỹ năng câu cá (Linh Nhãn, Thính Thủy, Ngự Câu, Tỏa Ngư, Thu Linh): tự mở khóa theo cảnh giới (0→4), mỗi kỹ năng chỉnh 1 tham số fishing, thêm UI nhỏ `presentation/fishing_skill_ui/` xem trạng thái & điểm mở khóa (Mức 2, `dev.tscn` + test kỹ năng + 7/7 `tests/headless` đạt; chưa chạy Godot Android).

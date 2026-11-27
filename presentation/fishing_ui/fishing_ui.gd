@@ -112,7 +112,12 @@ func _build_buttons() -> void:
 	_btn_release.button_up.connect(func(): if _fishing_api != null: _fishing_api.call("release", false))
 	btn_box.add_child(_btn_release)
 
-
+	var touch_helper := preload("res://presentation/fishing_ui/touch_button_helper.gd").new()
+	add_child(touch_helper)
+	touch_helper.bind_tap(_btn_cast, func(): if _is_near_spot and _fishing_api != null: _fishing_api.call("cast", _current_spot_id))
+	touch_helper.bind_tap(_btn_strike, func(): if _fishing_api != null: _fishing_api.call("strike"))
+	touch_helper.bind_hold(_btn_reel, func(): if _fishing_api != null: _fishing_api.call("reel", true), func(): if _fishing_api != null: _fishing_api.call("reel", false))
+	touch_helper.bind_hold(_btn_release, func(): if _fishing_api != null: _fishing_api.call("release", true), func(): if _fishing_api != null: _fishing_api.call("release", false))
 func _build_result_popup() -> void:
 	_res_popup = PanelContainer.new()
 	_res_popup.anchor_left = 0.5
