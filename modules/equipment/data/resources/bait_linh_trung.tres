@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/equipment/data/equipment_item_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+slot_type = "bait"
+id = "bait_linh_trung"
+display_name = "Mồi Linh Trùng"
+description = "Mồi câu ủ từ linh trùng thảo dược, tỏa hương thơm thanh khiết dẫn dụ linh ngư và tăng cảm nhận linh khí."
+tier = 0
+required_realm_level = 0
+pull_force_bonus = 0.0
+max_tension_bonus = 0.0
+durability = 50
+control_power_bonus = 0.0
+spirit_sensing = 10.0
+rare_fish_rate_bonus = 8.0
+qi_absorption_bonus = 5.0
+fatigue_rate_bonus = 0.0

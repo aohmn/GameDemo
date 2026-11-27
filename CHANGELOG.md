@@ -2,6 +2,8 @@
 
 ## Chưa phát hành
 
+- Tích hợp Pháp Bảo & Trang Bị vào game chính: thêm 3 trang bị mới (Cước Bạch Liên, Mồi Linh Trùng, Định Hải Châu); giao diện trang bị `presentation/equipment_ui/` với 5 slot (cần/dây/mồi/pháp bảo/di vật), nối qua `ui_action_router` → `service_coordinator` → `EquipmentAPI`; Bootstrap tải EquipmentAPI và EquipmentUI tự động khi module tồn tại; refactor `_init_services()` dùng helper `_load_api()` giữ main.gd 289 dòng (Mức 2, boot đạt Player y=0.050, HUD 5 children; chưa chạy Godot Android).
+
 - Điểm câu Hồ Linh Ngư & nhận diện vùng câu động: bổ sung `spot_ho_linh_ngu` với hệ sinh thái cá nước ngọt (Cá Chép Linh, Cá Trắm Ngọc) trên cao nguyên đảo bến cảng; `maps/harbor_island/map.gd` và `CastCoordinator` tự động nhận diện điểm câu theo vị trí rơi phao và hiển thị trực quan trên Fishing UI (Mức 2, kiểm thử nhận diện vùng & nạp cá đạt; chưa chạy Godot Android).
 
 - Dọn dẹp kỹ thuật & chuẩn hóa độc lập: loại bỏ preload chéo module trong các scene dev (`maps/harbor_island/dev.gd`, `presentation/.../dev.gd`); tối ưu cấu trúc các file chạm trần 300 dòng (`fishing_logic`, `gameplay/dev`, `fishing_inventory_ui`, `main`) xuống <= 283 dòng (Mức 2, toàn bộ 15/15 dev scenes & 10/10 test gameplay đạt; chưa chạy Godot Android).

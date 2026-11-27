@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/equipment/data/equipment_item_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+slot_type = "relic_1"
+id = "relic_dinh_hai_chau"
+display_name = "Định Hải Châu"
+description = "Pháp bảo trấn áp sóng gió, giúp người câu giữ vững tay cần, tăng khả năng khống chế và tốc độ làm cá mệt."
+tier = 1
+required_realm_level = 0
+pull_force_bonus = 5.0
+max_tension_bonus = 10.0
+durability = 200
+control_power_bonus = 0.25
+spirit_sensing = 15.0
+rare_fish_rate_bonus = 5.0
+qi_absorption_bonus = 10.0
+fatigue_rate_bonus = 8.0

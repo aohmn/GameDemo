@@ -207,6 +207,18 @@ func equip_item_from_inventory(slot: String, item_id: String, realm_level: int =
 	return ok
 
 
+## Tháo trang bị khỏi vị trí slot.
+func unequip_item(slot: String) -> bool:
+	if _equipment_api == null:
+		return false
+	var ok: bool = bool(_equipment_api.call("unequip_item", slot))
+	if ok and slot == "rod" and _fishing_api != null and _fishing_api.has_method("set_default_rod"):
+		_fishing_api.call("set_default_rod", "rod_truc_nhiem")
+	if ok:
+		_equipment_api.call("save")
+	return ok
+
+
 ## Thực hiện chế tạo vật phẩm (Atomic transaction giữa Crafting, Inventory và Cultivation).
 ## Trả về Dictionary: { "success": bool, "recipe_id": String, "reason": String }
 func execute_craft(recipe_id: String) -> Dictionary:

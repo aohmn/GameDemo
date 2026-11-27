@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="EquipmentItemSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/equipment/data/equipment_item_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+slot_type = "line"
+id = "line_cuoc_bach_lien"
+display_name = "Cước Bạch Liên"
+description = "Dây cước bện từ tơ sen tuyết ngàn năm, dẻo dai khó đứt, tăng sức chịu lực tối đa cho dây."
+tier = 0
+required_realm_level = 0
+pull_force_bonus = 0.0
+max_tension_bonus = 15.0
+durability = 100
+control_power_bonus = 0.1
+spirit_sensing = 0.0
+rare_fish_rate_bonus = 0.0
+qi_absorption_bonus = 0.0
+fatigue_rate_bonus = 0.0

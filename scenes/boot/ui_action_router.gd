@@ -55,6 +55,30 @@ func on_breakthrough_requested() -> void:
 	_cultivation_api.call("save")
 
 
+func connect_equipment_ui(eq_ui: Control) -> void:
+	_connect(eq_ui, "equip_requested", on_equip_requested)
+	_connect(eq_ui, "unequip_requested", on_unequip_requested)
+
+
+func on_equip_requested(slot: String, item_id: String) -> void:
+	if _coordinator == null:
+		return
+	var realm: int = int(_cultivation_api.call("get_current_realm_index")) if _cultivation_api != null else 0
+	var ok: bool = bool(_coordinator.call("equip_item_from_inventory", slot, item_id, realm))
+	if ok:
+		_toast("Đã trang bị pháp bảo thành công")
+	else:
+		_toast("Không thể trang bị: chưa đủ cảnh giới hoặc chưa sở hữu")
+
+
+func on_unequip_requested(slot: String) -> void:
+	if _coordinator == null:
+		return
+	var ok: bool = bool(_coordinator.call("unequip_item", slot))
+	if ok:
+		_toast("Đã tháo pháp bảo")
+
+
 func _balance() -> int:
 	return int(_economy_api.call("get_balance")) if _economy_api != null else 0
 

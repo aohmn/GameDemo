@@ -16,6 +16,8 @@ const ECONOMY_API_PATH: String = "res://modules/economy/api/economy_api.gd"
 const SHOP_API_PATH: String = "res://modules/shop/api/shop_api.gd"
 const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
 const CULTIVATION_API_PATH: String = "res://modules/cultivation/api/cultivation_api.gd"
+const EQUIPMENT_API_PATH: String = "res://modules/equipment/api/equipment_api.gd"
+const EQUIPMENT_UI_PATH: String = "res://presentation/equipment_ui/equipment_ui.tscn"
 
 var _map_manager: Node3D
 var _coordinator: RefCounted
@@ -28,7 +30,9 @@ var _economy_api: RefCounted
 var _shop_api: RefCounted
 var _fishing_api: RefCounted
 var _cultivation_api: RefCounted
+var _equipment_api: RefCounted
 var _cultivation_ui: Control
+var _equipment_ui: Control
 var _ui_router: RefCounted
 var _fishing_inventory_ui: Control
 var _fishing_ui: Control
@@ -48,6 +52,7 @@ func _ready() -> void:
 	_init_services()
 	_create_inventory_ui()
 	_create_cultivation_ui()
+	_create_equipment_ui()
 	_create_fishing_ui()
 	_create_fishing_rig()
 
@@ -181,53 +186,38 @@ func _on_joystick_direction_changed(direction: Vector2) -> void:
 
 
 func _init_services() -> void:
-	if ResourceLoader.exists(INVENTORY_API_PATH):
-		var inv_s: Script = load(INVENTORY_API_PATH) as Script
-		if inv_s != null:
-			_inventory_api = inv_s.new() as RefCounted
-			if _inventory_api.has_method("load_data"):
-				_inventory_api.call("load_data")
-
-	if ResourceLoader.exists(ECONOMY_API_PATH):
-		var eco_s: Script = load(ECONOMY_API_PATH) as Script
-		if eco_s != null:
-			_economy_api = eco_s.new() as RefCounted
-			if _economy_api.has_method("load_data"):
-				_economy_api.call("load_data")
-
-	if ResourceLoader.exists(FISHING_API_PATH):
-		var fish_s: Script = load(FISHING_API_PATH) as Script
-		if fish_s != null:
-			_fishing_api = fish_s.new() as RefCounted
-
-	if ResourceLoader.exists(SHOP_API_PATH):
-		var shop_s: Script = load(SHOP_API_PATH) as Script
-		if shop_s != null:
-			_shop_api = shop_s.new() as RefCounted
-			if _shop_api.has_method("load_data"):
-				_shop_api.call("load_data")
-
-	if ResourceLoader.exists(CULTIVATION_API_PATH):
-		var cult_s: Script = load(CULTIVATION_API_PATH) as Script
-		if cult_s != null:
-			_cultivation_api = cult_s.new() as RefCounted
-			if _cultivation_api.has_method("load_save"):
-				_cultivation_api.call("load_save")
-
+	_inventory_api = _load_api(INVENTORY_API_PATH, "load_data")
+	_economy_api = _load_api(ECONOMY_API_PATH, "load_data")
+	_fishing_api = _load_api(FISHING_API_PATH, "")
+	_shop_api = _load_api(SHOP_API_PATH, "load_data")
+	_cultivation_api = _load_api(CULTIVATION_API_PATH, "load_save")
+	_equipment_api = _load_api(EQUIPMENT_API_PATH, "load_save")
 	_coordinator = SERVICE_COORDINATOR_SCRIPT.new()
 	_coordinator.call("setup", _inventory_api, _economy_api, _shop_api, _fishing_api)
 	if _cultivation_api != null:
 		_coordinator.call("set_cultivation_api", _cultivation_api)
 		if _fishing_api != null and _fishing_api.has_method("set_realm_provider"):
 			_fishing_api.call("set_realm_provider", Callable(_cultivation_api, "get_current_realm_index"))
-
+	if _equipment_api != null:
+		_coordinator.call("set_equipment_api", _equipment_api)
 	var eb: Node = get_node_or_null("/root/EventBus")
 	if eb != null and eb.has_method("subscribe"):
 		eb.call("subscribe", "shop_rod_equipped", Callable(_coordinator, "on_shop_rod_equipped"))
-
 	if _fishing_api != null and _shop_api != null and _shop_api.has_method("get_equipped_rod_id"):
 		var eq_rod: String = str(_shop_api.call("get_equipped_rod_id"))
 		_fishing_api.call("set_default_rod", eq_rod)
+
+
+func _load_api(path: String, init_method: String) -> RefCounted:
+	if not ResourceLoader.exists(path):
+		return null
+	var s: Script = load(path) as Script
+	if s == null:
+		return null
+	var api: RefCounted = s.new() as RefCounted
+	if api != null and not init_method.is_empty() and api.has_method(init_method):
+		api.call(init_method)
+	return api
 
 
 func _create_inventory_ui() -> void:
@@ -245,6 +235,22 @@ func _create_inventory_ui() -> void:
 func _create_cultivation_ui() -> void:
 	_ui_router = UI_ACTION_ROUTER_SCRIPT.new()
 	_cultivation_ui = _ui_router.call("build", _hud, _fishing_inventory_ui, _coordinator, _economy_api, _cultivation_api) as Control
+
+
+func _create_equipment_ui() -> void:
+	if _equipment_api == null or not ResourceLoader.exists(EQUIPMENT_UI_PATH):
+		return
+	var scene := load(EQUIPMENT_UI_PATH) as PackedScene
+	if scene == null:
+		return
+	_equipment_ui = scene.instantiate() as Control
+	if _equipment_ui == null:
+		return
+	_hud.add_child(_equipment_ui)
+	if _equipment_ui.has_method("setup"):
+		_equipment_ui.call("setup", _equipment_api)
+	if _ui_router != null:
+		_ui_router.call("connect_equipment_ui", _equipment_ui)
 
 
 func _create_fishing_ui() -> void:
