@@ -66,11 +66,12 @@ void fragment() {
     float horizon_glow = pow(1.0 - abs(dir.y), 6.0) * 0.25;
     sky += sky_horizon_color.rgb * horizon_glow;
 
-    // 3. Mặt trời procedural
+    // 3. Mặt trời procedural (ẩn mượt khi xuống dưới đường chân trời ban đêm)
     vec3 sun_dir_norm = normalize(sun_direction);
+    float sun_vis = smoothstep(-0.08, 0.12, sun_dir_norm.y);
     float sun_angle = acos(clamp(dot(dir, sun_dir_norm), -1.0, 1.0));
-    float sun_disc = 1.0 - smoothstep(sun_size, sun_size + sun_blur, sun_angle);
-    float sun_halo = pow(max(dot(dir, sun_dir_norm), 0.0), 128.0) * 0.4;
+    float sun_disc = (1.0 - smoothstep(sun_size, sun_size + sun_blur, sun_angle)) * sun_vis;
+    float sun_halo = pow(max(dot(dir, sun_dir_norm), 0.0), 128.0) * 0.4 * sun_vis;
     vec3 final_color = sky + sun_color.rgb * (sun_disc + sun_halo);
 
     // 4. Mây procedural trên vòm trời (chỉ sinh khi dir.y > 0.08)

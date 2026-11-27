@@ -279,5 +279,9 @@ func _on_cast_denied_evt(p: Dictionary) -> void:
 			_alert_label.text = "Cảnh giới chưa đủ để dùng cần này (cần cảnh giới %d)" % (int(p.get("required", 0)) + 1)
 		"no_fish_for_rod":
 			_alert_label.text = "Cần câu quá yếu, không có linh ngư nào mắc câu ở đây"
+		"time_condition":
+			_alert_label.text = "Chưa đúng thời điểm câu tại đây (cần: %s)" % str(p.get("required", ""))
+		"weather_condition":
+			_alert_label.text = "Thời tiết không thuận lợi để câu tại đây (cần: %s)" % str(p.get("required", ""))
 		_:
 			_alert_label.text = "Không thể thả cần lúc này"

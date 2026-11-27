@@ -47,6 +47,8 @@ func _load_default_fish_specs() -> void:
 		"res://modules/fishing/data/resources/fish_ca_ngu_dai_duong.tres",
 		"res://modules/fishing/data/resources/fish_ca_chep_linh.tres",
 		"res://modules/fishing/data/resources/fish_ca_tram_ngoc.tres",
+		"res://modules/fishing/data/resources/fish_ca_den_long.tres",
+		"res://modules/fishing/data/resources/fish_ca_nguyet_anh.tres",
 	]
 	for p in paths:
 		if ResourceLoader.exists(p):
@@ -294,5 +296,4 @@ func execute_craft(recipe_id: String) -> Dictionary:
 	_crafting_api.call("save")
 
 	return {"success": true, "recipe_id": recipe_id, "reason": "ok"}
-
 

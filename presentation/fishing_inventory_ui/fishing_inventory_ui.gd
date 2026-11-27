@@ -20,7 +20,9 @@ const FISH_NAMES: Dictionary = {
 	"fish_ca_thu": "Cá Thu Vàng",
 	"fish_ca_ngu_dai_duong": "Cá Ngừ Đại Dương",
 	"fish_ca_chep_linh": "Cá Chép Linh",
-	"fish_ca_tram_ngoc": "Cá Trắm Ngọc"
+	"fish_ca_tram_ngoc": "Cá Trắm Ngọc",
+	"fish_ca_den_long": "Cá Đèn Lồng",
+	"fish_ca_nguyet_anh": "Cá Nguyệt Ảnh"
 }
 
 var _inventory_api: RefCounted

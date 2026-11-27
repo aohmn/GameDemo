@@ -7,6 +7,7 @@ extends RefCounted
 
 const FishingEventsContract: Script = preload("res://core/contracts/fishing_events.gd")
 const FishingControllerScript: Script = preload("res://modules/fishing/gameplay/fishing_controller.gd")
+const FishSpawnerScript: Script = preload("res://modules/fishing/gameplay/fish/fish_spawner.gd")
 
 var _controller: FishingController
 var _spots: Dictionary = {}
@@ -70,9 +71,27 @@ func _current_realm() -> int:
 	return 0
 
 
-func _deny_cast(reason: String, required: int, current: int) -> bool:
+func _deny_cast(reason: String, required: Variant, current: Variant) -> bool:
 	_emit_event(FishingEventsContract.CAST_DENIED, {"reason": reason, "required": required, "current": current})
 	return false
+
+
+func _current_time_period() -> String:
+	var ml: MainLoop = Engine.get_main_loop()
+	if ml is SceneTree:
+		var gc: Node = (ml as SceneTree).root.get_node_or_null("GameClock")
+		if gc != null and gc.has_method("get_time_period"):
+			return str(gc.call("get_time_period"))
+	return "ngay"
+
+
+func _current_weather() -> String:
+	var ml: MainLoop = Engine.get_main_loop()
+	if ml is SceneTree:
+		var gc: Node = (ml as SceneTree).root.get_node_or_null("GameClock")
+		if gc != null and gc.has_method("get_weather"):
+			return str(gc.call("get_weather"))
+	return "nang"
 
 
 func set_default_rod(rod_id: String) -> void:
@@ -109,8 +128,17 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 	if realm < rod_req:
 		return _deny_cast("rod_realm", rod_req, realm)
 
+	var cur_time: String = _current_time_period()
+	var spot_time: String = str(spot.get("time_condition")) if "time_condition" in spot else "tat_ca"
+	if not FishSpawnerScript.matches_condition(spot_time, cur_time):
+		return _deny_cast("time_condition", spot_time, cur_time)
+	var cur_weather: String = _current_weather()
+	var spot_weather: String = str(spot.get("weather_condition")) if "weather_condition" in spot else "tat_ca"
+	if not FishSpawnerScript.matches_condition(spot_weather, cur_weather):
+		return _deny_cast("weather_condition", spot_weather, cur_weather)
+
 	var eq_stats: Dictionary = _get_equipment_stats()
-	var success: bool = _controller.cast(spot, rod, null, eq_stats)
+	var success: bool = _controller.cast(spot, rod, null, eq_stats, cur_time, cur_weather)
 	if not success and _controller.get_state_name() == "IDLE":
 		return _deny_cast("no_fish_for_rod", 0, realm)
 	if success:

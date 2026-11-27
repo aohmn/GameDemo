@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="FishSpec" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://modules/fishing/data/fish_spec.gd" id="1_spec"]
+
+[resource]
+script = ExtResource("1_spec")
+id = "fish_ca_nguyet_anh"
+display_name = "Cá Nguyệt Ảnh"
+description = "Linh ngư hấp thu ánh trăng trên mặt Hồ Linh Ngư, thân trong suốt như ngọc, chỉ xuất hiện vào ban đêm."
+tier = 1
+spirit_qi = 45
+base_value = 600
+element = "quang"
+min_weight_g = 400
+max_weight_g = 1200
+strength = 48.0
+rarity = 3
+pull_force = 24.0
+habitat_water_type = "ho"
+time_condition = "dem"
+weather_condition = "tat_ca"

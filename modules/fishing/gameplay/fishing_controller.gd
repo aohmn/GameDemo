@@ -59,7 +59,7 @@ func get_state_name() -> String:
 
 
 ## Thả câu (IDLE -> CASTING -> WAITING)
-func cast(spot: Resource, rod: Resource, line_res: Resource = null, equipment_stats: Dictionary = {}) -> bool:
+func cast(spot: Resource, rod: Resource, line_res: Resource = null, equipment_stats: Dictionary = {}, time_period: String = "ngay", weather: String = "nang") -> bool:
 	if not FishingStateScript.can_transition(current_state, FishingStateScript.State.CASTING):
 		return false
 	if spot == null or rod == null:
@@ -76,7 +76,7 @@ func cast(spot: Resource, rod: Resource, line_res: Resource = null, equipment_st
 	var bait_pref := bait_system.preferred_tier if bait_system.remaining_uses > 0 else 0
 	var rod_tier: int = int(rod.get("tier")) if "tier" in rod else 0
 	var max_tier: int = FishingCalculatorScript.max_catchable_fish_tier(rod_tier)
-	var fish_res: Resource = FishSpawnerScript.spawn_fish_for_spot(spot, bait_pref, rng, max_tier)
+	var fish_res: Resource = FishSpawnerScript.spawn_fish_for_spot(spot, bait_pref, rng, max_tier, time_period, weather)
 	if fish_res == null:
 		return false
 	fishing_data.target_fish_resource = fish_res

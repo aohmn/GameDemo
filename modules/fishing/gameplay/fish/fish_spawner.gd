@@ -4,11 +4,21 @@ extends RefCounted
 ## Bộ sinh cá và điều phối tỷ lệ xuất hiện dựa trên SpotSpec và Mồi câu.
 
 
+static func matches_condition(required: String, current: String) -> bool:
+	if required.is_empty() or required == "tat_ca":
+		return true
+	if required == "ngay":
+		return current in ["ngay", "binh_minh", "hoang_hon"]
+	return required == current
+
+
 static func spawn_fish_for_spot(
 	spot: Resource,
 	bait_pref_tier: int,
 	rng: RandomNumberGenerator,
-	max_fish_tier: int = 99
+	max_fish_tier: int = 99,
+	time_period: String = "ngay",
+	weather: String = "nang"
 ) -> Resource:
 	if spot == null:
 		return null
@@ -29,6 +39,12 @@ static func spawn_fish_for_spot(
 		var fish_tier: int = int(fish_res.get("tier")) if "tier" in fish_res else 0
 		if fish_tier > max_fish_tier:
 			continue # Cá quá phẩm cấp so với cần câu: không thể mắc câu
+		var f_time: String = str(fish_res.get("time_condition")) if "time_condition" in fish_res else "tat_ca"
+		if not matches_condition(f_time, time_period):
+			continue
+		var f_weather: String = str(fish_res.get("weather_condition")) if "weather_condition" in fish_res else "tat_ca"
+		if not matches_condition(f_weather, weather):
+			continue
 
 		if bait_pref_tier > 0:
 			var tier: int = fish_tier

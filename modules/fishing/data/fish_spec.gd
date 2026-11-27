@@ -34,4 +34,5 @@ enum FishTier {
 
 # 5. Điều kiện môi trường & Thiên tượng (mở rộng)
 @export var habitat_water_type: String = "bien" # Vùng nước: bien, song, ho, dam_lay, han_bang, linh_tuyen
+@export var time_condition: String = "tat_ca" # Thoi gian: tat_ca, ngay, dem, hoang_hon, binh_minh
 @export var weather_condition: String = "tat_ca" # Thoi tiet: tat_ca, mua, gio, bao, linh_trieu, trang_tron

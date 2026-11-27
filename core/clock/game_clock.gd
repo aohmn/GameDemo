@@ -16,6 +16,9 @@ var time_speed: float = 0.1
 # Số ngày đã trôi qua
 var current_day: int = 1
 
+# Thời tiết hiện tại (nang, mua, gio, bao, linh_trieu, trang_tron)
+var current_weather: String = "nang"
+
 # Theo dõi giờ nguyên gần nhất để phát signal
 var _last_int_hour: int = 8
 
@@ -55,3 +58,27 @@ func get_formatted_time() -> String:
 	var hours: int = (total_minutes / 60) % 24
 	var mins: int = total_minutes % 60
 	return "%02d:%02d" % [hours, mins]
+
+
+## Trả về buổi trong ngày: binh_minh (5-7), ngay (7-17), hoang_hon (17-19), dem (19-5).
+func get_time_period() -> String:
+	if current_time >= 5.0 and current_time < 7.0:
+		return "binh_minh"
+	if current_time >= 7.0 and current_time < 17.0:
+		return "ngay"
+	if current_time >= 17.0 and current_time < 19.0:
+		return "hoang_hon"
+	return "dem"
+
+
+func is_night() -> bool:
+	return get_time_period() == "dem"
+
+
+func get_weather() -> String:
+	return current_weather
+
+
+func set_weather(weather: String) -> void:
+	if not weather.is_empty():
+		current_weather = weather

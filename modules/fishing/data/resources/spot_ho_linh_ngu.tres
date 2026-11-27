@@ -1,10 +1,11 @@
-[gd_resource type="Resource" script_class="SpotSpec" load_steps=6 format=3]
+[gd_resource type="Resource" script_class="SpotSpec" load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://modules/fishing/data/spot_spec.gd" id="1_spec"]
 [ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_doi.tres" id="2_doi"]
 [ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_chem.tres" id="3_chem"]
 [ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_chep_linh.tres" id="4_chep"]
 [ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_tram_ngoc.tres" id="5_tram"]
+[ext_resource type="Resource" path="res://modules/fishing/data/resources/fish_ca_nguyet_anh.tres" id="6_nguyet"]
 
 [resource]
 script = ExtResource("1_spec")
@@ -22,5 +23,6 @@ fish_table = [
 	{"fish": ExtResource("2_doi"), "weight": 20},
 	{"fish": ExtResource("3_chem"), "weight": 30},
 	{"fish": ExtResource("4_chep"), "weight": 35},
-	{"fish": ExtResource("5_tram"), "weight": 15}
+	{"fish": ExtResource("5_tram"), "weight": 15},
+	{"fish": ExtResource("6_nguyet"), "weight": 25}
 ]
