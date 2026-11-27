@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Giai đoạn 3 — Hoàn thiện kinh tế & tu luyện: nạp `CraftingAPI` trong `main.gd` + lưu qua `save_manager.gd`, áp dụng `total_qi_absorption_bonus` từ trang bị vào `absorb_fish_qi()`, giữ nguyên rollback atomic cho bán cá/mua đồ/chế tạo (Mức 2, `tests/headless` đạt; chưa chạy Godot Android).
 - Giai đoạn 2 — Hoàn thiện câu cá: lưu độ bền cần câu thực tế sau mỗi lần giằng co, chặn thả cần khi `current_durability <= 0` (`rod_broken`), thêm `repair_rod()`, giảm hệ số mòn cần (`0.4 -> 0.25`) và giữ nguyên lọc cá theo thời gian/thời tiết + chỉ số dây/mồi từ `EquipmentAPI` (Mức 2, `tests/headless` đạt; chưa chạy Godot Android).
 - Giai đoạn 1 — Ổn định nền tảng: lưu/khôi phục `GameClock` (`user://game_clock.cfg`), lưu tự động khi đổi map và đồng bộ ánh sáng khi khôi phục map, đồng bộ cần câu giữa Shop, Equipment và Fishing qua `ServiceCoordinator` (Mức 2, `tests/headless` đạt; chưa chạy Godot Android).
 - Dọn dẹp & ý tưởng: kiểm tra danh sách code chết (`modules/fishing/logic/fishing_logic.gd`, các `dev.tscn` cũ — giữ nguyên chờ xác nhận xóa) và bổ sung ý tưởng mới vào `docs/ideas.md` (Mức 2, chưa xóa file).

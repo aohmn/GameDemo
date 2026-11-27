@@ -100,6 +100,12 @@ func absorb_fish_qi(fish_id: String, count: int) -> Dictionary:
 
 	var actual_weight: int = int(remove_res.get("removed_weight_g", weight_to_remove))
 	var total_exp_gained: int = spirit_qi_per_fish * count
+	# Áp dụng bonus hấp thu từ pháp bảo
+	if _equipment_api != null and _equipment_api.has_method("calculate_total_stats"):
+		var eq_stats: Dictionary = _equipment_api.call("calculate_total_stats") as Dictionary
+		var qi_bonus: float = float(eq_stats.get("total_qi_absorption_bonus", 0.0))
+		if qi_bonus > 0.0:
+			total_exp_gained = int(roundf(float(total_exp_gained) * (1.0 + qi_bonus / 100.0)))
 
 	# 2. Cộng tu vi vào Cultivation
 	_cultivation_api.call("add_exp", total_exp_gained, "absorb_" + fish_id)

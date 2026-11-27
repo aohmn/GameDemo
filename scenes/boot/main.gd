@@ -19,6 +19,7 @@ const FISHING_API_PATH: String = "res://modules/fishing/api/fishing_api.gd"
 const CULTIVATION_API_PATH: String = "res://modules/cultivation/api/cultivation_api.gd"
 const EQUIPMENT_API_PATH: String = "res://modules/equipment/api/equipment_api.gd"
 const EQUIPMENT_UI_PATH: String = "res://presentation/equipment_ui/equipment_ui.tscn"
+const CRAFTING_API_PATH: String = "res://modules/crafting/api/crafting_api.gd"
 
 var _map_manager: Node3D
 var _coordinator: RefCounted
@@ -32,6 +33,7 @@ var _shop_api: RefCounted
 var _fishing_api: RefCounted
 var _cultivation_api: RefCounted
 var _equipment_api: RefCounted
+var _crafting_api: RefCounted
 var _cultivation_ui: Control
 var _equipment_ui: Control
 var _shop_ui: Control
@@ -76,7 +78,7 @@ func _notification(what: int) -> void:
 
 func _setup_save_manager() -> void:
 	_save_manager = SAVE_MANAGER_SCRIPT.new()
-	_save_manager.call("setup", _map_manager, _player, _inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api)
+	_save_manager.call("setup", _map_manager, _player, _inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api, _crafting_api)
 	if bool(_save_manager.call("restore_player_state")):
 		_sync_sun_direction()
 
@@ -194,14 +196,13 @@ func _init_services() -> void:
 	_shop_api = _load_api(SHOP_API_PATH, "load_data")
 	_cultivation_api = _load_api(CULTIVATION_API_PATH, "load_save")
 	_equipment_api = _load_api(EQUIPMENT_API_PATH, "load_save")
+	_crafting_api = _load_api(CRAFTING_API_PATH, "load_save")
 	_coordinator = SERVICE_COORDINATOR_SCRIPT.new()
-	_coordinator.call("setup", _inventory_api, _economy_api, _shop_api, _fishing_api)
+	_coordinator.call("setup", _inventory_api, _economy_api, _shop_api, _fishing_api, _cultivation_api, _equipment_api, _crafting_api)
 	if _cultivation_api != null:
-		_coordinator.call("set_cultivation_api", _cultivation_api)
 		if _fishing_api != null and _fishing_api.has_method("set_realm_provider"):
 			_fishing_api.call("set_realm_provider", Callable(_cultivation_api, "get_current_realm_index"))
 	if _equipment_api != null:
-		_coordinator.call("set_equipment_api", _equipment_api)
 		if _fishing_api != null and _fishing_api.has_method("get_all_rods"):
 			for rod in (_fishing_api.call("get_all_rods") as Array):
 				_equipment_api.call("register_item_spec", rod)

@@ -3,11 +3,7 @@ extends RefCounted
 
 var _map_manager: Node3D
 var _player: CharacterBody3D
-var _inventory_api: RefCounted
-var _economy_api: RefCounted
-var _shop_api: RefCounted
-var _cultivation_api: RefCounted
-var _equipment_api: RefCounted
+var _apis: Array[RefCounted] = []
 
 
 func setup(
@@ -18,21 +14,21 @@ func setup(
 	shop_api: RefCounted,
 	cultivation_api: RefCounted,
 	equipment_api: RefCounted,
+	crafting_api: RefCounted = null,
 ) -> void:
 	_map_manager = map_manager
 	_player = player
-	_inventory_api = inventory_api
-	_economy_api = economy_api
-	_shop_api = shop_api
-	_cultivation_api = cultivation_api
-	_equipment_api = equipment_api
+	_apis.clear()
+	for api in [inventory_api, economy_api, shop_api, cultivation_api, equipment_api, crafting_api]:
+		if api != null:
+			_apis.append(api)
 
 
 func save_all() -> void:
 	if _map_manager != null and _player != null and is_instance_valid(_player) and _player.is_inside_tree():
 		_map_manager.call("save_player_state", _player.global_position)
-	for api in [_inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api]:
-		if api != null and api.has_method("save"):
+	for api in _apis:
+		if api.has_method("save"):
 			api.call("save")
 	var ml: MainLoop = Engine.get_main_loop()
 	if ml is SceneTree and (ml as SceneTree).root != null:
