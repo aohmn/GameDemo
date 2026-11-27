@@ -4,6 +4,7 @@ const MAP_MANAGER_SCRIPT: Script = preload("res://scenes/boot/map_manager.gd")
 const SERVICE_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/service_coordinator.gd")
 const UI_ACTION_ROUTER_SCRIPT: Script = preload("res://scenes/boot/ui_action_router.gd")
 const CAST_COORDINATOR_SCRIPT: Script = preload("res://scenes/boot/cast_coordinator.gd")
+const SAVE_MANAGER_SCRIPT: Script = preload("res://scenes/boot/save_manager.gd")
 
 const PLAYER_SCENE_PATH: String = "res://modules/player/scenes/player.tscn"
 const JOYSTICK_SCENE_PATH: String = "res://presentation/joystick/joystick.tscn"
@@ -39,6 +40,7 @@ var _fishing_inventory_ui: Control
 var _fishing_ui: Control
 var _fishing_rig: Node3D
 var _cast_coordinator: RefCounted
+var _save_manager: RefCounted
 var _hud: CanvasLayer
 
 
@@ -58,10 +60,23 @@ func _ready() -> void:
 	_ui_router.call("build_skill_ui", _hud, _fishing_api)
 	_create_fishing_ui()
 	_create_fishing_rig()
+	_setup_save_manager()
 
 	var eb: Node = get_node_or_null("/root/EventBus")
 	if eb != null and eb.has_method("subscribe"):
 		eb.call("subscribe", "map_change_requested", Callable(self, "_on_map_change_requested"))
+
+
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_WM_CLOSE_REQUEST, NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_WM_GO_BACK_REQUEST, NOTIFICATION_EXIT_TREE]:
+		if _save_manager != null:
+			_save_manager.call("save_all")
+
+
+func _setup_save_manager() -> void:
+	_save_manager = SAVE_MANAGER_SCRIPT.new()
+	_save_manager.call("setup", _map_manager, _player, _inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api)
+	_save_manager.call("restore_player_state")
 
 
 func _on_map_change_requested(payload: Dictionary) -> void:
@@ -119,18 +134,9 @@ func _create_camera() -> void:
 
 
 func _create_sky_dome() -> void:
-	if not ResourceLoader.exists(SKY_DOME_SCENE_PATH):
-		return
-	var scene := load(SKY_DOME_SCENE_PATH) as PackedScene
-	if scene == null:
-		return
-	var dome_node := scene.instantiate() as Node3D
-	if dome_node != null:
-		_sky_dome = dome_node
-		_sky_dome.name = "SkyDome"
-		add_child(_sky_dome)
-		if _sky_dome.has_method("set_follow_target") and _camera != null:
-			_sky_dome.call("set_follow_target", _camera)
+	_sky_dome = _instantiate_scene(SKY_DOME_SCENE_PATH) as Node3D
+	if _sky_dome != null and _sky_dome.has_method("set_follow_target") and _camera != null:
+		_sky_dome.call("set_follow_target", _camera)
 
 
 func _create_map_manager() -> void:
@@ -157,15 +163,9 @@ func _sync_sun_direction() -> void:
 
 
 func _create_player() -> void:
-	if not ResourceLoader.exists(PLAYER_SCENE_PATH):
-		return
-	var scene := load(PLAYER_SCENE_PATH) as PackedScene
-	if scene != null:
-		_player = scene.instantiate() as CharacterBody3D
-		if _player != null:
-			_player.name = "Player"
-			_player.position = Vector3(-2.0, 0.05, 10.0)
-			add_child(_player)
+	_player = _instantiate_scene(PLAYER_SCENE_PATH) as CharacterBody3D
+	if _player != null:
+		_player.position = Vector3(-2.0, 0.05, 10.0)
 
 
 func _setup_hud() -> void:
@@ -176,15 +176,9 @@ func _setup_hud() -> void:
 
 
 func _create_joystick() -> void:
-	if not ResourceLoader.exists(JOYSTICK_SCENE_PATH):
-		return
-	var scene := load(JOYSTICK_SCENE_PATH) as PackedScene
-	if scene != null:
-		_joystick = scene.instantiate()
-		if _joystick is Control:
-			_hud.add_child(_joystick)
-			if _joystick.has_signal("direction_changed"):
-				_joystick.connect("direction_changed", _on_joystick_direction_changed)
+	_joystick = _instantiate_ui(JOYSTICK_SCENE_PATH)
+	if _joystick != null and _joystick.has_signal("direction_changed"):
+		_joystick.connect("direction_changed", _on_joystick_direction_changed)
 
 
 func _on_joystick_direction_changed(direction: Vector2) -> void:
@@ -233,15 +227,9 @@ func _load_api(path: String, init_method: String) -> RefCounted:
 
 
 func _create_inventory_ui() -> void:
-	if not ResourceLoader.exists(FISHING_INVENTORY_UI_PATH):
-		return
-	var scene := load(FISHING_INVENTORY_UI_PATH) as PackedScene
-	if scene != null:
-		_fishing_inventory_ui = scene.instantiate() as Control
-		if _fishing_inventory_ui != null:
-			_hud.add_child(_fishing_inventory_ui)
-			if _inventory_api != null and _fishing_inventory_ui.has_method("set_inventory_api"):
-				_fishing_inventory_ui.call("set_inventory_api", _inventory_api)
+	_fishing_inventory_ui = _instantiate_ui(FISHING_INVENTORY_UI_PATH)
+	if _fishing_inventory_ui != null and _inventory_api != null and _fishing_inventory_ui.has_method("set_inventory_api"):
+		_fishing_inventory_ui.call("set_inventory_api", _inventory_api)
 
 
 func _create_cultivation_ui() -> void:
@@ -249,15 +237,11 @@ func _create_cultivation_ui() -> void:
 	_cultivation_ui = _ui_router.call("build", _hud, _fishing_inventory_ui, _coordinator, _economy_api, _cultivation_api) as Control
 
 func _create_equipment_ui() -> void:
-	if _equipment_api == null or not ResourceLoader.exists(EQUIPMENT_UI_PATH):
+	if _equipment_api == null:
 		return
-	var scene := load(EQUIPMENT_UI_PATH) as PackedScene
-	if scene == null:
-		return
-	_equipment_ui = scene.instantiate() as Control
+	_equipment_ui = _instantiate_ui(EQUIPMENT_UI_PATH)
 	if _equipment_ui == null:
 		return
-	_hud.add_child(_equipment_ui)
 	if _equipment_ui.has_method("setup"):
 		_equipment_ui.call("setup", _equipment_api)
 	if _ui_router != null:
@@ -265,36 +249,49 @@ func _create_equipment_ui() -> void:
 
 
 func _create_fishing_ui() -> void:
-	if not ResourceLoader.exists(FISHING_UI_PATH):
-		return
-	var scene := load(FISHING_UI_PATH) as PackedScene
-	if scene != null:
-		_fishing_ui = scene.instantiate() as Control
-		if _fishing_ui != null:
-			_hud.add_child(_fishing_ui)
-			if _fishing_api != null and _fishing_ui.has_method("set_fishing_api"):
-				_fishing_ui.call("set_fishing_api", _fishing_api)
+	_fishing_ui = _instantiate_ui(FISHING_UI_PATH)
+	if _fishing_ui != null and _fishing_api != null and _fishing_ui.has_method("set_fishing_api"):
+		_fishing_ui.call("set_fishing_api", _fishing_api)
 
 
 func sell_fish(fish_id: String, count: int) -> bool:
 	return bool(_coordinator.call("sell_fish", fish_id, count)) if _coordinator != null else false
 
-
 func buy_shop_item(item_id: String) -> bool:
 	return bool(_coordinator.call("buy_shop_item", item_id)) if _coordinator != null else false
+
+
+func _instantiate_ui(path: String) -> Control:
+	if not ResourceLoader.exists(path):
+		return null
+	var scene := load(path) as PackedScene
+	if scene == null:
+		return null
+	var ui := scene.instantiate() as Control
+	if ui != null:
+		_hud.add_child(ui)
+	return ui
 
 
 func _create_fishing_rig() -> void:
 	if _player == null or not ResourceLoader.exists(FISHING_RIG_PATH):
 		return
-	var scene := load(FISHING_RIG_PATH) as PackedScene
-	if scene == null:
-		return
-	_fishing_rig = scene.instantiate() as Node3D
+	_fishing_rig = _instantiate_scene(FISHING_RIG_PATH) as Node3D
 	if _fishing_rig == null:
 		return
-	add_child(_fishing_rig)
 	_fishing_rig.call("set_anchor", _player)
 	_cast_coordinator = CAST_COORDINATOR_SCRIPT.new()
 	var map_node: Node = _map_manager.call("get_current_map") as Node
 	_cast_coordinator.call("setup", _player, map_node, _fishing_ui, _fishing_rig, _fishing_api)
+
+
+func _instantiate_scene(path: String) -> Node:
+	if not ResourceLoader.exists(path):
+		return null
+	var scene := load(path) as PackedScene
+	if scene == null:
+		return null
+	var node := scene.instantiate()
+	if node != null:
+		add_child(node)
+	return node

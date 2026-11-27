@@ -146,6 +146,11 @@ func load_from_disk(custom_path: String = "") -> bool:
 	if err != OK:
 		return false
 
+	var save_ver: int = int(config.get_value(SECTION_META, "version", 0))
+	if save_ver <= 0 or save_ver > SAVE_VERSION:
+		push_warning("Shop: Phiên bản save không hỗ trợ (%d)" % save_ver)
+		return false
+
 	if config.has_section(SECTION_OWNED):
 		var raw_owned: Array = config.get_value(SECTION_OWNED, "items", []) as Array
 		var loaded_owned: Array[String] = []

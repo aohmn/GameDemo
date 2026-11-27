@@ -213,6 +213,11 @@ func load_from_disk(custom_path: String = "") -> bool:
 	if err != OK:
 		return false
 
+	var save_ver: int = int(config.get_value(SECTION_META, "version", 0))
+	if save_ver <= 0 or save_ver > SAVE_VERSION:
+		push_warning("Cultivation: Phiên bản save không hỗ trợ (%d)" % save_ver)
+		return false
+
 	var r_idx: int = int(config.get_value(SECTION_CULTIVATION, "realm_index", 0))
 	var lay: int = int(config.get_value(SECTION_CULTIVATION, "layer", 1))
 	var l_exp: int = int(config.get_value(SECTION_CULTIVATION, "layer_exp", 0))

@@ -162,10 +162,46 @@ func _save_unlocked_status() -> void:
 func _load_unlocked_status() -> void:
 	var config := ConfigFile.new()
 	if config.load(SAVE_PATH) == OK:
+		var save_ver: int = int(config.get_value(SECTION_META, "version", 0))
+		if save_ver <= 0 or save_ver > SAVE_VERSION:
+			return
 		if config.has_section(SECTION_UNLOCKED):
 			var keys: PackedStringArray = config.get_section_keys(SECTION_UNLOCKED)
 			for k in keys:
 				_unlocked_maps[k] = bool(config.get_value(SECTION_UNLOCKED, k, false))
+
+
+const PLAYER_STATE_PATH: String = "user://player_state.cfg"
+
+
+func save_player_state(pos: Vector3, custom_path: String = "") -> bool:
+	var path: String = PLAYER_STATE_PATH if custom_path.is_empty() else custom_path
+	var config := ConfigFile.new()
+	config.set_value(SECTION_META, "version", SAVE_VERSION)
+	config.set_value("player", "map_id", current_map_id)
+	config.set_value("player", "x", pos.x)
+	config.set_value("player", "y", pos.y)
+	config.set_value("player", "z", pos.z)
+	return config.save(path) == OK
+
+
+func load_player_state(custom_path: String = "") -> Dictionary:
+	var path: String = PLAYER_STATE_PATH if custom_path.is_empty() else custom_path
+	var config := ConfigFile.new()
+	if config.load(path) != OK:
+		return {"has_save": false}
+	var save_ver: int = int(config.get_value(SECTION_META, "version", 0))
+	if save_ver <= 0 or save_ver > SAVE_VERSION:
+		return {"has_save": false}
+	if not config.has_section("player"):
+		return {"has_save": false}
+	var m_id: String = str(config.get_value("player", "map_id", "harbor_island"))
+	var pos := Vector3(
+		float(config.get_value("player", "x", -2.0)),
+		float(config.get_value("player", "y", 0.05)),
+		float(config.get_value("player", "z", 10.0))
+	)
+	return {"has_save": true, "map_id": m_id, "position": pos}
 
 
 func _emit_event(event_name: String, payload: Dictionary) -> void:

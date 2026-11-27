@@ -216,6 +216,11 @@ func load_from_disk(custom_path: String = "") -> bool:
 	if err != OK:
 		return false
 
+	var save_ver: int = int(config.get_value(SECTION_META, "version", 0))
+	if save_ver <= 0 or save_ver > SAVE_VERSION:
+		push_warning("Crafting: Phiên bản save không hỗ trợ (%d)" % save_ver)
+		return false
+
 	if config.has_section(SECTION_UNLOCKED):
 		var keys: PackedStringArray = config.get_section_keys(SECTION_UNLOCKED)
 		for k in keys:

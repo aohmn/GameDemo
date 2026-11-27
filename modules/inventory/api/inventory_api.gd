@@ -37,6 +37,7 @@ func _on_fish_caught(payload: Dictionary) -> void:
 	var weight_g: int = int(payload.get("weight_g", 0))
 	if not fish_id.is_empty():
 		add_fish(fish_id, weight_g)
+		save()
 
 
 func add_fish(fish_id: String, weight_g: int) -> void:
