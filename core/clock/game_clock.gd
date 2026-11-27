@@ -6,6 +6,9 @@ extends Node
 signal hour_changed(new_hour: int)
 signal day_changed(new_day: int)
 
+const SAVE_PATH: String = "user://game_clock.cfg"
+const SAVE_VERSION: int = 1
+
 # Giờ trong ngày (0.0 đến 24.0)
 var current_time: float = 8.0
 
@@ -21,6 +24,10 @@ var current_weather: String = "nang"
 
 # Theo dõi giờ nguyên gần nhất để phát signal
 var _last_int_hour: int = 8
+
+
+func _ready() -> void:
+	load_save()
 
 
 func _process(delta: float) -> void:
@@ -82,3 +89,25 @@ func get_weather() -> String:
 func set_weather(weather: String) -> void:
 	if not weather.is_empty():
 		current_weather = weather
+
+
+func save() -> bool:
+	var cfg := ConfigFile.new()
+	cfg.set_value("meta", "version", SAVE_VERSION)
+	cfg.set_value("clock", "current_time", current_time)
+	cfg.set_value("clock", "current_day", current_day)
+	cfg.set_value("clock", "current_weather", current_weather)
+	return cfg.save(SAVE_PATH) == OK
+
+
+func load_save() -> bool:
+	var cfg := ConfigFile.new()
+	if cfg.load(SAVE_PATH) != OK:
+		return false
+	if int(cfg.get_value("meta", "version", 0)) != SAVE_VERSION:
+		return false
+	current_time = clampf(float(cfg.get_value("clock", "current_time", 8.0)), 0.0, 24.0)
+	current_day = maxi(1, int(cfg.get_value("clock", "current_day", 1)))
+	current_weather = str(cfg.get_value("clock", "current_weather", "nang"))
+	_last_int_hour = int(floorf(current_time))
+	return true

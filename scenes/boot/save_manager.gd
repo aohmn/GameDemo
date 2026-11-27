@@ -34,16 +34,24 @@ func save_all() -> void:
 	for api in [_inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api]:
 		if api != null and api.has_method("save"):
 			api.call("save")
+	var ml: MainLoop = Engine.get_main_loop()
+	if ml is SceneTree and (ml as SceneTree).root != null:
+		var gc: Node = (ml as SceneTree).root.get_node_or_null("GameClock")
+		if gc != null and gc.has_method("save"):
+			gc.call("save")
 
 
-func restore_player_state() -> void:
+func restore_player_state() -> bool:
 	if _map_manager == null or _player == null:
-		return
+		return false
 	var st: Dictionary = _map_manager.call("load_player_state") as Dictionary
 	if not bool(st.get("has_save", false)):
-		return
+		return false
+	var map_changed: bool = false
 	var m_id: String = str(st.get("map_id", ""))
 	if not m_id.is_empty() and m_id != str(_map_manager.call("get_current_map_id")):
 		_map_manager.call("load_map", m_id)
+		map_changed = true
 	_player.global_position = st.get("position", _player.global_position) as Vector3
 	_player.velocity = Vector3.ZERO
+	return map_changed

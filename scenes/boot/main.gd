@@ -77,7 +77,8 @@ func _notification(what: int) -> void:
 func _setup_save_manager() -> void:
 	_save_manager = SAVE_MANAGER_SCRIPT.new()
 	_save_manager.call("setup", _map_manager, _player, _inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api)
-	_save_manager.call("restore_player_state")
+	if bool(_save_manager.call("restore_player_state")):
+		_sync_sun_direction()
 
 
 func _on_map_change_requested(payload: Dictionary) -> void:
@@ -102,10 +103,9 @@ func change_map(target_map_id: String) -> bool:
 	if _cast_coordinator != null:
 		var new_map_node: Node = _map_manager.call("get_current_map") as Node
 		_cast_coordinator.call("setup", _player, new_map_node, _fishing_ui, _fishing_rig, _fishing_api)
-
+	if _save_manager != null:
+		_save_manager.call("save_all")
 	return true
-
-
 func _physics_process(_delta: float) -> void:
 	if _cast_coordinator != null:
 		_cast_coordinator.call("update")

@@ -28,10 +28,8 @@ func setup(inv: RefCounted, eco: RefCounted, shop: RefCounted, fish: RefCounted,
 func set_cultivation_api(cult: RefCounted) -> void:
 	_cultivation_api = cult
 
-
 func set_equipment_api(eq: RefCounted) -> void:
 	_equipment_api = eq
-
 
 func set_crafting_api(craft: RefCounted) -> void:
 	_crafting_api = craft
@@ -64,7 +62,6 @@ func register_fish_spec(spec: Resource) -> void:
 		var f_id: String = str(spec.get("id"))
 		if not f_id.is_empty():
 			_fish_specs[f_id] = spec
-
 
 func get_fish_spec(fish_id: String) -> Resource:
 	return _fish_specs.get(fish_id, null) as Resource
@@ -219,20 +216,27 @@ func equip_item_from_inventory(slot: String, item_id: String, realm_level: int =
 				return false
 
 	var ok: bool = bool(_equipment_api.call("equip_item", slot, item_id, realm_level))
-	if ok and slot == "rod" and _fishing_api != null and _fishing_api.has_method("set_default_rod"):
-		_fishing_api.call("set_default_rod", item_id)
+	if ok and slot == "rod":
+		_sync_rod(item_id)
 	if ok:
 		_equipment_api.call("save")
 	return ok
 
+
+func _sync_rod(rod_id: String) -> void:
+	if _fishing_api != null and _fishing_api.has_method("set_default_rod"):
+		_fishing_api.call("set_default_rod", rod_id)
+	if _shop_api != null and _shop_api.has_method("equip_rod"):
+		_shop_api.call("equip_rod", rod_id)
+		_shop_api.call("save")
 
 ## Tháo trang bị khỏi vị trí slot.
 func unequip_item(slot: String) -> bool:
 	if _equipment_api == null:
 		return false
 	var ok: bool = bool(_equipment_api.call("unequip_item", slot))
-	if ok and slot == "rod" and _fishing_api != null and _fishing_api.has_method("set_default_rod"):
-		_fishing_api.call("set_default_rod", "rod_truc_nhiem")
+	if ok and slot == "rod":
+		_sync_rod("rod_truc_nhiem")
 	if ok:
 		_equipment_api.call("save")
 	return ok
