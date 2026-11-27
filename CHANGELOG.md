@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Dọn dẹp & ý tưởng: kiểm tra danh sách code chết (`modules/fishing/logic/fishing_logic.gd`, các `dev.tscn` cũ — giữ nguyên chờ xác nhận xóa) và bổ sung ý tưởng mới vào `docs/ideas.md` (Mức 2, chưa xóa file).
 - Chạm nhiều ngón (`presentation/fishing_ui/touch_button_helper.gd`): nút Thả Cần, GIẬT CẦN!, Kéo Dây, Xả Dây nhận trực tiếp `InputEventScreenTouch` theo `touch.index`, vừa giữ joystick vừa bấm/giữ nút câu cá được (Mức 2, `tests/headless` đạt; chạm nhiều ngón thật trên Android chưa đo).
 - Hiệu năng Android (`presentation/settings_ui/`): thêm bộ đếm FPS (bật/tắt trong Cài Đặt) và 3 mức đồ họa Thấp/Vừa/Cao (tắt bóng, giảm sương/mist, giảm MultiMesh rừng trúc), lưu vào `user://settings.cfg` (Mức 2, `tests/headless` đạt; FPS thật trên Android chưa đo).
 - Save/Load toàn diện: tách `save_manager.gd`, lưu tự động khi thoát/pause, khôi phục tiền/cá/tu vi/vị trí khi mở lại; mọi module kiểm tra `version` khi load; thêm `tests/headless/save_roundtrip.gd` (Mức 2, 8/8 `tests/headless` đạt; chưa chạy Godot Android).
