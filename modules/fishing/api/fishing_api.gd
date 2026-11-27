@@ -15,6 +15,9 @@ var _rods: Dictionary = {}
 var _default_rod_id: String = "rod_truc_nhiem"
 var _realm_provider: Callable = Callable() # trả về chỉ số cảnh giới hiện tại (int), do Bootstrap gắn
 var _equipment_stats_provider: Callable = Callable() # trả về Dictionary stats từ EquipmentAPI
+var _equipped_line_provider: Callable = Callable() # trả về Resource dây câu đang trang bị
+var _line_durability_consumer: Callable = Callable() # nhận float độ bền đã tiêu hao
+var _last_cast_line_durability: float = -1.0
 
 
 func _init(seed_val: int = -1) -> void:
@@ -57,6 +60,30 @@ func set_realm_provider(provider: Callable) -> void:
 ## Bootstrap gắn nguồn chỉ số trang bị (EquipmentAPI.calculate_total_stats). Chưa gắn = không bonus.
 func set_equipment_stats_provider(provider: Callable) -> void:
 	_equipment_stats_provider = provider
+
+
+## Bootstrap gắn nguồn dây câu đang trang bị (trả về Resource hoặc null).
+func set_equipped_line_provider(provider: Callable) -> void:
+	_equipped_line_provider = provider
+
+
+## Bootstrap gắn callback tiêu hao độ bền dây câu (nhận float lượng độ bền mất đi).
+func set_line_durability_consumer(consumer: Callable) -> void:
+	_line_durability_consumer = consumer
+
+
+func _get_equipped_line() -> Resource:
+	if _equipped_line_provider.is_valid():
+		return _equipped_line_provider.call() as Resource
+	return null
+
+
+func _sync_line_durability_after_fishing() -> void:
+	if _last_cast_line_durability >= 0.0 and _line_durability_consumer.is_valid() and _controller != null:
+		var used: float = maxf(0.0, _last_cast_line_durability - _controller.fishing_data.line_durability)
+		if used > 0.0:
+			_line_durability_consumer.call(used)
+	_last_cast_line_durability = -1.0
 
 
 func _get_equipment_stats() -> Dictionary:
@@ -151,8 +178,10 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 		return _deny_cast("weather_condition", spot_weather, cur_weather)
 
 	var eq_stats: Dictionary = _get_equipment_stats()
+	var line_res: Resource = _get_equipped_line()
+	_last_cast_line_durability = float(line_res.get("current_durability")) if line_res != null and "current_durability" in line_res else -1.0
 	_controller.skills.sync_with_realm(realm)
-	var success: bool = _controller.cast(spot, rod, null, eq_stats, cur_time, cur_weather)
+	var success: bool = _controller.cast(spot, rod, line_res, eq_stats, cur_time, cur_weather)
 	if not success and _controller.get_state_name() == "IDLE":
 		return _deny_cast("no_fish_for_rod", 0, realm)
 	if success:
@@ -233,10 +262,12 @@ func _on_fight_update(payload: Dictionary) -> void:
 
 
 func _on_fish_caught(payload: Dictionary) -> void:
+	_sync_line_durability_after_fishing()
 	_emit_event(FishingEventsContract.FISH_CAUGHT, payload)
 
 
 func _on_fish_lost(payload: Dictionary) -> void:
+	_sync_line_durability_after_fishing()
 	_emit_event(FishingEventsContract.FISH_ESCAPED, payload)
 
 

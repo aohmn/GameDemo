@@ -3,6 +3,7 @@ extends RefCounted
 
 var _map_manager: Node3D
 var _player: CharacterBody3D
+var _cultivation_api: RefCounted
 var _apis: Array[RefCounted] = []
 
 
@@ -18,6 +19,7 @@ func setup(
 ) -> void:
 	_map_manager = map_manager
 	_player = player
+	_cultivation_api = cultivation_api
 	_apis.clear()
 	for api in [inventory_api, economy_api, shop_api, cultivation_api, equipment_api, crafting_api]:
 		if api != null:
@@ -46,8 +48,9 @@ func restore_player_state() -> bool:
 	var map_changed: bool = false
 	var m_id: String = str(st.get("map_id", ""))
 	if not m_id.is_empty() and m_id != str(_map_manager.call("get_current_map_id")):
-		_map_manager.call("load_map", m_id)
-		map_changed = true
+		var realm: int = int(_cultivation_api.call("get_current_realm_index")) if _cultivation_api != null and _cultivation_api.has_method("get_current_realm_index") else 0
+		if bool(_map_manager.call("load_map", m_id, realm)):
+			map_changed = true
 	_player.global_position = st.get("position", _player.global_position) as Vector3
 	_player.velocity = Vector3.ZERO
 	return map_changed

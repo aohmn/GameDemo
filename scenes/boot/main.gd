@@ -81,6 +81,9 @@ func _setup_save_manager() -> void:
 	_save_manager.call("setup", _map_manager, _player, _inventory_api, _economy_api, _shop_api, _cultivation_api, _equipment_api, _crafting_api)
 	if bool(_save_manager.call("restore_player_state")):
 		_sync_sun_direction()
+		if _cast_coordinator != null:
+			var new_map_node: Node = _map_manager.call("get_current_map") as Node
+			_cast_coordinator.call("setup", _player, new_map_node, _fishing_ui, _fishing_rig, _fishing_api)
 
 
 func _on_map_change_requested(payload: Dictionary) -> void:
@@ -211,6 +214,10 @@ func _init_services() -> void:
 				_equipment_api.call("register_item_spec", rod)
 		if _fishing_api != null and _fishing_api.has_method("set_equipment_stats_provider"):
 			_fishing_api.call("set_equipment_stats_provider", Callable(_equipment_api, "calculate_total_stats"))
+		if _fishing_api != null and _fishing_api.has_method("set_equipped_line_provider"):
+			_fishing_api.call("set_equipped_line_provider", Callable(self, "_get_equipped_line_resource"))
+		if _fishing_api != null and _fishing_api.has_method("set_line_durability_consumer"):
+			_fishing_api.call("set_line_durability_consumer", Callable(self, "_consume_equipped_line_durability"))
 	var eb: Node = get_node_or_null("/root/EventBus")
 	if eb != null and eb.has_method("subscribe"):
 		eb.call("subscribe", "shop_rod_equipped", Callable(_coordinator, "on_shop_rod_equipped"))
@@ -300,3 +307,23 @@ func _instantiate_scene(path: String) -> Node:
 	if node != null:
 		add_child(node)
 	return node
+
+
+func _get_equipped_line_resource() -> Resource:
+	if _equipment_api == null:
+		return null
+	var line_id: String = str(_equipment_api.call("get_equipped_item_id", "line"))
+	if line_id.is_empty():
+		return null
+	var spec: Resource = _equipment_api.call("get_item_spec", line_id) as Resource
+	if spec == null:
+		return null
+	var res: Resource = spec.duplicate()
+	if "current_durability" in res:
+		res.set("current_durability", float(_equipment_api.call("get_item_durability", line_id)))
+	return res
+
+
+func _consume_equipped_line_durability(used: float) -> void:
+	if _equipment_api != null and used > 0.0:
+		_equipment_api.call("consume_durability", "line", used)

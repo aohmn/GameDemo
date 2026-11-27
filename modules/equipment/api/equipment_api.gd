@@ -72,6 +72,10 @@ func get_item_durability(item_id: String) -> float:
 	return float(_logic.call("get_item_durability", item_id)) if _logic != null and _logic.has_method("get_item_durability") else 100.0
 
 
+func get_item_spec(item_id: String) -> Resource:
+	return _logic.call("get_item_spec", item_id) as Resource if _logic != null and _logic.has_method("get_item_spec") else null
+
+
 func get_upgrade_cost(item_id: String) -> int:
 	return int(_logic.call("get_upgrade_cost", item_id)) if _logic != null and _logic.has_method("get_upgrade_cost") else 50
 
