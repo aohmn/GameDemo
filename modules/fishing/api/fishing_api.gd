@@ -138,6 +138,7 @@ func cast(spot_id: String = "spot_cau_tau_ben_cang") -> bool:
 		return _deny_cast("weather_condition", spot_weather, cur_weather)
 
 	var eq_stats: Dictionary = _get_equipment_stats()
+	_controller.skills.sync_with_realm(realm)
 	var success: bool = _controller.cast(spot, rod, null, eq_stats, cur_time, cur_weather)
 	if not success and _controller.get_state_name() == "IDLE":
 		return _deny_cast("no_fish_for_rod", 0, realm)
@@ -182,6 +183,15 @@ func tick(delta: float) -> void:
 ## Cung cấp quyền truy cập kỹ năng câu cá cho tu luyện
 func get_skills() -> RefCounted:
 	return _controller.skills
+
+
+## Trả về danh sách 5 kỹ năng đã đồng bộ mở khóa theo cảnh giới hiện tại.
+func get_skills_info() -> Dictionary:
+	var realm: int = _current_realm()
+	return {
+		"realm": realm,
+		"skills": _controller.skills.get_skills_summary(realm)
+	}
 
 
 ## Cung cấp quyền thiết lập mồi câu cho túi đồ / trang bị

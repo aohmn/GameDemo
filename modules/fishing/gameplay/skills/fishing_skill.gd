@@ -28,8 +28,43 @@ var unlocked_skills: Dictionary = {
 var toa_ngu_uses: int = 1
 
 
+const SKILL_DEFS: Array[Dictionary] = [
+	{"type": SkillType.LINH_NHAN, "name": "Linh Nhãn", "req_realm": 0, "effect": "+0.5 thu hút & thấu thị cá cắn"},
+	{"type": SkillType.THINH_THUY, "name": "Thính Thủy", "req_realm": 1, "effect": "+0.35s cửa sổ giật cần"},
+	{"type": SkillType.NGU_CAU, "name": "Ngự Câu", "req_realm": 2, "effect": "+10 vùng an toàn lực căng"},
+	{"type": SkillType.TOA_NGU, "name": "Tỏa Ngư", "req_realm": 3, "effect": "-35% lực giật của cá"},
+	{"type": SkillType.THU_LINH, "name": "Thu Linh", "req_realm": 4, "effect": "+35% linh khí hấp thu"},
+]
+
+
 func unlock_skill(skill: int) -> void:
 	unlocked_skills[skill] = true
+
+
+func sync_with_realm(realm_index: int) -> void:
+	for def in SKILL_DEFS:
+		var st: int = int(def["type"])
+		if realm_index >= int(def["req_realm"]):
+			unlocked_skills[st] = true
+
+
+func get_skills_summary(realm_index: int = 0) -> Array[Dictionary]:
+	sync_with_realm(realm_index)
+	var out: Array[Dictionary] = []
+	for def in SKILL_DEFS:
+		var st: int = int(def["type"])
+		out.append({
+			"type": st,
+			"name": str(def["name"]),
+			"req_realm": int(def["req_realm"]),
+			"unlocked": is_unlocked(st),
+			"effect": str(def["effect"])
+		})
+	return out
+
+
+func get_attraction_bonus() -> float:
+	return 0.5 if is_unlocked(SkillType.LINH_NHAN) else 0.0
 
 
 func is_unlocked(skill: int) -> bool:

@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Kỹ năng câu cá (Linh Nhãn, Thính Thủy, Ngự Câu, Tỏa Ngư, Thu Linh): tự mở khóa theo cảnh giới (0→4), mỗi kỹ năng chỉnh 1 tham số fishing, thêm UI nhỏ `presentation/fishing_skill_ui/` xem trạng thái & điểm mở khóa (Mức 2, `dev.tscn` + test kỹ năng + 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - Đổi tên dữ liệu theo thế giới tu tiên (giữ nguyên `id`): Cần Thanh Trúc / Cần Huyền Thiết và các loài Phàm Ngư / Linh Ngư / Yêu Ngư; hiển thị nhãn phẩm cấp (`[Phàm]`, `[Linh]`, `[Yêu]`) trong Túi Cá và popup bắt cá (Mức 2, 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - GameClock + ngày/đêm + điều kiện điểm câu: nối `GameClock` vào `SkyDome` chuyển màu bầu trời ngày/hoàng hôn/đêm, `FishingAPI.cast` kiểm `time_condition` / `weather_condition` phát `fishing_cast_denied`; thêm 2 loài cá đêm (Cá Đèn Lồng, Cá Nguyệt Ảnh) (Mức 2, test ngày/đêm + 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - Gỡ đường dẫn cứng `modules/fishing` khỏi `equipment_logic.gd`: Bootstrap đăng ký các `RodSpec` sang `EquipmentAPI` qua `register_item_spec`, `modules/equipment/scenes/dev.gd` tự đăng ký spec thử nghiệm độc lập (Mức 2, `dev.tscn` + 7/7 `tests/headless` đạt; chưa chạy Godot Android).

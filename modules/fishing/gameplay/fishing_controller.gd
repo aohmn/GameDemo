@@ -92,6 +92,7 @@ func cast(spot: Resource, rod: Resource, line_res: Resource = null, equipment_st
 	var min_w: float = float(spot.get("min_wait_time")) if "min_wait_time" in spot else 2.0
 	var max_w: float = float(spot.get("max_wait_time")) if "max_wait_time" in spot else 5.0
 	var attraction := bait_system.attraction_power if bait_system.remaining_uses > 0 else 0.0
+	attraction += skills.get_attraction_bonus()
 	_wait_timer = FishingCalculatorScript.calculate_wait_time(
 		min_w, max_w, current_fish.rarity, attraction, rng
 	)
@@ -175,11 +176,15 @@ func _trigger_bite() -> void:
 	_bite_timer = BASE_BITE_WINDOW + bonus_win
 
 	if on_fish_bite.is_valid():
-		on_fish_bite.call({
+		var bite_payload: Dictionary = {
 			"spot_id": fishing_data.spot_id,
 			"fish_id": current_fish.id,
 			"window_seconds": _bite_timer
-		})
+		}
+		var insight: Dictionary = skills.activate_linh_nhan(fishing_data.target_fish_resource)
+		if not insight.is_empty():
+			bite_payload["linh_nhan"] = insight
+		on_fish_bite.call(bite_payload)
 
 
 func _process_fighting(delta: float) -> void:

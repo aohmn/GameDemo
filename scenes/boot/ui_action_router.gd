@@ -5,6 +5,7 @@ extends RefCounted
 
 const CULTIVATION_UI_PATH: String = "res://presentation/cultivation_ui/cultivation_ui.tscn"
 const SHOP_UI_PATH: String = "res://presentation/shop_ui/shop_ui.tscn"
+const SKILL_UI_PATH: String = "res://presentation/fishing_skill_ui/fishing_skill_ui.tscn"
 
 var _coordinator: RefCounted
 var _economy_api: RefCounted
@@ -77,6 +78,21 @@ func build_shop_ui(hud: Node, shop_api: RefCounted, economy_api: RefCounted, cul
 	_connect(shop_ui, "buy_requested", on_shop_buy_requested)
 	_connect(shop_ui, "equip_requested", on_shop_equip_requested)
 	return shop_ui
+
+
+## Tạo UI nhỏ xem 5 kỹ năng câu cá và điểm cảnh giới. Trả về Control hoặc null.
+func build_skill_ui(hud: Node, fishing_api: RefCounted) -> Control:
+	if fishing_api == null or not ResourceLoader.exists(SKILL_UI_PATH):
+		return null
+	var scene := load(SKILL_UI_PATH) as PackedScene
+	if scene == null:
+		return null
+	var ui := scene.instantiate() as Control
+	if ui != null:
+		hud.add_child(ui)
+		if ui.has_method("setup"):
+			ui.call("setup", fishing_api)
+	return ui
 
 
 func on_shop_buy_requested(item_id: String) -> void:
