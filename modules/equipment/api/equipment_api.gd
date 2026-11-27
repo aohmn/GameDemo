@@ -64,6 +64,31 @@ func register_item_spec(spec: Resource) -> void:
 		_logic.call("register_item_spec", spec)
 
 
+func get_item_level(item_id: String) -> int:
+	return int(_logic.call("get_item_level", item_id)) if _logic != null and _logic.has_method("get_item_level") else 1
+
+
+func get_item_durability(item_id: String) -> float:
+	return float(_logic.call("get_item_durability", item_id)) if _logic != null and _logic.has_method("get_item_durability") else 100.0
+
+
+func get_upgrade_cost(item_id: String) -> int:
+	return int(_logic.call("get_upgrade_cost", item_id)) if _logic != null and _logic.has_method("get_upgrade_cost") else 50
+
+
+func upgrade_item(item_id: String) -> bool:
+	return bool(_logic.call("upgrade_item", item_id)) if _logic != null and _logic.has_method("upgrade_item") else false
+
+
+func consume_durability(slot: String, amount: float) -> void:
+	if _logic != null and _logic.has_method("consume_durability"):
+		_logic.call("consume_durability", slot, amount)
+
+
+func repair_item(item_id: String) -> bool:
+	return bool(_logic.call("repair_item", item_id)) if _logic != null and _logic.has_method("repair_item") else false
+
+
 func save(custom_path: String = "") -> bool:
 	if _logic != null and _logic.has_method("save_to_disk"):
 		return bool(_logic.call("save_to_disk", custom_path))
