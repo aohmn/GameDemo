@@ -13,16 +13,21 @@ const ACTION_ABSORB: String = "absorb"
 const ACTION_SELL: String = "sell"
 
 const FISH_NAMES: Dictionary = {
-	"fish_ca_com": "Cá Cơm Biển",
-	"fish_ca_doi": "Cá Đối Mục",
-	"fish_ca_chem": "Cá Chẽm Bờ",
-	"fish_ca_mu": "Cá Mú Đỏ",
-	"fish_ca_thu": "Cá Thu Vàng",
-	"fish_ca_ngu_dai_duong": "Cá Ngừ Đại Dương",
-	"fish_ca_chep_linh": "Cá Chép Linh",
-	"fish_ca_tram_ngoc": "Cá Trắm Ngọc",
-	"fish_ca_den_long": "Cá Đèn Lồng",
-	"fish_ca_nguyet_anh": "Cá Nguyệt Ảnh"
+	"fish_ca_com": "Cá Cơm Phàm",
+	"fish_ca_doi": "Cá Đối Thanh",
+	"fish_ca_chem": "Thanh Chẽm Linh Ngư",
+	"fish_ca_mu": "Hồng Mú Linh Ngư",
+	"fish_ca_thu": "Hoàng Kim Yêu Thu",
+	"fish_ca_ngu_dai_duong": "Thâm Hải Yêu Ngừ",
+	"fish_ca_chep_linh": "Kim Lân Chép Linh",
+	"fish_ca_tram_ngoc": "Bích Ngọc Yêu Trắm",
+	"fish_ca_den_long": "Đèn Lồng U Ngư",
+	"fish_ca_nguyet_anh": "Nguyệt Ảnh Linh Ngư"
+}
+const FISH_TIERS: Dictionary = {
+	"fish_ca_com": "Phàm", "fish_ca_doi": "Phàm", "fish_ca_den_long": "Phàm",
+	"fish_ca_chem": "Linh", "fish_ca_mu": "Linh", "fish_ca_chep_linh": "Linh", "fish_ca_nguyet_anh": "Linh",
+	"fish_ca_tram_ngoc": "Yêu", "fish_ca_thu": "Yêu", "fish_ca_ngu_dai_duong": "Yêu"
 }
 
 var _inventory_api: RefCounted
@@ -92,9 +97,9 @@ func _setup_ui() -> void:
 	_panel.anchor_top = 0.5
 	_panel.anchor_right = 0.5
 	_panel.anchor_bottom = 0.5
-	_panel.offset_left = -220.0
+	_panel.offset_left = -260.0
 	_panel.offset_top = -140.0
-	_panel.offset_right = 220.0
+	_panel.offset_right = 260.0
 	_panel.offset_bottom = 140.0
 	add_child(_panel)
 
@@ -196,7 +201,9 @@ func _update_view() -> void:
 		var data: Dictionary = items[fish_id] as Dictionary
 		var count: int = int(data.get("count", 0))
 		var weight_g: int = int(data.get("total_weight_g", 0))
-		var display_name: String = str(FISH_NAMES.get(fish_id, fish_id))
+		var raw_name: String = str(FISH_NAMES.get(fish_id, fish_id))
+		var tier_label: String = str(FISH_TIERS.get(fish_id, "Phàm"))
+		var display_name: String = "[%s] %s" % [tier_label, raw_name]
 		var item_panel := _create_fish_item_row(str(fish_id), display_name, count, weight_g)
 		_fish_list_container.add_child(item_panel)
 
@@ -238,6 +245,7 @@ func _create_fish_item_row(fish_id: String, display_name: String, count: int, we
 	var name_lbl := Label.new()
 	name_lbl.text = display_name
 	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	name_lbl.add_theme_font_size_override("font_size", 14)
 	hbox.add_child(name_lbl)
 

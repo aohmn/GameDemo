@@ -232,10 +232,17 @@ func _on_fight_update_evt(payload: Dictionary) -> void:
 	_alert_label.text = "[Thu phục: %0.0f%%] %s" % [progress, mode_name]
 
 
+func _tier_name(tier: int) -> String:
+	const NAMES: Array[String] = ["Phàm Ngư", "Linh Ngư", "Yêu Ngư", "Tiên Ngư", "Thần Ngư", "Thái Cổ"]
+	return NAMES[clampi(tier, 0, NAMES.size() - 1)]
+
+
 func _on_fish_caught_evt(payload: Dictionary) -> void:
+	var tier_str: String = _tier_name(int(payload.get("tier", 0)))
 	_show_result(
 		"THU PHỤC THÀNH CÔNG!",
-		"Linh Ngư: %s (%d g)\nChứa %d linh khí - mở Túi, bấm Hấp thu để vào tu vi" % [
+		"[%s] %s (%d g)\nChứa %d linh khí - mở Túi, bấm Hấp thu để vào tu vi" % [
+			tier_str,
 			str(payload.get("name", "Linh Ngư")),
 			int(payload.get("weight_g", 0)),
 			int(payload.get("qi_value", 0))

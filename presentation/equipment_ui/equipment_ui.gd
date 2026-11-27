@@ -18,8 +18,8 @@ const SLOT_NAMES: Dictionary = {
 }
 
 const ITEM_NAMES: Dictionary = {
-	"rod_truc_nhiem": "Cần Trúc Nhiệm",
-	"rod_carbon_bien_sau": "Cần Carbon Biển Sâu",
+	"rod_truc_nhiem": "Cần Thanh Trúc",
+	"rod_carbon_bien_sau": "Cần Huyền Thiết",
 	"line_cuoc_bach_lien": "Cước Bạch Liên",
 	"bait_linh_trung": "Mồi Linh Trùng",
 	"relic_dinh_hai_chau": "Định Hải Châu"

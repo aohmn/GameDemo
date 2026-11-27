@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_spec")
 id = "fish_ca_den_long"
-display_name = "Cá Đèn Lồng"
+display_name = "Đèn Lồng U Ngư"
 description = "Loài cá biển phát ánh sáng lam dịu giữa màn đêm, chỉ trồi lên gần cầu tàu sau khi mặt trời lặn."
 tier = 0
 spirit_qi = 18

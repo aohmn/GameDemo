@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_spec")
 id = "rod_carbon_bien_sau"
-display_name = "Cần Carbon Biển Sâu"
-description = "Pháp bảo cần câu cấp Linh tôi luyện từ hắc thạch và gân giao long, chịu lực kéo vượt trội."
+display_name = "Cần Huyền Thiết"
+description = "Pháp bảo cần câu cấp Linh rèn từ huyền thiết thâm hải và gân giao long, chịu lực kéo vượt trội."
 tier = 1
 max_durability = 250
 current_durability = 250

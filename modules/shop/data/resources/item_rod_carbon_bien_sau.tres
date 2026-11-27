@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_spec")
 id = "shop_rod_carbon_bien_sau"
-display_name = "Cần Carbon Biển Sâu"
-description = "Pháp bảo cần câu cấp Linh tôi luyện từ hắc thạch, độ bền 250, chịu lực căng cực đại 125.0."
+display_name = "Cần Huyền Thiết"
+description = "Pháp bảo cần câu cấp Linh rèn từ huyền thiết thâm hải, độ bền 250, chịu lực căng cực đại 125.0."
 price_spirit_stone = 1500
 price_vnd = 1500000
 category = "rod"

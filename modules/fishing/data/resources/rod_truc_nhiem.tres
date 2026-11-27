@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_spec")
 id = "rod_truc_nhiem"
-display_name = "Cần Trúc Nhiệm Màu"
+display_name = "Cần Thanh Trúc"
 description = "Pháp bảo cần câu cấp Phàm luyện chế từ thanh trúc lâu năm, dẻo dai vừa đủ câu phàm ngư và linh ngư nhỏ."
 tier = 0
 max_durability = 100

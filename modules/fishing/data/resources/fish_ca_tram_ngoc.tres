@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_spec")
 id = "fish_ca_tram_ngoc"
-display_name = "Cá Trắm Ngọc"
+display_name = "Bích Ngọc Yêu Trắm"
 description = "Linh ngư thượng phẩm ẩn mình dưới lớp ngọc thạch đáy Hồ Linh Ngư, cực kỳ tinh khôn và dũng mãnh."
 tier = 2
 spirit_qi = 75
