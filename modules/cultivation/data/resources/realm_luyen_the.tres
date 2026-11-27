@@ -9,5 +9,5 @@ id = "realm_luyen_the"
 display_name = "Luyện Thể"
 description = "Rèn luyện thể phách, khí huyết cường thịnh, gân cốt cứng như đá."
 max_layer = 9
-layer_exp_requirements = [100, 150, 220, 320, 460, 650, 900, 1250, 1700]
+layer_exp_requirements = [50, 75, 110, 150, 200, 260, 330, 405, 520]
 base_breakthrough_chance = 1.0

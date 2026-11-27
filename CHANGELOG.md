@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Cân bằng tu vi đầu game: giảm tổng tu vi Luyện Thể từ 5.750 xuống 2.100 (tầng 1 cần 50), tăng linh khí Cá Cơm (5→10) và Cá Đối (10→15), ghi bảng cân bằng tại `docs/design/cultivation_balance.md` (Mức 2, 7/7 `tests/headless` đạt; chưa chạy Godot Android).
 - Thêm bộ kiểm tra `tests/headless/` (7 kịch bản đi bộ, mép đảo, mặt nước, chạm câu/giật/hấp thu/bán/đột phá) và lưu kết quả chạy tại `docs/headless_test_report.md` (Mức 2, 7/7 đạt; chưa chạy Godot Android).
 - Dựng lại map harbor_island theo phong cách tiên hiệp: đảo ba bậc (bến cảng, ao sen, Tiên Các), bài phường, tháp ba tầng mái cong, đình, cầu đá vòm, ao sen Hồ Linh Ngư, núi đá vôi mờ sương, thác, tùng/trúc/đào; thêm shader lacquer/karst/glow/waterfall/mist/pond và `is_water_at`, `get_water_height_at` cho ao (Mức 2, render Mesa; chưa chạy Android).
 - Hiệu ứng trang bị lên câu cá: `FishingAPI.set_equipment_stats_provider` nhận chỉ số tổng hợp từ `EquipmentAPI.calculate_total_stats` qua Bootstrap; `FishingController` và `FishingBattle` áp dụng `max_tension_bonus`, `fatigue_rate_bonus`, `control_power_bonus` và `qi_absorption_bonus` trực tiếp vào giằng co và linh khí cá (Mức 2, test trang bị + giằng co & boot đạt Player y=0.050; chưa chạy Godot Android).
