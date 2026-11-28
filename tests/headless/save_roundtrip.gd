@@ -15,7 +15,10 @@ func _check(label: String, got: Variant, expected: Variant) -> void:
 		failed += 1
 		print("  FAIL: ", label, " got=", got, " expected=", expected)
 
+const BackupHelper: Script = preload("res://tests/headless/save_backup_helper.gd")
+
 func _initialize() -> void:
+	BackupHelper.backup_user_saves()
 	sub = SubViewport.new()
 	sub.size = Vector2i(1280, 576)
 	sub.handle_input_locally = true
@@ -93,6 +96,7 @@ func _physics_process(_d: float) -> bool:
 			print("SAVE ROUNDTRIP: ALL PASS")
 		else:
 			print("SAVE ROUNDTRIP: FAILED")
+		BackupHelper.restore_user_saves()
 		quit()
 
 	return false

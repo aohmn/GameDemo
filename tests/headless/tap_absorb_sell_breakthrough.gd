@@ -20,7 +20,10 @@ func _find_button(root_node: Node, txt: String) -> Button:
 		if (n as Button).text == txt and (n as Button).is_visible_in_tree():
 			return n
 	return null
+const BackupHelper: Script = preload("res://tests/headless/save_backup_helper.gd")
+
 func _initialize() -> void:
+	BackupHelper.backup_user_saves()
 	sub = SubViewport.new()
 	sub.size = Vector2i(1280, 576)
 	sub.handle_input_locally = true
@@ -59,5 +62,6 @@ func _physics_process(_d: float) -> bool:
 	if f == 120: _tap(cui.get("_btn_breakthrough"))
 	if f == 150:
 		print("sau Đột phá: ", cult.call("get_current_realm_name"), " tầng ", cult.call("get_current_layer"), " | HUD: ", cui.get("_realm_label").text, " | toast='", cui.get("_toast").text, "'")
+		BackupHelper.restore_user_saves()
 		quit()
 	return false

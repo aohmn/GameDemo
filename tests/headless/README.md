@@ -19,3 +19,5 @@ Chạy từ thư mục dự án (GODOT = đường dẫn binary Godot 4.7):
 
 Lưu ý: các script đọc biến nội bộ của `scenes/boot/main.gd` (`_fishing_ui`, `_fishing_api`, `_map_manager`...). Nếu đổi tên biến thì sửa script theo.
 Chạm giả lập đẩy sự kiện chuột vào SubViewport 1280x576 và giữ vài khung vật lý, vì chạm thật trên điện thoại không bao giờ nhấn-nhả trong cùng một khung.
+
+> **CẢNH BÁO SAVE**: Mọi test ghi/tải save trong `tests/headless/` PHẢI dùng đường dẫn `user://test_*.cfg` riêng hoặc sao lưu & khôi phục qua `save_backup_helper.gd`, và ưu tiên đặt giá trị cố định (`set`) thay vì cộng dồn (`add`) để không làm hỏng dữ liệu save thật của người chơi.
