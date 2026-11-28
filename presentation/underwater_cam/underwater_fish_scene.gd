@@ -10,8 +10,10 @@ var _fin_mat: ShaderMaterial
 var _eye_mat: StandardMaterial3D
 var _line_node: Node3D
 var _vfx_node: Node3D
+var _rig_ref: Node
 
 var _water_anchor: Vector3 = Vector3.ZERO
+var _tension_ratio: float = 0.0
 var _target_pos: Vector3 = Vector3.ZERO
 var _current_pos: Vector3 = Vector3.ZERO
 var _swim_time: float = 0.0
@@ -45,11 +47,22 @@ func _on_state_changed(payload: Dictionary) -> void:
 	var in_fight: bool = (str(payload.get("to_state", "")) == "FIGHT")
 	visible = in_fight
 	if in_fight:
-		var rig: Node = get_tree().get_first_node_in_group("fishing_rig")
-		if rig != null and rig.has_method("get_line_end"):
-			_water_anchor = rig.call("get_line_end")
+		_rig_ref = get_tree().get_first_node_in_group("fishing_rig")
+		if _rig_ref != null and _rig_ref.has_method("get_line_end"):
+			_water_anchor = _rig_ref.call("get_line_end")
 		_current_pos = _water_anchor + Vector3(0.0, -1.0, 0.0)
 		global_position = _current_pos
+
+
+func _process(_delta: float) -> void:
+	if not visible or _line_node == null or not _line_node.has_method("update_line"):
+		return
+	if _rig_ref == null or not is_instance_valid(_rig_ref):
+		_rig_ref = get_tree().get_first_node_in_group("fishing_rig")
+	var rod_tip_world: Vector3 = _water_anchor + Vector3(0.0, 1.2, 0.0)
+	if _rig_ref != null and _rig_ref.has_method("get_rod_tip_position"):
+		rod_tip_world = _rig_ref.call("get_rod_tip_position")
+	_line_node.call("update_line", rod_tip_world, get_mouth_world_position(), _tension_ratio)
 
 
 func _on_fight_ended(_payload: Dictionary) -> void:
@@ -61,19 +74,17 @@ func _on_fight_update(payload: Dictionary) -> void:
 		return
 	var tension: float = float(payload.get("line_tension", 0.0))
 	var max_t: float = maxf(float(payload.get("max_tension", 100.0)), 1.0)
-	var t_ratio: float = clampf(tension / max_t, 0.0, 1.0)
+	_tension_ratio = clampf(tension / max_t, 0.0, 1.0)
 	var is_tele: bool = bool(payload.get("fish_telegraphing", false))
 	var delta: float = get_process_delta_time()
 	update_fish(
 		float(payload.get("fish_pos_norm", 0.0)),
 		float(payload.get("fish_depth_norm", 0.5)),
 		int(payload.get("fish_swim_dir", 1)),
-		t_ratio,
+		_tension_ratio,
 		is_tele,
 		delta
 	)
-	if _line_node != null and _line_node.has_method("update_line"):
-		_line_node.call("update_line", get_mouth_world_position(), t_ratio, float(payload.get("rod_bend", 0.0)), _water_anchor)
 	if _vfx_node != null and _vfx_node.has_method("update_vfx"):
 		_vfx_node.call("update_vfx", global_position, is_tele, delta)
 
@@ -204,4 +215,4 @@ func update_fish(
 
 
 func get_mouth_world_position() -> Vector3:
-	return global_position + Vector3(0.42 * float(_facing_dir), 0.02, 0.0)
+	return global_transform * Vector3(0.42, 0.02, 0.0)

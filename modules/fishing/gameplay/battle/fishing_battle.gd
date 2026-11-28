@@ -211,7 +211,7 @@ func set_fish_skills(specs: Array[Resource]) -> void:
 	fish_skill_specs = specs
 
 
-func trigger_twitch(fish_data: Resource) -> Dictionary:
+func trigger_twitch(fish_data: FishData) -> Dictionary:
 	if _twitch_cooldown > 0.0:
 		return {"ok": false, "reason": "cooldown"}
 	_twitch_cooldown = 0.45

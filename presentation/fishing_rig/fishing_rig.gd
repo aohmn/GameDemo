@@ -80,6 +80,10 @@ func get_line_end() -> Vector3:
 	return _cast_target
 
 
+func get_rod_tip_position() -> Vector3:
+	return _tip_pos
+
+
 func _process(delta: float) -> void:
 	_clock += delta
 	var has_anchor: bool = _anchor != null and is_instance_valid(_anchor)
@@ -123,7 +127,7 @@ func _update_rod(delta: float) -> void:
 
 
 func _update_bobber(delta: float) -> void:
-	_bobber.visible = _line_out
+	_bobber.visible = _line_out and (_state != "FIGHT" or _retracting)
 	if not _line_out:
 		return
 	if _retracting:
@@ -161,7 +165,7 @@ func _resting_bobber() -> Vector3:
 
 func _update_line() -> void:
 	_line_mesh.clear_surfaces()
-	if not _line_out:
+	if not _line_out or (_state == "FIGHT" and not _retracting):
 		return
 	var cam: Camera3D = get_viewport().get_camera_3d()
 	if cam == null:

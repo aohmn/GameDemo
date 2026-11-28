@@ -144,9 +144,9 @@ func set_rod_steer(dir: float) -> void:
 
 
 func trigger_twitch() -> Dictionary:
-	if battle == null or fishing_data.target_fish_resource == null:
+	if battle == null or current_fish == null:
 		return {"ok": false, "reason": "no_battle"}
-	return battle.trigger_twitch(fishing_data.target_fish_resource)
+	return battle.trigger_twitch(current_fish)
 
 
 func set_drag(level: float) -> void:
