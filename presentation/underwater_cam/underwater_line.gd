@@ -30,39 +30,80 @@ func _build_hook_mesh() -> void:
 	hook_mat.metallic = 0.85
 	hook_mat.roughness = 0.2
 
-	# Thân lưỡi câu (shank)
-	var shank := MeshInstance3D.new()
-	var shank_mesh := CylinderMesh.new()
-	shank_mesh.top_radius = 0.008
-	shank_mesh.bottom_radius = 0.008
-	shank_mesh.height = 0.09
-	shank_mesh.radial_segments = 6
-	shank.mesh = shank_mesh
-	shank.position = Vector3(0.0, -0.045, 0.0)
-	shank.material_override = hook_mat
-	_hook_root.add_child(shank)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 
-	# Phần uốn cong chữ J (bend)
-	var bend := MeshInstance3D.new()
-	var bend_mesh := CylinderMesh.new()
-	bend_mesh.top_radius = 0.008
-	bend_mesh.bottom_radius = 0.008
-	bend_mesh.height = 0.05
-	bend_mesh.radial_segments = 6
-	bend.mesh = bend_mesh
-	bend.position = Vector3(0.022, -0.09, 0.0)
-	bend.rotation_degrees = Vector3(0.0, 0.0, 90.0)
-	bend.material_override = hook_mat
-	_hook_root.add_child(bend)
+	# Thân thẳng -> đoạn uốn chữ J liên tục -> mũi nhọn
+	var spine: Array[Vector3] = [
+		Vector3(0.0, 0.0, 0.0),
+		Vector3(0.0, -0.032, 0.0),
+		Vector3(0.0, -0.062, 0.0),
+	]
+	var radii: Array[float] = [0.007, 0.0065, 0.0065]
 
-	# Mũi nhọn lưỡi câu (point + barb)
-	var point := MeshInstance3D.new()
-	var point_mesh := PrismMesh.new()
-	point_mesh.size = Vector3(0.016, 0.045, 0.016)
-	point.mesh = point_mesh
-	point.position = Vector3(0.045, -0.068, 0.0)
-	point.material_override = hook_mat
-	_hook_root.add_child(point)
+	var bend_center := Vector3(0.026, -0.062, 0.0)
+	var bend_r: float = 0.026
+	for i in range(1, 9):
+		var ang: float = PI + (float(i) / 8.0) * PI
+		spine.append(bend_center + Vector3(cos(ang) * bend_r, sin(ang) * bend_r, 0.0))
+		radii.append(0.0065)
+
+	spine.append(Vector3(0.052, -0.044, 0.0))
+	radii.append(0.0055)
+	spine.append(Vector3(0.050, -0.026, 0.0))
+	radii.append(0.0012)
+	_add_tube(st, spine, radii, 8)
+
+	# Ngạnh lưỡi câu
+	var barb_spine: Array[Vector3] = [
+		Vector3(0.051, -0.036, 0.0),
+		Vector3(0.040, -0.049, 0.0),
+	]
+	var barb_radii: Array[float] = [0.004, 0.001]
+	_add_tube(st, barb_spine, barb_radii, 6)
+
+	st.generate_normals()
+	var hook_mesh: ArrayMesh = st.commit()
+	var hook_inst := MeshInstance3D.new()
+	hook_inst.mesh = hook_mesh
+	hook_inst.material_override = hook_mat
+	_hook_root.add_child(hook_inst)
+
+
+func _add_tube(st: SurfaceTool, spine: Array[Vector3], radii: Array[float], segs: int) -> void:
+	if spine.size() < 2 or spine.size() != radii.size():
+		return
+	var rings: Array = []
+	for i in range(spine.size()):
+		var tang: Vector3
+		if i == 0:
+			tang = (spine[1] - spine[0]).normalized()
+		elif i == spine.size() - 1:
+			tang = (spine[i] - spine[i - 1]).normalized()
+		else:
+			tang = (spine[i + 1] - spine[i - 1]).normalized()
+		var side: Vector3 = tang.cross(Vector3.BACK)
+		if side.length_squared() < 0.0001:
+			side = tang.cross(Vector3.RIGHT)
+		side = side.normalized()
+		var binorm: Vector3 = tang.cross(side).normalized()
+		var ring: Array[Vector3] = []
+		for j in range(segs):
+			var a: float = (float(j) / float(segs)) * TAU
+			ring.append(spine[i] + (side * cos(a) + binorm * sin(a)) * radii[i])
+		rings.append(ring)
+
+	for i in range(rings.size() - 1):
+		var r0: Array = rings[i]
+		var r1: Array = rings[i + 1]
+		for j in range(segs):
+			var jn: int = (j + 1) % segs
+			st.add_vertex(r0[j])
+			st.add_vertex(r1[j])
+			st.add_vertex(r1[jn])
+			st.add_vertex(r0[j])
+			st.add_vertex(r1[jn])
+			st.add_vertex(r0[jn])
 
 
 func update_line(
