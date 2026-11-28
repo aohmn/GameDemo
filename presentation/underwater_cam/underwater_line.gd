@@ -46,21 +46,23 @@ func _ready() -> void:
 	add_child(_hook_instance)
 
 
-func update_line(mouth_pos: Vector3, tension_ratio: float, rod_bend: float = 0.0) -> void:
+func update_line(
+	mouth_pos: Vector3,
+	tension_ratio: float,
+	rod_bend: float = 0.0,
+	surface_anchor: Vector3 = Vector3.ZERO
+) -> void:
 	if _line_mesh == null:
 		return
 
-	# Đầu cần cong thực tế theo rod_bend
 	var bend_clamped: float = clampf(rod_bend, 0.0, 1.0)
-	var tip_pos := Vector3(mouth_pos.x * 0.35, 0.92 - bend_clamped * 0.28, 0.0)
+	var tip_pos: Vector3 = surface_anchor + Vector3(0.0, 0.08 - bend_clamped * 0.12, 0.0)
 	if _rod_tip != null:
-		_rod_tip.position = tip_pos + Vector3(0.0, 0.28, 0.0)
-		_rod_tip.rotation.z = lerpf(0.0, -0.45, bend_clamped) * (1.0 if mouth_pos.x >= 0.0 else -1.0)
+		_rod_tip.visible = false
 
-	# Độ võng dây tỉ lệ nghịch với lực căng, có giới hạn không xuyên đáy (-2.6)
 	var sag: float = lerpf(0.32, 0.01, clampf(tension_ratio, 0.0, 1.0))
 	var ctrl_pos: Vector3 = tip_pos.lerp(mouth_pos, 0.5) + Vector3(0.0, -sag, 0.0)
-	ctrl_pos.y = maxf(ctrl_pos.y, -2.55)
+	ctrl_pos.y = maxf(ctrl_pos.y, surface_anchor.y - 2.55)
 
 	if tension_ratio > 0.82:
 		_line_mat.albedo_color = Color(1.0, 0.28, 0.22)
@@ -74,7 +76,7 @@ func update_line(mouth_pos: Vector3, tension_ratio: float, rod_bend: float = 0.0
 	for i in range(7):
 		var t: float = float(i) / 6.0
 		var p: Vector3 = tip_pos.lerp(ctrl_pos, t).lerp(ctrl_pos.lerp(mouth_pos, t), t)
-		p.y = maxf(p.y, -2.55)
+		p.y = maxf(p.y, surface_anchor.y - 2.55)
 		_line_mesh.surface_add_vertex(p)
 	_line_mesh.surface_end()
 

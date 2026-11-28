@@ -53,6 +53,7 @@ var _marker: MeshInstance3D
 
 
 func _ready() -> void:
+	add_to_group("fishing_rig")
 	_build_nodes()
 	_connect_events()
 
