@@ -195,8 +195,8 @@ func update_fish(
 	is_telegraphing: bool,
 	delta: float
 ) -> void:
-	# Ánh xạ tọa độ chuẩn hóa [-1..1] / [0..1] quanh điểm thả câu thực tế
-	var world_x: float = clampf(pos_norm, -1.0, 1.0) * 2.6
+	# Ánh xạ tọa độ chuẩn hóa [0..1] sang [-1..1] rồi nhân biên độ
+	var world_x: float = (clampf(pos_norm, 0.0, 1.0) - 0.5) * 2.0 * 2.6
 	var world_y: float = lerpf(-0.4, -2.4, clampf(depth_norm, 0.0, 1.0))
 	_target_pos = _water_anchor + Vector3(world_x, world_y, 0.0)
 

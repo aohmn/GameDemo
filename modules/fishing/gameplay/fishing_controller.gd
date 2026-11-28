@@ -1,8 +1,7 @@
 class_name FishingController
 extends RefCounted
 
-## FishingController — Bộ điều khiển trung tâm của module modules/fishing/gameplay/.
-## Quản lý toàn bộ 8 trạng thái FSM, điều phối đấu sức, trang bị, kỹ năng và phát sự kiện.
+## Bộ điều khiển FSM câu cá: 8 trạng thái, đấu sức, trang bị, kỹ năng.
 
 const FishingStateScript: Script = preload("res://modules/fishing/gameplay/core/fishing_state.gd")
 const FishingDataScript: Script = preload("res://modules/fishing/gameplay/core/fishing_data.gd")
@@ -52,7 +51,6 @@ func _init(seed_val: int = -1) -> void:
 
 func set_seed(seed_val: int) -> void:
 	rng.seed = seed_val
-
 
 func get_state_name() -> String:
 	return FishingStateScript.get_state_name(current_state)
@@ -277,7 +275,6 @@ func _cleanup_and_idle() -> void:
 	fishing_data.reset()
 	current_fish = null
 	_transition_to(FishingStateScript.State.IDLE)
-
 
 func _transition_to(next_state: int) -> bool:
 	if current_state == next_state:
