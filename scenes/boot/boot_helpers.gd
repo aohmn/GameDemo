@@ -51,6 +51,9 @@ static func sync_sun_direction(sky_dome: Node, map_manager: Node3D) -> void:
 	var sun_dir: Vector3 = current_map.call("get_sun_direction")
 	if sky_dome != null and sky_dome.has_method("set_sun_direction"):
 		sky_dome.call("set_sun_direction", sun_dir)
+	var sun_node: DirectionalLight3D = current_map.get_node_or_null("SunLight") as DirectionalLight3D
+	if sun_node != null and sky_dome != null and sky_dome.has_method("set_sun_light"):
+		sky_dome.call("set_sun_light", sun_node)
 	if current_map.has_method("get_water_material"):
 		var water_mat: ShaderMaterial = current_map.call("get_water_material") as ShaderMaterial
 		if water_mat != null:

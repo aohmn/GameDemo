@@ -27,6 +27,7 @@ func _initialize() -> void:
 	_test_battle_hp_stamina_qi()
 	_test_battle_skill_integration()
 	_test_battle_ui_touch_isolation()
+	_test_day_night_cycle()
 	print("=== KẾT QUẢ: %d passed, %d failed ===" % [_passed, _failed])
 	quit(1 if _failed > 0 else 0)
 
@@ -330,3 +331,34 @@ func _test_battle_ui_touch_isolation() -> void:
 	helper._input(touch)
 	_assert_true("Nút bị lớp khác phủ lên KHÔNG gọi reel/release", not called[0])
 	hud.free()
+
+
+func _test_day_night_cycle() -> void:
+	var sky := preload("res://modules/sky_dome/logic/sky_dome.gd").new() as Node3D
+	var sun := DirectionalLight3D.new()
+	get_root().add_child(sky)
+	get_root().add_child(sun)
+	sky.call("_ready")
+	sky.call("set_sun_light", sun)
+
+	sky.call("set_time_of_day", 12.0)
+	var day_energy: float = sun.light_energy
+	var day_col: Color = (sky.call("get_shader_material") as ShaderMaterial).get_shader_parameter("sky_top_color")
+	sky.call("set_time_of_day", 23.0)
+	var night_energy: float = sun.light_energy
+	var night_col: Color = (sky.call("get_shader_material") as ShaderMaterial).get_shader_parameter("sky_top_color")
+	_assert_true("Đổi giờ ngày/đêm làm đổi light_energy", day_energy > night_energy + 0.5)
+	_assert_true("Đổi giờ ngày/đêm làm đổi màu trời", day_col != night_col)
+
+	var gc := get_root().get_node_or_null("GameClock")
+	if gc != null:
+		gc.call("set_time", 12.0)
+		sky.call("_sync_from_clock")
+		var e1: float = sun.light_energy
+		gc.set("time_speed", 11.0)
+		gc.call("_process", 1.0)
+		sky.call("_sync_from_clock")
+		var e2: float = sun.light_energy
+		_assert_true("Tick tự nhiên của GameClock làm đổi light_energy", e1 > e2 + 0.5)
+	sky.free()
+	sun.free()

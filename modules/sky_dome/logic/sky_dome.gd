@@ -4,6 +4,7 @@ const SKY_SHADER: Shader = preload("res://modules/sky_dome/assets/sky_dome.gdsha
 const DOME_RADIUS: float = 200.0
 
 var _target: Node3D
+var _sun_light: DirectionalLight3D
 var _mesh_instance: MeshInstance3D
 var _shader_material: ShaderMaterial
 var _last_synced_hour: float = -1.0
@@ -21,7 +22,11 @@ func _process(_delta: float) -> void:
 
 
 func _sync_from_clock() -> void:
-    var clock: Node = get_node_or_null("/root/GameClock")
+    var clock: Node = get_node_or_null("/root/GameClock") if is_inside_tree() else null
+    if clock == null:
+        var ml: MainLoop = Engine.get_main_loop()
+        if ml is SceneTree and (ml as SceneTree).root != null:
+            clock = (ml as SceneTree).root.get_node_or_null("GameClock")
     if clock == null:
         return
     var h: float = float(clock.get("current_time"))
@@ -53,6 +58,15 @@ func set_time_of_day(hour: float) -> void:
     _shader_material.set_shader_parameter("sky_horizon_color", hor_col)
     _shader_material.set_shader_parameter("ground_color", gnd_col)
     _shader_material.set_shader_parameter("cloud_color", cld_col)
+    if is_instance_valid(_sun_light):
+        _sun_light.light_energy = lerpf(0.18, 1.15, day_w)
+        _sun_light.light_color = Color(0.55, 0.65, 0.90).lerp(Color(1.0, 0.96, 0.88), day_w)
+
+
+func set_sun_light(sun: DirectionalLight3D) -> void:
+    _sun_light = sun
+    if _last_synced_hour >= 0.0:
+        set_time_of_day(_last_synced_hour)
 
 
 func set_follow_target(target: Node3D) -> void:
