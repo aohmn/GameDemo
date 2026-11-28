@@ -9,5 +9,5 @@ id = "realm_truc_co"
 display_name = "Trúc Cơ"
 description = "Đặt nền móng đại đạo, đan điền hóa linh dịch, thọ nguyên tăng gấp bội."
 max_layer = 9
-layer_exp_requirements = [280000, 360000, 460000, 580000, 720000, 900000, 1120000, 1400000, 1750000]
+layer_exp_requirements = [1600, 2100, 2700, 3300, 4000, 4700, 5400, 5900, 6300]
 base_breakthrough_chance = 0.9

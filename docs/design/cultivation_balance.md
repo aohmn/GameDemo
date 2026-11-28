@@ -36,3 +36,13 @@
 - **Cầu Tàu Bến Cảng** (cá Phẩm ≤ 1): trung bình **~18,8 linh khí/con** (trước đây ~15,3).
 - **Hồ Linh Ngư** (cá Phẩm ≤ 1): trung bình **~26,8 linh khí/con** (trước đây ~25,6).
 - **Pha trộn thực tế**: ~21–23 linh khí/con → 2.100 tu vi tương ứng ~92–100 con cá hấp thu (~31–35 phút chơi, cộng thêm ~15–20% cá bán lấy Linh Thạch nằm gọn trong 35–40 phút).
+
+## 5. Cân bằng Tụ Khí → Khai Mạch → Trúc Cơ (Mục tiêu ~30–40 phút/cảnh giới)
+
+Giả định tốc độ trung bình ~3 con/phút (~95–110 con/35 phút, kết hợp trang bị tăng % hấp thu linh khí):
+
+| Cảnh giới | Tổng cũ | Tổng mới | 9 tầng mới | Sản lượng kỳ vọng/con | Thời gian ước tính |
+|---|---:|---:|---|---:|---:|
+| **Tụ Khí** (`realm_tu_khi.tres`) | 88.200 | **7.200** | `300, 420, 550, 680, 820, 960, 1070, 1150, 1250` | ~70–85 linh khí | ~30–36 phút |
+| **Khai Mạch** (`realm_khai_mach.tres`) | 901.000 | **18.000** | `800, 1050, 1350, 1650, 2000, 2350, 2700, 2950, 3150` | ~170–200 linh khí | ~32–38 phút |
+| **Trúc Cơ** (`realm_truc_co.tres`) | 7.570.000 | **36.000** | `1600, 2100, 2700, 3300, 4000, 4700, 5400, 5900, 6300` | ~340–400 linh khí | ~33–39 phút |

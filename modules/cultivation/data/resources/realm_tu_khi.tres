@@ -9,5 +9,5 @@ id = "realm_tu_khi"
 display_name = "Tụ Khí"
 description = "Cảm ứng thiên địa linh khí, dẫn khí nhập thể, đan điền tụ linh."
 max_layer = 9
-layer_exp_requirements = [2400, 3300, 4500, 6000, 8000, 10500, 13500, 17500, 22500]
+layer_exp_requirements = [300, 420, 550, 680, 820, 960, 1070, 1150, 1250]
 base_breakthrough_chance = 1.0

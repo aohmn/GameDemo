@@ -9,5 +9,5 @@ id = "realm_khai_mach"
 display_name = "Khai Mạch"
 description = "Đả thông kinh mạch toàn thân, linh lực lưu chuyển thông suốt."
 max_layer = 9
-layer_exp_requirements = [30000, 40000, 52000, 67000, 85000, 107000, 135000, 170000, 215000]
+layer_exp_requirements = [800, 1050, 1350, 1650, 2000, 2350, 2700, 2950, 3150]
 base_breakthrough_chance = 0.95
