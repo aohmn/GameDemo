@@ -99,11 +99,11 @@ func _add_tube(st: SurfaceTool, spine: Array[Vector3], radii: Array[float], segs
 		for j in range(segs):
 			var jn: int = (j + 1) % segs
 			st.add_vertex(r0[j])
+			st.add_vertex(r1[jn])
 			st.add_vertex(r1[j])
-			st.add_vertex(r1[jn])
 			st.add_vertex(r0[j])
-			st.add_vertex(r1[jn])
 			st.add_vertex(r0[jn])
+			st.add_vertex(r1[jn])
 
 
 func update_line(
