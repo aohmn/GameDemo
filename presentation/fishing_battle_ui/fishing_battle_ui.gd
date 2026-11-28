@@ -30,19 +30,18 @@ func set_fishing_api(api: RefCounted) -> void:
 
 
 func _build_ui() -> void:
-	var bg := ColorRect.new()
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0.02, 0.05, 0.10, 0.88)
-	add_child(bg)
-
 	var root := VBoxContainer.new()
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.offset_top = 88.0
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_theme_constant_override("separation", 6)
 	add_child(root)
 
 	_build_fish_hud(root)
-	_build_arena(root)
+	var spacer := Control.new()
+	spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(spacer)
 	_build_mech_hud(root)
 	_build_controls(root)
 
