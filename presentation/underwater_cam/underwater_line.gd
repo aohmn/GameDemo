@@ -4,7 +4,7 @@ extends Node3D
 var _line_mesh: ImmediateMesh
 var _line_instance: MeshInstance3D
 var _line_mat: StandardMaterial3D
-var _hook_instance: MeshInstance3D
+var _hook_root: Node3D
 
 
 func _ready() -> void:
@@ -18,17 +18,51 @@ func _ready() -> void:
 	_line_instance.material_override = _line_mat
 	add_child(_line_instance)
 
-	_hook_instance = MeshInstance3D.new()
-	var hook_mesh := SphereMesh.new()
-	hook_mesh.radius = 0.035
-	hook_mesh.height = 0.07
+	_build_hook_mesh()
+
+
+func _build_hook_mesh() -> void:
+	_hook_root = Node3D.new()
+	add_child(_hook_root)
+
 	var hook_mat := StandardMaterial3D.new()
 	hook_mat.albedo_color = Color(0.85, 0.88, 0.92)
 	hook_mat.metallic = 0.85
 	hook_mat.roughness = 0.2
-	hook_mesh.material = hook_mat
-	_hook_instance.mesh = hook_mesh
-	add_child(_hook_instance)
+
+	# Thân lưỡi câu (shank)
+	var shank := MeshInstance3D.new()
+	var shank_mesh := CylinderMesh.new()
+	shank_mesh.top_radius = 0.008
+	shank_mesh.bottom_radius = 0.008
+	shank_mesh.height = 0.09
+	shank_mesh.radial_segments = 6
+	shank.mesh = shank_mesh
+	shank.position = Vector3(0.0, -0.045, 0.0)
+	shank.material_override = hook_mat
+	_hook_root.add_child(shank)
+
+	# Phần uốn cong chữ J (bend)
+	var bend := MeshInstance3D.new()
+	var bend_mesh := CylinderMesh.new()
+	bend_mesh.top_radius = 0.008
+	bend_mesh.bottom_radius = 0.008
+	bend_mesh.height = 0.05
+	bend_mesh.radial_segments = 6
+	bend.mesh = bend_mesh
+	bend.position = Vector3(0.022, -0.09, 0.0)
+	bend.rotation_degrees = Vector3(0.0, 0.0, 90.0)
+	bend.material_override = hook_mat
+	_hook_root.add_child(bend)
+
+	# Mũi nhọn lưỡi câu (point + barb)
+	var point := MeshInstance3D.new()
+	var point_mesh := PrismMesh.new()
+	point_mesh.size = Vector3(0.016, 0.045, 0.016)
+	point.mesh = point_mesh
+	point.position = Vector3(0.045, -0.068, 0.0)
+	point.material_override = hook_mat
+	_hook_root.add_child(point)
 
 
 func update_line(
@@ -58,5 +92,5 @@ func update_line(
 		_line_mesh.surface_add_vertex(p)
 	_line_mesh.surface_end()
 
-	if _hook_instance != null:
-		_hook_instance.global_position = fish_mouth_world
+	if _hook_root != null:
+		_hook_root.global_position = fish_mouth_world

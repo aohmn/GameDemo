@@ -28,6 +28,7 @@ func _ready() -> void:
 	_build_fish_meshes()
 	_line_node = LINE_SCRIPT.new() as Node3D
 	_line_node.top_level = true
+	_line_node.visible = false
 	add_child(_line_node)
 	_vfx_node = VFX_SCRIPT.new() as Node3D
 	_vfx_node.top_level = true
@@ -55,18 +56,26 @@ func _on_state_changed(payload: Dictionary) -> void:
 
 
 func _process(_delta: float) -> void:
-	if not visible or _line_node == null or not _line_node.has_method("update_line"):
+	if _line_node == null:
+		return
+	if not visible:
+		_line_node.visible = false
 		return
 	if _rig_ref == null or not is_instance_valid(_rig_ref):
 		_rig_ref = get_tree().get_first_node_in_group("fishing_rig")
-	var rod_tip_world: Vector3 = _water_anchor + Vector3(0.0, 1.2, 0.0)
-	if _rig_ref != null and _rig_ref.has_method("get_rod_tip_position"):
-		rod_tip_world = _rig_ref.call("get_rod_tip_position")
-	_line_node.call("update_line", rod_tip_world, get_mouth_world_position(), _tension_ratio)
+	if _rig_ref == null or not is_instance_valid(_rig_ref) or not _rig_ref.has_method("get_rod_tip_position"):
+		_line_node.visible = false
+		return
+	var rod_tip_world: Vector3 = _rig_ref.call("get_rod_tip_position")
+	_line_node.visible = true
+	if _line_node.has_method("update_line"):
+		_line_node.call("update_line", rod_tip_world, get_mouth_world_position(), _tension_ratio)
 
 
 func _on_fight_ended(_payload: Dictionary) -> void:
 	visible = false
+	if _line_node != null:
+		_line_node.visible = false
 
 
 func _on_fight_update(payload: Dictionary) -> void:
