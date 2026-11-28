@@ -29,6 +29,7 @@ func _build_hook_mesh() -> void:
 	hook_mat.albedo_color = Color(0.85, 0.88, 0.92)
 	hook_mat.metallic = 0.85
 	hook_mat.roughness = 0.2
+	hook_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
