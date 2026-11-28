@@ -12,6 +12,24 @@ static func mount_battle_ui(hud: CanvasLayer, fishing_api: RefCounted) -> void:
 				battle_ui.call("set_fishing_api", fishing_api)
 
 
+static func mount_underwater_cam(hud: CanvasLayer) -> void:
+	var cam_script: Script = load("res://presentation/underwater_cam/underwater_cam_panel.gd") as Script
+	if cam_script != null and hud != null:
+		var cam_panel := cam_script.new() as Control
+		if cam_panel != null:
+			hud.add_child(cam_panel)
+
+
+static func mount_fishing_joystick(hud: CanvasLayer, fishing_api: RefCounted) -> void:
+	var joy_script: Script = load("res://presentation/fishing_joystick/fishing_joystick.gd") as Script
+	if joy_script != null and hud != null:
+		var joy := joy_script.new() as Control
+		if joy != null:
+			hud.add_child(joy)
+			if fishing_api != null and joy.has_method("set_fishing_api"):
+				joy.call("set_fishing_api", fishing_api)
+
+
 static func get_equipped_line(equipment_api: RefCounted) -> Resource:
 	if equipment_api == null:
 		return null

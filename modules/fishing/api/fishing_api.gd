@@ -200,6 +200,11 @@ func set_rod_steer(dir: float) -> void:
 	_controller.set_rod_steer(dir)
 
 
+## Giật nhẹ cần câu (twitch) khi đang giằng co
+func trigger_twitch() -> Dictionary:
+	return _controller.trigger_twitch()
+
+
 ## Điều chỉnh lực cản máy câu (0.0 -> 1.0)
 func set_drag(level: float) -> void:
 	_controller.set_drag(level)

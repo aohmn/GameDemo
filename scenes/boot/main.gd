@@ -255,6 +255,8 @@ func _create_fishing_ui() -> void:
 	if _fishing_ui != null and _fishing_api != null and _fishing_ui.has_method("set_fishing_api"):
 		_fishing_ui.call("set_fishing_api", _fishing_api)
 	BOOT_HELPERS_SCRIPT.mount_battle_ui(_hud, _fishing_api)
+	BOOT_HELPERS_SCRIPT.mount_underwater_cam(_hud)
+	BOOT_HELPERS_SCRIPT.mount_fishing_joystick(_hud, _fishing_api)
 
 
 func sell_fish(fish_id: String, count: int) -> bool:

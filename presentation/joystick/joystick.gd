@@ -14,7 +14,22 @@ var _mouse_active: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bus: Node = get_node_or_null("/root/EventBus")
+	if bus != null:
+		var ev: Script = load("res://core/contracts/fishing_events.gd") as Script
+		if ev != null:
+			bus.call("subscribe", ev.STATE_CHANGED, Callable(self, "_on_fishing_state_changed"))
 	queue_redraw()
+
+
+func _on_fishing_state_changed(payload: Dictionary) -> void:
+	var to_state: String = str(payload.get("to_state", ""))
+	var in_fight: bool = (to_state == "FIGHT")
+	visible = not in_fight
+	if in_fight:
+		_active_touch_index = -1
+		_mouse_active = false
+		_reset_direction()
 
 
 func _notification(what: int) -> void:

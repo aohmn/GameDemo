@@ -113,20 +113,9 @@ func _add_skill_button(spec_path: String, fallback_name: String) -> void:
 	_skill_container.add_child(btn)
 
 
-func _build_controls(parent: Control) -> void:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	row.custom_minimum_size = Vector2(0.0, 72.0)
-	parent.add_child(row)
-	var lb := _touch_btn(row, "◀ Trái")
-	lb.button_down.connect(func() -> void: _set_steer(-1.0))
-	lb.button_up.connect(func() -> void: _set_steer(0.0))
-	var rb := _touch_btn(row, "GIỮ THU DÂY")
-	rb.button_down.connect(func() -> void: _set_reel(true))
-	rb.button_up.connect(func() -> void: _set_reel(false))
-	var rrb := _touch_btn(row, "Phải ▶")
-	rrb.button_down.connect(func() -> void: _set_steer(1.0))
-	rrb.button_up.connect(func() -> void: _set_steer(0.0))
+func _build_controls(_parent: Control) -> void:
+	# Điều hướng cần và giật cần đã chuyển sang presentation/fishing_joystick/ (không có nút thu dây).
+	pass
 
 
 func _bar(p: Control, title: String, col: Color) -> ProgressBar:

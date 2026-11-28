@@ -143,6 +143,12 @@ func set_rod_steer(dir: float) -> void:
 		battle.rod_steer = clampf(dir, -1.0, 1.0)
 
 
+func trigger_twitch() -> Dictionary:
+	if battle == null or fishing_data.target_fish_resource == null:
+		return {"ok": false, "reason": "no_battle"}
+	return battle.trigger_twitch(fishing_data.target_fish_resource)
+
+
 func set_drag(level: float) -> void:
 	if battle != null and battle.reel_drag != null:
 		battle.reel_drag.set_drag(level)
