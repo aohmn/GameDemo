@@ -2,24 +2,10 @@ extends Control
 ## Cửa sổ camera phụ dưới nước hiển thị đồng thời khi đang giằng co (FIGHT).
 
 const FISHING_EVENTS: Script = preload("res://core/contracts/fishing_events.gd")
-const ENV_SCRIPT: Script = preload("res://presentation/underwater_cam/underwater_environment.gd")
-const FISH_SCRIPT: Script = preload("res://presentation/underwater_cam/underwater_fish_scene.gd")
-const LINE_SCRIPT: Script = preload("res://presentation/underwater_cam/underwater_line.gd")
-const VFX_SCRIPT: Script = preload("res://presentation/underwater_cam/underwater_vfx.gd")
 
 var _panel: PanelContainer
 var _viewport: SubViewport
 var _camera: Camera3D
-var _fish_node: Node3D
-var _line_node: Node3D
-var _vfx_node: Node3D
-
-var _fish_pos_norm: float = 0.0
-var _fish_depth_norm: float = 0.5
-var _fish_swim_dir: int = 1
-var _tension_ratio: float = 0.3
-var _rod_bend: float = 0.0
-var _is_telegraphing: bool = false
 var _standalone_mode: bool = false
 
 
@@ -37,18 +23,8 @@ func set_standalone_mode(enabled: bool) -> void:
 	visible = enabled
 
 
-func apply_fight_update(payload: Dictionary) -> void:
-	_fish_pos_norm = float(payload.get("fish_pos_norm", _fish_pos_norm))
-	_fish_depth_norm = float(payload.get("fish_depth_norm", _fish_depth_norm))
-	_fish_swim_dir = int(payload.get("fish_swim_dir", _fish_swim_dir))
-	_rod_bend = float(payload.get("rod_bend", _rod_bend))
-	_is_telegraphing = bool(payload.get("fish_telegraphing", false))
-	if payload.has("fish_tier") and _fish_node != null and _fish_node.has_method("set_fish_tier"):
-		_fish_node.call("set_fish_tier", int(payload.get("fish_tier", 1)))
-
-	var tension: float = float(payload.get("line_tension", 0.0))
-	var max_tension: float = maxf(float(payload.get("max_tension", 100.0)), 1.0)
-	_tension_ratio = clampf(tension / max_tension, 0.0, 1.0)
+func apply_fight_update(_payload: Dictionary) -> void:
+	pass
 
 
 func _build_ui() -> void:
@@ -93,25 +69,13 @@ func _build_ui() -> void:
 	vbox.add_child(container)
 
 	_viewport = SubViewport.new()
-	_viewport.own_world_3d = true
+	_viewport.own_world_3d = false
 	_viewport.transparent_bg = false
 	_viewport.render_target_update_mode = SubViewport.UPDATE_WHEN_VISIBLE
 	container.add_child(_viewport)
 
 
 func _build_underwater_world() -> void:
-	var env_node := ENV_SCRIPT.new() as Node3D
-	_viewport.add_child(env_node)
-
-	_fish_node = FISH_SCRIPT.new() as Node3D
-	_viewport.add_child(_fish_node)
-
-	_line_node = LINE_SCRIPT.new() as Node3D
-	_viewport.add_child(_line_node)
-
-	_vfx_node = VFX_SCRIPT.new() as Node3D
-	_viewport.add_child(_vfx_node)
-
 	_camera = Camera3D.new()
 	_camera.position = Vector3(0.0, -1.2, 3.6)
 	_camera.fov = 52.0
@@ -119,31 +83,14 @@ func _build_underwater_world() -> void:
 
 
 func _process(delta: float) -> void:
-	if not visible:
+	if not visible or _camera == null:
 		return
-	if _fish_node != null and _fish_node.has_method("update_fish"):
-		_fish_node.call(
-			"update_fish",
-			_fish_pos_norm,
-			_fish_depth_norm,
-			_fish_swim_dir,
-			_tension_ratio,
-			_is_telegraphing,
-			delta
-		)
-		var mouth_pos: Vector3 = _fish_node.call("get_mouth_world_position")
-		if _line_node != null and _line_node.has_method("update_line"):
-			_line_node.call("update_line", mouth_pos, _tension_ratio, _rod_bend)
-		if _vfx_node != null and _vfx_node.has_method("update_vfx"):
-			_vfx_node.call("update_vfx", _fish_node.position, _is_telegraphing, delta)
-
-		# Camera bám cá mượt, có giới hạn, không rung giật
-		if _camera != null:
-			var target_cam_x: float = clampf(_fish_node.position.x * 0.55, -1.4, 1.4)
-			var target_cam_y: float = clampf(_fish_node.position.y + 0.15, -1.85, -0.45)
-			var target_cam := Vector3(target_cam_x, target_cam_y, 3.6)
-			_camera.position = _camera.position.lerp(target_cam, clampf(delta * 4.5, 0.0, 1.0))
-			_camera.look_at(_fish_node.position, Vector3.UP)
+	var fish: Node3D = get_tree().get_first_node_in_group("shared_fishing_fish") as Node3D
+	if fish == null:
+		return
+	var target_cam: Vector3 = fish.global_position + Vector3(0.0, 0.25, 3.4)
+	_camera.global_position = _camera.global_position.lerp(target_cam, clampf(delta * 5.0, 0.0, 1.0))
+	_camera.look_at(fish.global_position, Vector3.UP)
 
 
 func _subscribe_events() -> void:

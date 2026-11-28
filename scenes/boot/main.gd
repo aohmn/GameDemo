@@ -256,6 +256,7 @@ func _create_fishing_ui() -> void:
 		_fishing_ui.call("set_fishing_api", _fishing_api)
 	BOOT_HELPERS_SCRIPT.mount_battle_ui(_hud, _fishing_api)
 	BOOT_HELPERS_SCRIPT.mount_underwater_cam(_hud)
+	BOOT_HELPERS_SCRIPT.mount_shared_fish(self)
 	BOOT_HELPERS_SCRIPT.mount_fishing_joystick(_hud, _fishing_api)
 
 

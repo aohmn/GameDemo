@@ -16,8 +16,41 @@ var _target_yaw: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group("shared_fishing_fish")
 	_build_materials()
 	_build_fish_meshes()
+	var bus: Node = get_node_or_null("/root/EventBus")
+	if bus != null:
+		var ev: Script = load("res://core/contracts/fishing_events.gd") as Script
+		if ev != null:
+			bus.call("subscribe", ev.STATE_CHANGED, Callable(self, "_on_state_changed"))
+			bus.call("subscribe", ev.FIGHT_UPDATE, Callable(self, "_on_fight_update"))
+			bus.call("subscribe", ev.FISH_CAUGHT, Callable(self, "_on_fight_ended"))
+			bus.call("subscribe", ev.FISH_ESCAPED, Callable(self, "_on_fight_ended"))
+	visible = false
+
+
+func _on_state_changed(payload: Dictionary) -> void:
+	visible = (str(payload.get("to_state", "")) == "FIGHT")
+
+
+func _on_fight_ended(_payload: Dictionary) -> void:
+	visible = false
+
+
+func _on_fight_update(payload: Dictionary) -> void:
+	if not visible:
+		return
+	var tension: float = float(payload.get("line_tension", 0.0))
+	var max_t: float = maxf(float(payload.get("max_tension", 100.0)), 1.0)
+	update_fish(
+		float(payload.get("fish_pos_norm", 0.0)),
+		float(payload.get("fish_depth_norm", 0.5)),
+		int(payload.get("fish_swim_dir", 1)),
+		clampf(tension / max_t, 0.0, 1.0),
+		bool(payload.get("fish_telegraphing", false)),
+		get_process_delta_time()
+	)
 
 
 func _build_materials() -> void:

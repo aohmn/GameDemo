@@ -20,6 +20,14 @@ static func mount_underwater_cam(hud: CanvasLayer) -> void:
 			hud.add_child(cam_panel)
 
 
+static func mount_shared_fish(world_parent: Node3D) -> void:
+	var fish_script: Script = load("res://presentation/underwater_cam/underwater_fish_scene.gd") as Script
+	if fish_script != null and world_parent != null:
+		var fish_node := fish_script.new() as Node3D
+		if fish_node != null:
+			world_parent.add_child(fish_node)
+
+
 static func mount_fishing_joystick(hud: CanvasLayer, fishing_api: RefCounted) -> void:
 	var joy_script: Script = load("res://presentation/fishing_joystick/fishing_joystick.gd") as Script
 	if joy_script != null and hud != null:

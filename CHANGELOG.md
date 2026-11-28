@@ -2,6 +2,7 @@
 
 ## Chưa phát hành
 
+- Chuyển `underwater_cam_panel.gd` sang `own_world_3d = false` dùng chung `World3D` chính và gắn thực thể cá 3D duy nhất (`mount_shared_fish`) qua `boot_helpers.gd`, loại bỏ cá bản sao trong `SubViewport` (Mức 2, `tests/headless` đạt; chưa test trên Godot Android).
 - Bỏ nền `ColorRect` phủ kín màn hình và `_arena` 2D trong `fishing_battle_ui.gd` để camera chính 3D và camera phụ dưới nước cùng hiển thị rõ ràng trong pha `FIGHT` (Mức 2, `tests/headless` đạt; chưa test trên Godot Android).
 - Hoàn thiện HUD Fishing Battle (`fishing_battle_ui.gd`): gỡ bỏ nút `GIỮ THU DÂY` / `◀ Trái` / `Phải ▶` cũ, giữ bố cục responsive hiển thị HP/Sức/Nội năng cá, lực căng, độ bền dây/cần, Drag và kỹ năng cùng camera dưới nước + joystick phải không chồng lấn (Mức 2, `tests/headless` đạt; chưa test trên Godot Android).
 - Thêm hệ thống VFX dưới nước (`underwater_vfx.gd`: sóng xung kích, vòng cảnh báo telegraph kỹ năng cá, hạt bọt khí giới hạn cho Android) và liên kết tốc độ bơi cá với trạng thái telegraph (Mức 2, `tests/headless` đạt; chưa test trên Godot Android).
