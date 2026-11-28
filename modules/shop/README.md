@@ -28,7 +28,6 @@ modules/shop/
   - `display_name`: Tên tiếng Việt có dấu.
   - `description`: Mô tả trang bị / pháp bảo.
   - `price_spirit_stone`: Giá bán bằng Linh Thạch (hạ phẩm).
-  - `price_vnd`: Thuộc tính cũ giữ lại để tương thích ngược.
   - `category`: Phân loại (`rod`, `equipment`, `bait`).
   - Chỉ số cần câu chuẩn xác tương ứng với hệ thống mô phỏng: `safe_tension_min`, `safe_tension_max`, `max_tension`, `reel_speed`, `release_speed`, `fatigue_rate`.
 

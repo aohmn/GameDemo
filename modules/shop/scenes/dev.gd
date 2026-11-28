@@ -133,7 +133,7 @@ func _refresh_display() -> void:
 		var item_id: String = str(item.get("id"))
 		var d_name: String = str(item.get("display_name"))
 		var desc: String = str(item.get("description"))
-		var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
+		var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_spirit_stone"))
 		var is_owned: bool = bool(_api.call("is_owned", item_id))
 		var r_id: String = str(item.get("rod_id"))
 		var is_equipped: bool = (r_id == equipped)

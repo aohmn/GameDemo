@@ -168,7 +168,7 @@ func buy_shop_item(item_id: String) -> bool:
 	if current_realm < req_realm:
 		return false
 
-	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
+	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_spirit_stone"))
 	var current_bal: int = int(_economy_api.call("get_balance"))
 
 	if current_bal < price or bool(_shop_api.call("is_owned", item_id)):

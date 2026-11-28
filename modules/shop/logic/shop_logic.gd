@@ -63,10 +63,10 @@ func buy_item(item_id: String, current_balance: int, current_realm_level: int = 
 	var item: Resource = _items[item_id] as Resource
 	var req_realm: int = int(item.get("required_realm_level")) if "required_realm_level" in item else 0
 	if current_realm_level < req_realm:
-		_fail_purchase(item_id, "Chưa đủ cảnh giới (yêu cầu cảnh giới %d)" % req_realm)
+		_fail_purchase(item_id, "Chưa đủ cảnh giới (yêu cầu cảnh giới %d)" % (req_realm + 1))
 		return {"success": false, "price": 0, "item_id": item_id, "reason": "insufficient_realm", "required_realm": req_realm}
 
-	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_vnd"))
+	var price: int = int(item.call("get_price")) if item.has_method("get_price") else int(item.get("price_spirit_stone"))
 
 	if current_balance < price:
 		_fail_purchase(item_id, "Không đủ linh thạch để mua vật phẩm này")

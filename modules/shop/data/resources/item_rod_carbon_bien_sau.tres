@@ -8,7 +8,6 @@ id = "shop_rod_carbon_bien_sau"
 display_name = "Cần Huyền Thiết"
 description = "Pháp bảo cần câu cấp Linh rèn từ huyền thiết thâm hải, độ bền 250, chịu lực căng cực đại 125.0."
 price_spirit_stone = 1500
-price_vnd = 1500000
 category = "rod"
 required_realm_level = 1
 rod_id = "rod_carbon_bien_sau"

@@ -124,7 +124,7 @@ func _update_view() -> void:
 	for s in skills:
 		if bool((s as Dictionary).get("unlocked", false)):
 			unlocked_count += 1
-	_summary_label.text = "Điểm mở khóa (Cảnh giới %d): %d / %d kỹ năng" % [realm, unlocked_count, skills.size()]
+	_summary_label.text = "Điểm mở khóa (Cảnh giới %d): %d / %d kỹ năng" % [realm + 1, unlocked_count, skills.size()]
 
 	for s in skills:
 		var d: Dictionary = s as Dictionary

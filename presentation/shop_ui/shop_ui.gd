@@ -191,7 +191,7 @@ func _add_item_row(item: Resource, balance: int, realm: int, equipped_rod: Strin
 	row.add_child(left)
 
 	var name_lbl := Label.new()
-	var req_text: String = " [Yêu cầu CG %d]" % req_realm if req_realm > 0 else ""
+	var req_text: String = " [Yêu cầu CG %d]" % (req_realm + 1) if req_realm > 0 else ""
 	name_lbl.text = "%s — %d Linh Thạch%s" % [disp_name, price, req_text]
 	name_lbl.add_theme_font_size_override("font_size", 13)
 	left.add_child(name_lbl)
